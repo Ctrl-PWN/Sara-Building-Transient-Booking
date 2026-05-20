@@ -46,3 +46,5 @@ export const bookings = pgTable('bookings', {
 
   createdAt: timestamp('created_at').defaultNow(),
 })
+
+export * from '../../auth-schema.ts'
