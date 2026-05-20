@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Welcome to your new TanStack Start app! 
 
 # Getting Started
@@ -269,3 +270,6 @@ Files prefixed with `demo` can be safely deleted. They are there to provide a st
 You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
 
 For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+=======
+# Sara-Building-Transient-Booking
+>>>>>>> 1a9d4ca1b9291282a8f415f1b7e87cd60b5b197e
