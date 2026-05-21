@@ -1,145 +1,95 @@
-# Block Center — Design System
+---
+name: Architectural Serenity - Night
+colors:
+  surface: '#161615' # Oiled Charcoal (Base canvas)
+  surface-dim: '#0f0f0e' # Deep Slate
+  surface-bright: '#222120' # Polished Basalt
+  surface-container-lowest: '#0a0a0a'
+  surface-container-low: '#1c1b1a'
+  surface-container: '#222120' # Standard Card Background
+  surface-container-high: '#2d2c2a' # Elevated Layer
+  surface-container-highest: '#383735'
+  on-surface: '#e6e2de' # Parchment White (High contrast text)
+  on-surface-variant: '#cac6bd' # Muted Stone (Secondary text)
+  inverse-surface: '#faf9f7'
+  inverse-on-surface: '#1a1c1b'
+  outline: '#53524b' # Raw Steel (Drafted borders)
+  outline-variant: '#3c3b36'
+  surface-tint: '#cac6bf'
+  primary: '#e6e2de' # Parchment White (Primary structural actions)
+  on-primary: '#161615' # Dark text on light button
+  primary-container: '#383735'
+  on-primary-container: '#e6e2de'
+  inverse-primary: '#181816'
+  secondary: '#dbc3a6' # Luminous Bronze (Active states/Accents)
+  on-secondary: '#3a2b1a'
+  secondary-container: '#55442e' # Amber Glow Container
+  on-secondary-container: '#f8dec1'
+  tertiary: '#cac6bf' # Warm Gray Accent
+  on-tertiary: '#161615'
+  tertiary-container: '#2d2c28'
+  on-tertiary-container: '#cac6bf'
+  error: '#ffb4ab'
+  on-error: '#690005'
+  error-container: '#93000a'
+  on-error-container: '#ffdad6'
+  background: '#161615'
+  on-background: '#e6e2de'
+  surface-variant: '#2d2c2a'
+---
+
+a
 
 ## Brand & Style
 
-The design system for this property management platform employs a **Brutalist-Lite** aesthetic that prioritizes structural integrity and spatial clarity. By blending the raw, honest layout principles of brutalism with a warm, tactile color palette, the interface evokes a sense of physical architecture and reliable management.
+This design system is built upon the principles of modern architectural practice: structural integrity, intentionality, and a balance between raw materiality and refined comfort. It targets an audience that appreciates precision and timelessness, such as design professionals, developers, and high-end service providers.
 
-The personality is **grounded, authoritative, yet approachable**. It rejects the ethereal nature of modern SaaS design in favor of "physical" UI — elements feel like heavy blocks or architectural tiles. High contrast and generous spacing ensure that users can navigate complex property data through instant pattern recognition rather than dense text parsing.
+The visual style is **Architectural Minimalism**. It emphasizes heavy whitespace to allow content to breathe, utilizing a sophisticated interplay of serif and sans-serif typography to evoke a "studio" atmosphere. The emotional response should be one of calm authority and intellectual warmth—avoiding the coldness of traditional tech minimalism in favor of a "lived-in" professional aesthetic.
 
 ## Colors
 
-The palette is inspired by natural building materials — terracotta, sand, and sage — providing a "human" touch to the industrial layout.
+The palette is derived from natural architectural materials: limestone, blackened steel, and oak.
 
-- **Primary (Terracotta):** Used for "Occupied" states and primary actions. It signifies life and activity within a space.
-- **Status Colors:** Functional clarity is achieved through Sage (Available), Saffron (Reserved), and Sunset Orange (Maintenance/Alert).
-- **Core Neutral:** Deep Charcoal (`#2C3531`) is the exclusive color for all borders and primary text, providing the "ink" that binds the structural blocks together.
-- **Surface Strategy:** Backgrounds use a warm Sand to reduce eye strain, while active UI containers use Pure White to "pop" against the 2px charcoal borders.
+- **Primary (#2D2C2A):** A "Carbon Black" used for high-contrast typography and structural elements.
+- **Secondary (#A69076):** A "Muted Bronze" used for accents, active states, and call-to-actions, providing a warm focal point.
+- **Tertiary (#E5E1DA):** A "Warm Stone" used for subtle borders and secondary containers.
+- **Neutral (#F9F8F6):** A "Parchment White" background that reduces eye strain and provides a softer canvas than pure white.
 
-### Token reference
-
-```yaml
-colors:
-  surface: '#f2fcf5'
-  surface-dim: '#d3dcd6'
-  surface-bright: '#f2fcf5'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#ecf6f0'
-  surface-container: '#e6f0ea'
-  surface-container-high: '#e1eae4'
-  surface-container-highest: '#dbe5df'
-  on-surface: '#151d1a'
-  on-surface-variant: '#56423e'
-  inverse-surface: '#29322e'
-  inverse-on-surface: '#e9f3ed'
-  outline: '#8a726d'
-  outline-variant: '#ddc0bb'
-  surface-tint: '#a23e2e'
-  primary: '#9e3b2c'
-  on-primary: '#ffffff'
-  primary-container: '#bf5342'
-  on-primary-container: '#fffbff'
-  inverse-primary: '#ffb4a7'
-  secondary: '#4e6358'
-  on-secondary: '#ffffff'
-  secondary-container: '#cee5d8'
-  on-secondary-container: '#52675d'
-  tertiary: '#745b00'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#c9a845'
-  on-tertiary-container: '#4f3d00'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#ffdad4'
-  primary-fixed-dim: '#ffb4a7'
-  on-primary-fixed: '#400200'
-  on-primary-fixed-variant: '#822719'
-  secondary-fixed: '#d1e8da'
-  secondary-fixed-dim: '#b5ccbf'
-  on-secondary-fixed: '#0b1f17'
-  on-secondary-fixed-variant: '#374b41'
-  tertiary-fixed: '#ffe08b'
-  tertiary-fixed-dim: '#e6c35d'
-  on-tertiary-fixed: '#241a00'
-  on-tertiary-fixed-variant: '#584400'
-  background: '#f2fcf5'
-  on-background: '#151d1a'
-  surface-variant: '#dbe5df'
-```
+Usage is strictly disciplined: use the neutral background for the majority of the UI, with primary tones reserved for the most critical information hierarchy.
 
 ## Typography
 
-The typographic hierarchy utilizes three distinct voices to separate intent:
+The typographic strategy relies on a "Dual-Tone" hierarchy. **Newsreader** provides a sophisticated, editorial, and authoritative feel for all headings, mimicking the masthead of a high-end architectural journal. It should be used with tighter tracking in larger sizes to maintain visual density.
 
-1. **Fraunces (The Narrative):** A soft-serif used for headings and property names. It adds a premium, editorial feel that balances the harshness of the brutalist lines.
-2. **Outfit (The Interface):** A clean, modern sans-serif for body copy, descriptions, and general navigation. Its high x-height ensures readability against the warm background.
-3. **Space Grotesk (The Ledger):** A technical, geometric typeface used for all numerical data, financials, and unit numbers. Its monospaced-adjacent feel suggests precision and accuracy in reporting.
-
-### Type scale
-
-| Token | Font | Size | Weight | Line Height | Letter Spacing |
-|-------|------|------|--------|-------------|----------------|
-| `display-lg` | Fraunces | 48px | 700 | 1.1 | -0.02em |
-| `headline-lg` | Fraunces | 32px | 600 | 1.2 | — |
-| `headline-lg-mobile` | Fraunces | 24px | 600 | 1.2 | — |
-| `headline-md` | Fraunces | 24px | 600 | 1.3 | — |
-| `body-lg` | Outfit | 18px | 400 | 1.6 | — |
-| `body-md` | Outfit | 16px | 400 | 1.5 | — |
-| `data-lg` | Space Grotesk | 20px | 500 | 1.2 | -0.01em |
-| `data-md` | Space Grotesk | 14px | 500 | 1.2 | — |
-| `label-caps` | Space Grotesk | 12px | 700 | 1 | 0.05em |
+**Inter** handles all functional and body text. Its neutral, utilitarian character ensures maximum legibility for data, interface labels, and long-form descriptions. Use uppercase for labels to create a clear distinction between "Interface" (Inter) and "Content" (Newsreader).
 
 ## Layout & Spacing
 
-The layout is governed by a **Fixed Grid** philosophy that treats the screen as a construction site. Elements are placed into clearly defined "lots."
+The layout is governed by a **Fixed Grid** system that centers the content on large displays, creating a "gallery" effect.
 
-- **The Grid:** A 12-column grid on desktop with a fixed 16px gutter.
-- **The Border Rule:** Every major container and interactive element must be bounded by a **2px solid Deep Charcoal (`#2C3531`)** border. Do not use hair-lines or subtle dividers.
-- **Rhythm:** Use an 8px base unit. Spatial recognition is prioritized over density; never crowd the interface. If a container feels full, increase the margin rather than shrinking the text.
-- **Responsive:** On mobile, columns collapse to a single stack, but the 24px container padding is maintained to ensure the "block" edges are always visible against the Sand background.
-
-### Spacing tokens
-
-| Token | Value |
-|-------|-------|
-| `spacing-unit` | 8px |
-| `container-padding` | 24px |
-| `gutter` | 16px |
-| `margin-sm` | 16px |
-| `margin-md` | 32px |
-| `margin-lg` | 64px |
-
-### Radius tokens
-
-| Token | Value |
-|-------|-------|
-| `sm` | 0.25rem |
-| `DEFAULT` | 0.5rem |
-| `md` | 0.75rem |
-| `lg` | 1rem |
-| `xl` | 1.5rem |
-| `full` | 9999px |
+- **Desktop:** A 12-column grid with 24px gutters and 64px outer margins. Elements should align strictly to column edges to reinforce the architectural feel.
+- **Mobile:** A 4-column fluid grid with 16px gutters and 20px margins.
+- **Rhythm:** All vertical spacing must be a multiple of the 8px base unit. Section-level padding should be generous (80px or 96px) to signify a change in context without the need for heavy dividers.
 
 ## Elevation & Depth
 
-This design system rejects all shadows, gradients, and blurs. Depth is achieved strictly through **Tonal Stacking and Offset Borders**:
+This design system avoids high-elevation shadows to maintain a grounded, structural appearance.
 
-1. **Flat Stacking:** All elements sit on the same Z-axis. Separation is achieved by the 2px Deep Charcoal borders.
-2. **Active States:** When a button or card is "pressed," it does not sink or glow. Instead, it may change its fill color to the Primary (Terracotta) or invert its colors (Charcoal background with White text).
-3. **Layering:** If a modal or popover is required, it is treated as a solid block placed on top of the layout, still using the 2px border to define its boundaries. No backdrop blur is used; use a solid 20% opacity Charcoal overlay if necessary.
+- **Tonal Layers:** Depth is primarily communicated through subtle shifts in background color (e.g., a "Warm Stone" card on a "Parchment White" background).
+- **Ambient Shadows:** When physical separation is required (like in dropdowns or modals), use an extremely diffused, low-opacity shadow with a hint of the secondary color tint: `0px 10px 30px rgba(45, 44, 42, 0.05)`.
+- **Ghost Borders:** Use 1px solid strokes in the Tertiary color for defining input fields and containers, ensuring the UI feels drafted rather than rendered.
 
 ## Shapes
 
-A uniform **16px (1rem)** border radius is applied to all primary containers, buttons, and input fields. This softened corner prevents the brutalist 2px borders from feeling too aggressive or "sharp," reinforcing the warm and tactile nature of the brand.
+The shape language is defined by the **Rounded-Eight** rule. A base radius of 0.5rem (8px) is applied to all standard components like buttons, input fields, and small cards.
 
-Small elements like tags or "Unit ID" labels may use the same 16px radius, effectively making them pill-shaped if they are small enough, maintaining a consistent curvature language across the system.
+Larger containers (like hero images or main content areas) should scale to 1rem (16px) or 1.5rem (24px) to maintain visual harmony. This moderate roundness softens the industrial grid, making the professional environment feel accessible and tactile.
 
 ## Components
 
-- **Buttons:** 2px Charcoal border, 16px radius. Primary buttons use a Terracotta fill with White text. Secondary buttons use a White fill with Charcoal text. Use Space Grotesk for button labels.
-- **Cards (The "Property Block"):** White background, 2px Charcoal border. The header of the card should be separated by a 2px horizontal line. Use Fraunces for the title and Space Grotesk for the unit availability.
-- **Input Fields:** White background, 2px Charcoal border. When focused, the border remains 2px Charcoal, but the background shifts to a very light tint of the primary color (Terracotta at 5% opacity).
-- **Status Chips:** Small blocks with a 2px border. The fill color indicates the status (Sage, Saffron, etc.). Use Space Grotesk Bold at 12px for the text.
-- **Financial Tables:** No cell borders; only a single 2px bottom border for the header row and a 2px border around the entire table container. Use Space Grotesk for all numerical entries to ensure alignment.
-- **Navigation:** Vertical sidebar using large blocks. Active links are filled with Terracotta and White text; inactive links remain White with Charcoal text and borders.
+- **Buttons:** Primary buttons use a solid Carbon Black background with white Inter text (Medium weight). Secondary buttons use a Ghost style with a 1px Stone border.
+- **Cards:** Cards should have no shadow by default, instead using a "Warm Stone" background or a thin 1px border. Headlines within cards use Newsreader MD.
+- **Input Fields:** Fields use a 1px border. On focus, the border transitions to the Secondary color (Bronze) with a subtle 2px inset glow. Labels are Inter (Label-MD) placed strictly above the field.
+- **Chips:** Small, 8px rounded elements used for categories. Use the Tertiary background with Carbon Black text.
+- **Lists:** Use generous 16px vertical padding between items, separated by a 1px Tertiary divider that does not span the full width of the container.
+- **Additional Components:** "Blueprint Icons" (thin stroke icons, 1.5px weight) should be used sparingly to guide navigation without cluttering the architectural clarity of the typography.
