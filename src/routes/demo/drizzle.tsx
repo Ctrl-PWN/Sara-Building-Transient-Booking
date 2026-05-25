@@ -1,8 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { desc } from "drizzle-orm";
-import { db } from "#/db/index";
-import { todos } from "#/db/schema";
+import { db } from "@/db/index";
+import { todos } from "@/db/schema";
 
 const getTodos = createServerFn({
 	method: "GET",
@@ -30,9 +30,9 @@ function DemoDrizzle() {
 	const router = useRouter();
 	const todos = Route.useLoaderData();
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const formData = new FormData(e.target as HTMLFormElement);
+		const formData = new FormData(e.target);
 		const title = formData.get("title") as string;
 
 		if (!title) return;
@@ -40,7 +40,7 @@ function DemoDrizzle() {
 		try {
 			await createTodo({ data: { title } });
 			router.invalidate();
-			(e.target as HTMLFormElement).reset();
+			e.target.reset();
 		} catch (error) {
 			console.error("Failed to create todo:", error);
 		}
