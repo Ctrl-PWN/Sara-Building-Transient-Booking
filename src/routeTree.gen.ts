@@ -10,12 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+<<<<<<< HEAD
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LogInIndexRouteImport } from './routes/log-in/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoNeonRouteImport } from './routes/demo/neon'
+=======
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
+>>>>>>> development
 import { Route as DemoDrizzleRouteImport } from './routes/demo/drizzle'
 import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -25,16 +30,20 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+=======
+>>>>>>> development
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 const LogInIndexRoute = LogInIndexRouteImport.update({
   id: '/log-in/',
   path: '/log-in/',
@@ -45,16 +54,21 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+=======
+>>>>>>> development
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 const DemoNeonRoute = DemoNeonRouteImport.update({
   id: '/demo/neon',
   path: '/demo/neon',
   getParentRoute: () => rootRouteImport,
 } as any)
+=======
+>>>>>>> development
 const DemoDrizzleRoute = DemoDrizzleRouteImport.update({
   id: '/demo/drizzle',
   path: '/demo/drizzle',
@@ -73,6 +87,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+<<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
@@ -81,6 +96,12 @@ export interface FileRoutesByFullPath {
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/log-in/': typeof LogInIndexRoute
+=======
+  '/about': typeof AboutRoute
+  '/demo/better-auth': typeof DemoBetterAuthRoute
+  '/demo/drizzle': typeof DemoDrizzleRoute
+  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+>>>>>>> development
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -88,15 +109,20 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/drizzle': typeof DemoDrizzleRoute
+<<<<<<< HEAD
   '/demo/neon': typeof DemoNeonRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/dashboard': typeof DashboardIndexRoute
   '/log-in': typeof LogInIndexRoute
+=======
+  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+>>>>>>> development
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+<<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
@@ -105,12 +131,19 @@ export interface FileRoutesById {
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/log-in/': typeof LogInIndexRoute
+=======
+  '/about': typeof AboutRoute
+  '/demo/better-auth': typeof DemoBetterAuthRoute
+  '/demo/drizzle': typeof DemoDrizzleRoute
+  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+>>>>>>> development
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+<<<<<<< HEAD
     | '/dashboard'
     | '/about'
     | '/demo/better-auth'
@@ -119,6 +152,12 @@ export interface FileRouteTypes {
     | '/demo/tanstack-query'
     | '/dashboard/'
     | '/log-in/'
+=======
+    | '/about'
+    | '/demo/better-auth'
+    | '/demo/drizzle'
+    | '/demo/tanstack-query'
+>>>>>>> development
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -126,14 +165,19 @@ export interface FileRouteTypes {
     | '/about'
     | '/demo/better-auth'
     | '/demo/drizzle'
+<<<<<<< HEAD
     | '/demo/neon'
     | '/demo/tanstack-query'
     | '/dashboard'
     | '/log-in'
+=======
+    | '/demo/tanstack-query'
+>>>>>>> development
     | '/api/auth/$'
   id:
     | '__root__'
     | '/'
+<<<<<<< HEAD
     | '/dashboard'
     | '/about'
     | '/demo/better-auth'
@@ -142,11 +186,18 @@ export interface FileRouteTypes {
     | '/demo/tanstack-query'
     | '/dashboard/'
     | '/log-in/'
+=======
+    | '/about'
+    | '/demo/better-auth'
+    | '/demo/drizzle'
+    | '/demo/tanstack-query'
+>>>>>>> development
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+<<<<<<< HEAD
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   DemoBetterAuthRoute: typeof DemoBetterAuthRoute
@@ -154,6 +205,12 @@ export interface RootRouteChildren {
   DemoNeonRoute: typeof DemoNeonRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   LogInIndexRoute: typeof LogInIndexRoute
+=======
+  AboutRoute: typeof AboutRoute
+  DemoBetterAuthRoute: typeof DemoBetterAuthRoute
+  DemoDrizzleRoute: typeof DemoDrizzleRoute
+  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+>>>>>>> development
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -166,6 +223,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -173,6 +231,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+=======
+>>>>>>> development
     '/': {
       id: '/'
       path: '/'
@@ -180,6 +240,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
     '/log-in/': {
       id: '/log-in/'
       path: '/log-in'
@@ -194,6 +255,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+=======
+>>>>>>> development
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
       path: '/demo/tanstack-query'
@@ -201,6 +264,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
     '/demo/neon': {
       id: '/demo/neon'
       path: '/demo/neon'
@@ -208,6 +272,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoNeonRouteImport
       parentRoute: typeof rootRouteImport
     }
+=======
+>>>>>>> development
     '/demo/drizzle': {
       id: '/demo/drizzle'
       path: '/demo/drizzle'
@@ -232,6 +298,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
+<<<<<<< HEAD
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -253,6 +320,14 @@ const rootRouteChildren: RootRouteChildren = {
   DemoNeonRoute: DemoNeonRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   LogInIndexRoute: LogInIndexRoute,
+=======
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  DemoBetterAuthRoute: DemoBetterAuthRoute,
+  DemoDrizzleRoute: DemoDrizzleRoute,
+  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+>>>>>>> development
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
