@@ -50,6 +50,7 @@
   --status-reserved: #6e5b44;
   --status-maintenance: #c47d3a;
   --status-occupied: #181816;
+  --status-checked-out: #8a857c;
 
   --foreground: var(--on-surface);
   --card: var(--surface-container);
@@ -128,6 +129,7 @@
   --status-reserved: #dbc3a6;
   --status-maintenance: #e8a05a;
   --status-occupied: #e6e2de;
+  --status-checked-out: #9a958c;
 
   --foreground: var(--on-surface);
   --card: var(--surface-container);
@@ -192,6 +194,7 @@
   --color-status-reserved: var(--status-reserved);
   --color-status-maintenance: var(--status-maintenance);
   --color-status-occupied: var(--status-occupied);
+  --color-status-checked-out: var(--status-checked-out);
 
   --color-foreground: var(--foreground);
   --color-card: var(--card);
