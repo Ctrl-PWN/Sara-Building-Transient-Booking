@@ -38,8 +38,6 @@ colors:
   surface-variant: '#2d2c2a'
 ---
 
-a
-
 ## Brand & Style
 
 This design system is built upon the principles of modern architectural practice: structural integrity, intentionality, and a balance between raw materiality and refined comfort. It targets an audience that appreciates precision and timelessness, such as design professionals, developers, and high-end service providers.
