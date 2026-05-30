@@ -188,12 +188,8 @@
           "name": "bookings_room_id_rooms_id_fk",
           "tableFrom": "bookings",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["room_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -203,9 +199,7 @@
         "bookings_booking_ref_unique": {
           "name": "bookings_booking_ref_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "booking_ref"
-          ]
+          "columns": ["booking_ref"]
         }
       },
       "policies": {},
@@ -350,9 +344,7 @@
         "rooms_room_number_unique": {
           "name": "rooms_room_number_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "room_number"
-          ]
+          "columns": ["room_number"]
         }
       },
       "policies": {},
@@ -425,12 +417,8 @@
           "name": "ledger_transactions_booking_id_bookings_id_fk",
           "tableFrom": "ledger_transactions",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "booking_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["booking_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -498,9 +486,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

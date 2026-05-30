@@ -1,5 +1,6 @@
-import type * as React from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import * as React from 'react'
+import { cva } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const badgeVariants = cva(
@@ -7,12 +8,16 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground shadow-sm',
+        default:
+          'border-transparent bg-primary text-primary-foreground shadow-sm',
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        destructive: 'border-transparent bg-destructive text-destructive-foreground shadow-sm',
+        destructive:
+          'border-transparent bg-destructive text-destructive-foreground shadow-sm',
         outline: 'text-foreground',
-        success: 'border-transparent bg-emerald-600/15 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
-        warning: 'border-transparent bg-amber-600/15 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',
+        success:
+          'border-transparent bg-emerald-600/15 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+        warning:
+          'border-transparent bg-amber-600/15 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',
       },
     },
     defaultVariants: {
@@ -22,7 +27,8 @@ const badgeVariants = cva(
 )
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {

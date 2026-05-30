@@ -61,10 +61,7 @@ function SelectList({ className, ...props }: SelectPrimitive.List.Props) {
   )
 }
 
-function SelectItem({
-  className,
-  ...props
-}: SelectPrimitive.Item.Props) {
+function SelectItem({ className, ...props }: SelectPrimitive.Item.Props) {
   return (
     <SelectPrimitive.Item
       className={cn(
@@ -76,9 +73,15 @@ function SelectItem({
   )
 }
 
-function SelectItemText({ className, ...props }: SelectPrimitive.ItemText.Props) {
+function SelectItemText({
+  className,
+  ...props
+}: SelectPrimitive.ItemText.Props) {
   return (
-    <SelectPrimitive.ItemText className={cn('flex-1 truncate', className)} {...props} />
+    <SelectPrimitive.ItemText
+      className={cn('flex-1 truncate', className)}
+      {...props}
+    />
   )
 }
 
@@ -96,14 +99,23 @@ function SelectItemIndicator({
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
-    <SelectPrimitive.Group className={cn('flex flex-col', className)} {...props} />
+    <SelectPrimitive.Group
+      className={cn('flex flex-col', className)}
+      {...props}
+    />
   )
 }
 
-function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) {
+function SelectLabel({
+  className,
+  ...props
+}: SelectPrimitive.GroupLabel.Props) {
   return (
     <SelectPrimitive.GroupLabel
-      className={cn('px-2 py-1.5 text-xs font-medium text-muted-foreground', className)}
+      className={cn(
+        'px-2 py-1.5 text-xs font-medium text-muted-foreground',
+        className,
+      )}
       {...props}
     />
   )
