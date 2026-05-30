@@ -1,98 +1,129 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, isNull } from 'drizzle-orm'
-
-import { db } from '@/db'
+import { db } from '@/db/index'
+import { eq, desc, and, isNull, sql, getTableColumns } from 'drizzle-orm'
 import { bookings, rooms } from '@/db/schema'
+import { z } from 'zod'
 
-import { bookingByIdSchema, bookingStatusSchema } from './schemas'
-import type { BookingWithRoom } from './types'
+import type { InferSelectModel } from 'drizzle-orm'
 
-function mapBookingRow(row: {
-  id: number
-  bookingRef: string
-  guestName: string
-  contactNumber: string | null
-  roomId: number
-  roomNumber: string
-  roomType: string
-  checkInDate: string
-  checkOutDate: string
-  occupantsCount: number
-  status: string
-  paymentStatus: string
-}): BookingWithRoom {
-  return {
-    id: row.id,
-    bookingRef: row.bookingRef,
-    guestName: row.guestName,
-    contactNumber: row.contactNumber,
-    roomId: row.roomId,
-    roomNumber: row.roomNumber,
-    roomType: row.roomType,
-    checkInDate: row.checkInDate,
-    checkOutDate: row.checkOutDate,
-    occupantsCount: row.occupantsCount,
-    status: bookingStatusSchema.parse(row.status),
-    paymentStatus: row.paymentStatus,
-  }
+type Booking = InferSelectModel<typeof bookings>
+
+export type BookingWithRoom = Booking & {
+  roomNumber: string | null
 }
 
-const bookingSelect = {
-  id: bookings.id,
-  bookingRef: bookings.bookingRef,
-  guestName: bookings.guestName,
-  contactNumber: bookings.contactNumber,
-  roomId: bookings.roomId,
-  roomNumber: rooms.roomNumber,
-  roomType: rooms.type,
-  checkInDate: bookings.checkInDate,
-  checkOutDate: bookings.checkOutDate,
-  occupantsCount: bookings.occupantsCount,
-  status: bookings.status,
-  paymentStatus: bookings.paymentStatus,
+function generateBookingRef(): string {
+  const ts = Date.now().toString(36).toUpperCase()
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
+  return `BKG-${ts}${rand}`
 }
 
-async function getBookingByIdFromDb(
-  id: number,
-): Promise<BookingWithRoom | null> {
+export const getBookings = createServerFn({ method: 'GET' }).handler(async () => {
   const rows = await db
-    .select(bookingSelect)
+    .select({
+      ...getTableColumns(bookings),
+      roomNumber: rooms.roomNumber,
+    })
     .from(bookings)
-    .innerJoin(rooms, eq(bookings.roomId, rooms.id))
-    .where(and(eq(bookings.id, id), isNull(bookings.deletedAt)))
-    .limit(1)
-
-  const row = rows.at(0)
-  if (row === undefined) {
-    return null
-  }
-
-  return mapBookingRow(row)
-}
-
-async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
-  const rows = await db
-    .select(bookingSelect)
-    .from(bookings)
-    .innerJoin(rooms, eq(bookings.roomId, rooms.id))
+    .leftJoin(rooms, eq(bookings.roomId, rooms.id))
     .where(isNull(bookings.deletedAt))
-    .orderBy(asc(bookings.checkInDate))
+    .orderBy(desc(bookings.createdAt))
 
-  return rows.map(mapBookingRow)
-}
+    return rows
+})
 
-export const getBookingById = createServerFn({ method: 'GET' })
-  .inputValidator(bookingByIdSchema)
+const bookingRefSchema = z.object({
+  bookingRef: z.string().min(1, 'Booking reference is required'),
+})
+
+export const getBookingByRef = createServerFn({ method: 'GET' })
+  .inputValidator(bookingRefSchema)
   .handler(async ({ data }) => {
-    const booking = await getBookingByIdFromDb(data.id)
-    if (!booking) {
-      throw new Error('Booking not found')
-    }
-    return booking
+    const rows = await db
+      .select({
+        ...getTableColumns(bookings),
+        roomNumber: rooms.roomNumber,
+      })
+      .from(bookings)
+      .leftJoin(rooms, eq(bookings.roomId, rooms.id))
+      .where(and(eq(bookings.bookingRef, data.bookingRef), isNull(bookings.deletedAt)))
+      .limit(1)
+
+    return rows[0] ?? null
   })
 
-export const getBookings = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    return getBookingsFromDb()
-  },
-)
+const createBookingSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  roomId: z.number().int().positive('Room is required'),
+  contactNumber: z.string().optional(),
+  checkInDate: z.string().min(1, 'Check-in date is required'),
+  checkOutDate: z.string().min(1, 'Check-out date is required'),
+  occupantsCount: z.number().int().positive('At least 1 occupant required'),
+  depositPercentage: z.number().min(0).max(100),
+})
+
+export const createBooking = createServerFn({ method: 'POST' })
+  .inputValidator(createBookingSchema)
+  .handler(async ({ data }) => {
+    const checkIn = new Date(data.checkInDate)
+    const checkOut = new Date(data.checkOutDate)
+    const depositHours = 24
+    const depositDeadline = new Date(checkIn.getTime() - depositHours * 60 * 60 * 1000)
+    const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    const bookingRef = generateBookingRef()
+
+    await db.insert(bookings).values({
+      bookingRef,
+      roomId: data.roomId,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      contactNumber: data.contactNumber,
+      checkInDate: data.checkInDate,
+      checkOutDate: data.checkOutDate,
+      occupantsCount: data.occupantsCount,
+      status: 'RESERVED',
+      paymentStatus: 'CURRENT',
+      depositDeadline,
+      finalDueDate,
+      depositPctSnapshot: data.depositPercentage.toString(),
+    })
+
+    return { success: true, bookingRef }
+  })
+
+export type BookingStatus = 'RESERVED' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED'
+
+const updateStatusSchema = z.object({
+  bookingRef: z.string().min(1),
+  status: z.enum(['RESERVED', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']),
+  cancellationReason: z.string().optional(),
+})
+
+export const updateBookingStatus = createServerFn({ method: 'POST' })
+  .inputValidator(updateStatusSchema)
+  .handler(async ({ data }) => {
+    const updateData: Record<string, unknown> = {
+      status: data.status,
+    }
+
+    if (data.status === 'CANCELLED') {
+      updateData.cancelledAt = sql`now()`
+      updateData.cancellationReason = data.cancellationReason ?? null
+    }
+
+    await db
+      .update(bookings)
+      .set(updateData)
+      .where(eq(bookings.bookingRef, data.bookingRef))
+
+    return { success: true }
+  })
+
+export const getRooms = createServerFn({ method: 'GET' }).handler(async () => {
+  return await db.query.rooms.findMany({
+    where: isNull(rooms.deletedAt),
+    orderBy: [rooms.roomNumber],
+  })
+})
