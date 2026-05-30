@@ -5,12 +5,13 @@ import { db } from '@/db'
 import { bookings, rooms } from '@/db/schema'
 
 import { bookingByIdSchema, bookingStatusSchema } from './schemas'
-import type { BookingWithRoom } from './types'
+import type { BookingPaymentStatus, BookingWithRoom } from './types'
 
 function mapBookingRow(row: {
   id: number
   bookingRef: string
-  guestName: string
+  firstName: string
+  lastName: string
   contactNumber: string | null
   roomId: number
   roomNumber: string
@@ -24,7 +25,8 @@ function mapBookingRow(row: {
   return {
     id: row.id,
     bookingRef: row.bookingRef,
-    guestName: row.guestName,
+    firstName: row.firstName,
+    lastName: row.lastName,
     contactNumber: row.contactNumber,
     roomId: row.roomId,
     roomNumber: row.roomNumber,
@@ -33,14 +35,15 @@ function mapBookingRow(row: {
     checkOutDate: row.checkOutDate,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
-    paymentStatus: row.paymentStatus,
+    paymentStatus: row.paymentStatus as BookingPaymentStatus,
   }
 }
 
 const bookingSelect = {
   id: bookings.id,
   bookingRef: bookings.bookingRef,
-  guestName: bookings.guestName,
+  firstName: bookings.firstName,
+  lastName: bookings.lastName,
   contactNumber: bookings.contactNumber,
   roomId: bookings.roomId,
   roomNumber: rooms.roomNumber,
@@ -81,18 +84,12 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
   return rows.map(mapBookingRow)
 }
 
+export const getBookings = createServerFn({ method: 'GET' }).handler(async () => {
+  return getBookingsFromDb()
+})
+
 export const getBookingById = createServerFn({ method: 'GET' })
   .inputValidator(bookingByIdSchema)
   .handler(async ({ data }) => {
-    const booking = await getBookingByIdFromDb(data.id)
-    if (!booking) {
-      throw new Error('Booking not found')
-    }
-    return booking
+    return getBookingByIdFromDb(data.id)
   })
-
-export const getBookings = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    return getBookingsFromDb()
-  },
-)
