@@ -1,6 +1,6 @@
 {
-  "id": "75058484-081c-4e5f-85c1-e51693a9fe6b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "82e3dd84-07d9-472a-b72b-1aab086afcb5",
+  "prevId": "3e9cf48f-d221-4fce-b7a9-46d94d521ea7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -85,6 +85,18 @@
         "room_id": {
           "name": "room_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -182,12 +194,8 @@
           "name": "bookings_room_id_rooms_id_fk",
           "tableFrom": "bookings",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["room_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -197,9 +205,7 @@
         "bookings_booking_ref_unique": {
           "name": "bookings_booking_ref_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "booking_ref"
-          ]
+          "columns": ["booking_ref"]
         }
       },
       "policies": {},
@@ -344,9 +350,7 @@
         "rooms_room_number_unique": {
           "name": "rooms_room_number_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "room_number"
-          ]
+          "columns": ["room_number"]
         }
       },
       "policies": {},
@@ -419,12 +423,8 @@
           "name": "ledger_transactions_booking_id_bookings_id_fk",
           "tableFrom": "ledger_transactions",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "booking_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["booking_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -492,9 +492,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
