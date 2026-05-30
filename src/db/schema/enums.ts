@@ -25,7 +25,6 @@ export const ledgerTransactionTypeEnum = pgEnum('ledger_transaction_type', [
   'DEPOSIT',
   'PAYMENT',
   'REFUND',
-  'ADJUSTMENT',
 ])
 
 export const ledgerTransactionCategoryEnum = pgEnum(
@@ -34,15 +33,13 @@ export const ledgerTransactionCategoryEnum = pgEnum(
     'ROOM_CHARGE',
     'DEPOSIT',
     'PAYMENT',
-    'REFUND',
-    'LATE_FEE',
-    'ADJUSTMENT',
+    'REFUND'
   ],
 )
 
 export const paymentMethodEnum = pgEnum('payment_method', [
   'CASH',
-  'CARD',
+  'GCASH',
   'BANK_TRANSFER',
 ])
 

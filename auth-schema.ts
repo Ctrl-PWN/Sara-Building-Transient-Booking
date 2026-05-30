@@ -12,10 +12,13 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-  role: text("role"),
+  role: text("role", { enum: ["ADMIN", "STAFF"] })
+    .default("STAFF")
+    .notNull(),
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
+  isActive: boolean("is_active").default(true).notNull(),
 });
 
 export const session = pgTable(

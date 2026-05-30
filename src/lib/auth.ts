@@ -13,6 +13,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-
+  user: {additionalFields: {
+      role: {
+        type: ['ADMIN', 'STAFF'], // enum in Better Auth — not type: 'string'
+        defaultValue: 'STAFF',
+        required: true,
+        input: false, // don’t let signup body set role
+      },
+      isActive: {
+        type: 'boolean',
+        defaultValue: true,
+        input: false,
+      },
+    },},
   plugins: [admin(), tanstackStartCookies()],
 })
