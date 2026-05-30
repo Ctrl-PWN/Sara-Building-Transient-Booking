@@ -1,1 +1,1 @@
-ALTER TABLE "bookings" DROP COLUMN "guest_name";
+-- guest_name already dropped in 0001

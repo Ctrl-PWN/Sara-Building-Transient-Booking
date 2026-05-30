@@ -86,7 +86,7 @@ function BookingDetailPage() {
   }
 
   const handleEvict = async () => {
-    await updateBooking(booking.id, { status: 'EVICTED' })
+    await updateBooking(booking.id, { status: 'EVICTED', evictionReason })
     setEvictOpen(false)
     setEvictReason('')
   }

@@ -48,7 +48,7 @@ type StoreState = {
   }) => Promise<void>
   updateBooking: (
     id: number,
-    data: Partial<{ status: string; paymentStatus: string }>,
+    data: Partial<{ status: string; paymentStatus: string; evictionReason: string }>,
   ) => Promise<void>
   cancelBooking: (id: number, reason: string) => Promise<void>
   refresh: () => Promise<void>
@@ -93,7 +93,7 @@ export const useStore = create<StoreState>((set, get) => ({
     await createBooking({
       data: {
         ...data,
-        depositPercentage: data.depositPercentage ?? 20,
+        depositPercentage: data.isNonRefundable ? (data.depositPercentage ?? 100) : (data.depositPercentage ?? 20),
         isNonRefundable: data.isNonRefundable ?? false,
         walkIn: data.walkIn ?? false,
       },
@@ -138,6 +138,7 @@ export const useStore = create<StoreState>((set, get) => ({
         data: {
           bookingRef: booking.bookingRef,
           status: data.status as 'RESERVED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'EVICTED',
+          evictionReason: data.evictionReason,
         },
       })
     }

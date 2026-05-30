@@ -112,7 +112,10 @@ const createBookingSchema = z.object({
   depositPercentage: z.number().min(0).max(100),
   isNonRefundable: z.boolean().optional(),
   walkIn: z.boolean().optional(),
-})
+}).refine(
+  (data) => new Date(data.checkOutDate) > new Date(data.checkInDate),
+  { message: 'Check-out date must be after check-in date', path: ['checkOutDate'] },
+)
 
 export const createBooking = createServerFn({ method: 'POST' })
   .inputValidator(createBookingSchema)
@@ -138,6 +141,22 @@ export const createBooking = createServerFn({ method: 'POST' })
 
     if (conflicts.length > 0) {
       throw new Error('Room is already booked for the selected dates')
+    }
+
+    const roomRows = await db
+      .select({ capacity: rooms.capacity })
+      .from(rooms)
+      .where(eq(rooms.id, data.roomId))
+      .limit(1)
+
+    if (roomRows.length === 0) {
+      throw new Error('Room not found')
+    }
+
+    if (data.occupantsCount > roomRows[0].capacity) {
+      throw new Error(
+        `Room capacity exceeded (max ${roomRows[0].capacity} occupants)`,
+      )
     }
 
     const checkIn = new Date(data.checkInDate)
@@ -176,7 +195,7 @@ export const createBooking = createServerFn({ method: 'POST' })
       depositPctSnapshot: data.depositPercentage.toString(),
     })
 
-    if (data.walkIn) {
+    if (status === 'CHECKED_IN') {
       await db
         .update(rooms)
         .set({ status: 'OCCUPIED' })
@@ -234,7 +253,6 @@ export const updateBookingStatus = createServerFn({ method: 'POST' })
     }
 
     if (data.status === 'EVICTED') {
-      updateData.status = 'CHECKED_OUT'
       updateData.cancelledAt = sql`now()`
       updateData.cancellationReason = data.evictionReason ?? 'Evicted'
     }
