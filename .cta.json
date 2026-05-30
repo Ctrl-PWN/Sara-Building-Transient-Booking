@@ -1,29 +1,29 @@
 {
-	"projectName": "sarabuildingtransient",
-	"mode": "file-router",
-	"typescript": true,
-	"packageManager": "npm",
-	"includeExamples": true,
-	"tailwind": true,
-	"addOnOptions": {
-		"drizzle": {
-			"database": "postgresql"
-		}
-	},
-	"envVarValues": {},
-	"git": true,
-	"install": true,
-	"routerOnly": false,
-	"version": 1,
-	"framework": "react",
-	"chosenAddOns": [
-		"eslint",
-		"nitro",
-		"drizzle",
-		"tanstack-query",
-		"neon",
-		"compiler",
-		"shadcn",
-		"better-auth"
-	]
+  "projectName": "sarabuildingtransient",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "npm",
+  "includeExamples": true,
+  "tailwind": true,
+  "addOnOptions": {
+    "drizzle": {
+      "database": "postgresql"
+    }
+  },
+  "envVarValues": {},
+  "git": true,
+  "install": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "eslint",
+    "nitro",
+    "drizzle",
+    "tanstack-query",
+    "neon",
+    "compiler",
+    "shadcn",
+    "better-auth"
+  ]
 }

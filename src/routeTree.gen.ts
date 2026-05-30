@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+<<<<<<< HEAD
 import { Route as AboutRouteImport } from './routes/about'
 <<<<<<< HEAD
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
@@ -23,13 +24,28 @@ import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-qu
 >>>>>>> development
 import { Route as DemoDrizzleRouteImport } from './routes/demo/drizzle'
 import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
+=======
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
+import { Route as AuthenticatedTimelineIndexRouteImport } from './routes/_authenticated/timeline/index'
+import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
+import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
+>>>>>>> origin/development
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedBookingsBookingIdRouteImport } from './routes/_authenticated/bookings/$bookingId'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/_admin/users'
+import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
+import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 <<<<<<< HEAD
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
@@ -39,10 +55,18 @@ const DashboardRouteRoute = DashboardRouteRouteImport.update({
 =======
 >>>>>>> development
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+=======
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+>>>>>>> origin/development
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+<<<<<<< HEAD
 <<<<<<< HEAD
 const LogInIndexRoute = LogInIndexRouteImport.update({
   id: '/log-in/',
@@ -73,19 +97,65 @@ const DemoDrizzleRoute = DemoDrizzleRouteImport.update({
   id: '/demo/drizzle',
   path: '/demo/drizzle',
   getParentRoute: () => rootRouteImport,
+=======
+const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
+  id: '/ledger',
+  path: '/ledger',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const DemoBetterAuthRoute = DemoBetterAuthRouteImport.update({
-  id: '/demo/better-auth',
-  path: '/demo/better-auth',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthenticatedRoute,
+>>>>>>> origin/development
 } as any)
+const AuthenticatedTimelineIndexRoute =
+  AuthenticatedTimelineIndexRouteImport.update({
+    id: '/timeline/',
+    path: '/timeline/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBookingsIndexRoute =
+  AuthenticatedBookingsIndexRouteImport.update({
+    id: '/bookings/',
+    path: '/bookings/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBookingsBookingIdRoute =
+  AuthenticatedBookingsBookingIdRouteImport.update({
+    id: '/bookings/$bookingId',
+    path: '/bookings/$bookingId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedRoomsRoomIdIndexRoute =
+  AuthenticatedRoomsRoomIdIndexRouteImport.update({
+    id: '/rooms/$roomId/',
+    path: '/rooms/$roomId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRoomsRoomIdHistoryRoute =
+  AuthenticatedRoomsRoomIdHistoryRouteImport.update({
+    id: '/rooms/$roomId/history',
+    path: '/rooms/$roomId/history',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
+<<<<<<< HEAD
   '/': typeof IndexRoute
 <<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
@@ -102,9 +172,22 @@ export interface FileRoutesByFullPath {
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
 >>>>>>> development
+=======
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
+  '/ledger': typeof AuthenticatedLedgerRoute
+  '/users': typeof AuthenticatedAdminUsersRoute
+  '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
+>>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/bookings/': typeof AuthenticatedBookingsIndexRoute
+  '/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/timeline/': typeof AuthenticatedTimelineIndexRoute
+  '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRoutesByTo {
+<<<<<<< HEAD
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
@@ -117,10 +200,23 @@ export interface FileRoutesByTo {
 =======
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
 >>>>>>> development
+=======
+  '/login': typeof LoginRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/ledger': typeof AuthenticatedLedgerRoute
+  '/users': typeof AuthenticatedAdminUsersRoute
+  '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
+>>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/bookings': typeof AuthenticatedBookingsIndexRoute
+  '/rooms': typeof AuthenticatedRoomsIndexRoute
+  '/timeline': typeof AuthenticatedTimelineIndexRoute
+  '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+<<<<<<< HEAD
   '/': typeof IndexRoute
 <<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
@@ -137,12 +233,27 @@ export interface FileRoutesById {
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
 >>>>>>> development
+=======
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/_admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
+>>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/bookings/': typeof AuthenticatedBookingsIndexRoute
+  '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/_authenticated/timeline/': typeof AuthenticatedTimelineIndexRoute
+  '/_authenticated/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/_authenticated/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+<<<<<<< HEAD
 <<<<<<< HEAD
     | '/dashboard'
     | '/about'
@@ -158,10 +269,23 @@ export interface FileRouteTypes {
     | '/demo/drizzle'
     | '/demo/tanstack-query'
 >>>>>>> development
+=======
+    | '/login'
+    | '/ledger'
+    | '/users'
+    | '/bookings/$bookingId'
+>>>>>>> origin/development
     | '/api/auth/$'
+    | '/bookings/'
+    | '/rooms/'
+    | '/timeline/'
+    | '/rooms/$roomId/history'
+    | '/rooms/$roomId/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/'
+<<<<<<< HEAD
     | '/about'
     | '/demo/better-auth'
     | '/demo/drizzle'
@@ -173,9 +297,20 @@ export interface FileRouteTypes {
 =======
     | '/demo/tanstack-query'
 >>>>>>> development
+=======
+    | '/ledger'
+    | '/users'
+    | '/bookings/$bookingId'
+>>>>>>> origin/development
     | '/api/auth/$'
+    | '/bookings'
+    | '/rooms'
+    | '/timeline'
+    | '/rooms/$roomId/history'
+    | '/rooms/$roomId'
   id:
     | '__root__'
+<<<<<<< HEAD
     | '/'
 <<<<<<< HEAD
     | '/dashboard'
@@ -192,10 +327,25 @@ export interface FileRouteTypes {
     | '/demo/drizzle'
     | '/demo/tanstack-query'
 >>>>>>> development
+=======
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/_admin'
+    | '/_authenticated/ledger'
+    | '/_authenticated/'
+    | '/_authenticated/_admin/users'
+    | '/_authenticated/bookings/$bookingId'
+>>>>>>> origin/development
     | '/api/auth/$'
+    | '/_authenticated/bookings/'
+    | '/_authenticated/rooms/'
+    | '/_authenticated/timeline/'
+    | '/_authenticated/rooms/$roomId/history'
+    | '/_authenticated/rooms/$roomId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+<<<<<<< HEAD
   IndexRoute: typeof IndexRoute
 <<<<<<< HEAD
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
@@ -211,18 +361,23 @@ export interface RootRouteChildren {
   DemoDrizzleRoute: typeof DemoDrizzleRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
 >>>>>>> development
+=======
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+>>>>>>> origin/development
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
     '/dashboard': {
       id: '/dashboard'
@@ -235,11 +390,23 @@ declare module '@tanstack/react-router' {
 >>>>>>> development
     '/': {
       id: '/'
-      path: '/'
+=======
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+>>>>>>> origin/development
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+<<<<<<< HEAD
 <<<<<<< HEAD
     '/log-in/': {
       id: '/log-in/'
@@ -280,13 +447,42 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/drizzle'
       preLoaderRoute: typeof DemoDrizzleRouteImport
       parentRoute: typeof rootRouteImport
+=======
+    '/_authenticated/ledger': {
+      id: '/_authenticated/ledger'
+      path: '/ledger'
+      fullPath: '/ledger'
+      preLoaderRoute: typeof AuthenticatedLedgerRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/demo/better-auth': {
-      id: '/demo/better-auth'
-      path: '/demo/better-auth'
-      fullPath: '/demo/better-auth'
-      preLoaderRoute: typeof DemoBetterAuthRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+>>>>>>> origin/development
+    }
+    '/_authenticated/timeline/': {
+      id: '/_authenticated/timeline/'
+      path: '/timeline'
+      fullPath: '/timeline/'
+      preLoaderRoute: typeof AuthenticatedTimelineIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rooms/': {
+      id: '/_authenticated/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/bookings/': {
+      id: '/_authenticated/bookings/'
+      path: '/bookings'
+      fullPath: '/bookings/'
+      preLoaderRoute: typeof AuthenticatedBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -295,9 +491,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/bookings/$bookingId': {
+      id: '/_authenticated/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof AuthenticatedBookingsBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_admin/users': {
+      id: '/_authenticated/_admin/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/rooms/$roomId/': {
+      id: '/_authenticated/rooms/$roomId/'
+      path: '/rooms/$roomId'
+      fullPath: '/rooms/$roomId/'
+      preLoaderRoute: typeof AuthenticatedRoomsRoomIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rooms/$roomId/history': {
+      id: '/_authenticated/rooms/$roomId/history'
+      path: '/rooms/$roomId/history'
+      fullPath: '/rooms/$roomId/history'
+      preLoaderRoute: typeof AuthenticatedRoomsRoomIdHistoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -328,6 +553,50 @@ const rootRouteChildren: RootRouteChildren = {
   DemoDrizzleRoute: DemoDrizzleRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
 >>>>>>> development
+=======
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedBookingsBookingIdRoute: typeof AuthenticatedBookingsBookingIdRoute
+  AuthenticatedBookingsIndexRoute: typeof AuthenticatedBookingsIndexRoute
+  AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
+  AuthenticatedTimelineIndexRoute: typeof AuthenticatedTimelineIndexRoute
+  AuthenticatedRoomsRoomIdHistoryRoute: typeof AuthenticatedRoomsRoomIdHistoryRoute
+  AuthenticatedRoomsRoomIdIndexRoute: typeof AuthenticatedRoomsRoomIdIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedBookingsBookingIdRoute: AuthenticatedBookingsBookingIdRoute,
+  AuthenticatedBookingsIndexRoute: AuthenticatedBookingsIndexRoute,
+  AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
+  AuthenticatedTimelineIndexRoute: AuthenticatedTimelineIndexRoute,
+  AuthenticatedRoomsRoomIdHistoryRoute: AuthenticatedRoomsRoomIdHistoryRoute,
+  AuthenticatedRoomsRoomIdIndexRoute: AuthenticatedRoomsRoomIdIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+>>>>>>> origin/development
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

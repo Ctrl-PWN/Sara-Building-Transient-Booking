@@ -1,0 +1,19 @@
+{
+	"servers": {
+		"Linear": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"mcp-remote",
+				"https://mcp.linear.app/mcp"
+			]
+		},
+		"neondatabase/mcp-server-neon": {
+			"type": "http",
+			"url": "https://mcp.neon.tech/sse",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		}
+	},
+	"inputs": []
+}
