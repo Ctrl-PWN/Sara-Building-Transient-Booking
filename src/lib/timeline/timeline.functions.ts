@@ -17,11 +17,11 @@ const timelineWeekSchema = z.object({
 function mapBookingRow(row: {
   id: number
   bookingRef: string
-  guestName: string
+  firstName: string
+  lastName: string
   contactNumber: string | null
   roomId: number
   roomNumber: string
-  roomType: string
   checkInDate: string
   checkOutDate: string
   occupantsCount: number
@@ -31,16 +31,23 @@ function mapBookingRow(row: {
   return {
     id: row.id,
     bookingRef: row.bookingRef,
-    guestName: row.guestName,
+    firstName: row.firstName,
+    lastName: row.lastName,
     contactNumber: row.contactNumber,
     roomId: row.roomId,
     roomNumber: row.roomNumber,
-    roomType: row.roomType,
     checkInDate: row.checkInDate,
     checkOutDate: row.checkOutDate,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
     paymentStatus: row.paymentStatus,
+    depositDeadline: '',
+    finalDueDate: null,
+    depositPctSnapshot: '',
+    cancellationReason: null,
+    cancelledAt: null,
+    createdAt: null,
+    deletedAt: null,
   }
 }
 
@@ -62,11 +69,11 @@ async function getTimelineWeekFromDb(
       .select({
         id: bookings.id,
         bookingRef: bookings.bookingRef,
-        guestName: bookings.guestName,
+        firstName: bookings.firstName,
+        lastName: bookings.lastName,
         contactNumber: bookings.contactNumber,
         roomId: bookings.roomId,
         roomNumber: rooms.roomNumber,
-        roomType: rooms.type,
         checkInDate: bookings.checkInDate,
         checkOutDate: bookings.checkOutDate,
         occupantsCount: bookings.occupantsCount,

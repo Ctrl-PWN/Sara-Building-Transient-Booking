@@ -1,4 +1,4 @@
-import type { BookingStatus, TimelineLegendStatus } from './types'
+import type { TimelineLegendStatus } from './types'
 
 export type BookingStatusPresentation = {
   label: string
@@ -34,7 +34,7 @@ export const timelineLegendStatuses: TimelineLegendStatus[] = [
 ]
 
 export function normalizeBookingStatus(
-  status: BookingStatus,
+  status: string,
 ): TimelineLegendStatus {
   if (status === 'CHECKED_IN') return 'CHECKED_IN'
   if (status === 'CHECKED_OUT') return 'CHECKED_OUT'
@@ -42,7 +42,7 @@ export function normalizeBookingStatus(
 }
 
 export function getBookingStatusPresentation(
-  status: BookingStatus,
+  status: string,
 ): BookingStatusPresentation {
   return presentationByLegend[normalizeBookingStatus(status)]
 }

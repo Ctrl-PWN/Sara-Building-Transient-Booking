@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { format, parseISO } from 'date-fns'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -28,7 +29,6 @@ const statusColorMap: Record<
   'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
 > = {
   RESERVED: 'warning',
-  CONFIRMED: 'default',
   CHECKED_IN: 'success',
   CHECKED_OUT: 'outline',
   CANCELLED: 'destructive',
@@ -41,6 +41,9 @@ export const Route = createFileRoute('/_authenticated/bookings/')({
 function BookingsListPage() {
   const { bookings, rooms, addBooking, init, refreshRooms } = useStore()
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [walkIn, setWalkIn] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     roomId: '',
@@ -50,7 +53,25 @@ function BookingsListPage() {
     checkInDate: '',
     checkOutDate: '',
     occupantsCount: 2,
+    isNonRefundable: false,
   })
+
+  const setDefaultDates = () => {
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const fmt = (d: Date) => {
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    }
+    setFormData((prev) => ({
+      ...prev,
+      checkInDate: fmt(today),
+      checkOutDate: fmt(tomorrow),
+    }))
+  }
 
   useEffect(() => {
     init()
@@ -72,30 +93,39 @@ function BookingsListPage() {
     )
       return
 
-    await addBooking({
-      roomId: Number(formData.roomId),
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      contactNumber: formData.contactNumber,
-      checkInDate: formData.checkInDate,
-      checkOutDate: formData.checkOutDate,
-      occupantsCount: formData.occupantsCount,
-    })
-
-    setFormData({
-      roomId: '',
-      firstName: '',
-      lastName: '',
-      contactNumber: '',
-      checkInDate: '',
-      checkOutDate: '',
-      occupantsCount: 2,
-    })
-    setIsAddOpen(false)
+    try {
+      await addBooking({
+        roomId: Number(formData.roomId),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        contactNumber: formData.contactNumber,
+        checkInDate: formData.checkInDate,
+        checkOutDate: formData.checkOutDate,
+        occupantsCount: formData.occupantsCount,
+        isNonRefundable: formData.isNonRefundable,
+        walkIn,
+      })
+      setIsAddOpen(false)
+      setWalkIn(false)
+      setSuccess(`Booking created successfully`)
+      setFormData({
+        roomId: '',
+        firstName: '',
+        lastName: '',
+        contactNumber: '',
+        checkInDate: '',
+        checkOutDate: '',
+        occupantsCount: 2,
+        isNonRefundable: false,
+      })
+      setIsAddOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create booking')
+    }
   }
 
   const availableRooms = rooms.filter(
-    (room) => (room.status ?? '').toUpperCase() === 'AVAILABLE',
+    (room) => room.status.toUpperCase() === 'AVAILABLE',
   )
 
   return (
@@ -110,13 +140,31 @@ function BookingsListPage() {
               Manage reservations, guest details, and check-ins.
             </p>
           </div>
-          <Button
-            className="shrink-0 gap-2 font-medium"
-            onClick={() => setIsAddOpen(true)}
-          >
-            <Plus size={16} />
-            New Reservation
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              className="gap-2 font-medium"
+              onClick={() => {
+                setDefaultDates()
+                setWalkIn(false)
+                setIsAddOpen(true)
+              }}
+            >
+              <Plus size={16} />
+              New Reservation
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 font-medium"
+              onClick={() => {
+                setDefaultDates()
+                setWalkIn(true)
+                setIsAddOpen(true)
+              }}
+            >
+              <Plus size={16} />
+              Walk-in
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -161,9 +209,9 @@ function BookingsListPage() {
                       </p>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm">{booking.checkInDate} &rarr;</p>
+                      <p className="text-sm">{format(parseISO(booking.checkInDate), 'MMMM d, yyyy')} &rarr;</p>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        {booking.checkOutDate}
+                        {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -206,10 +254,30 @@ function BookingsListPage() {
           </CardContent>
         </Card>
 
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <Dialog
+          open={isAddOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setWalkIn(false)
+              setFormData({
+                roomId: '',
+                firstName: '',
+                lastName: '',
+                contactNumber: '',
+                checkInDate: '',
+                checkOutDate: '',
+                occupantsCount: 2,
+                isNonRefundable: false,
+              })
+            }
+            setIsAddOpen(open)
+          }}
+        >
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>New Reservation</DialogTitle>
+              <DialogTitle>
+                {walkIn ? 'Walk-in Booking' : 'New Reservation'}
+              </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
@@ -252,7 +320,7 @@ function BookingsListPage() {
                       value={room.id.toString()}
                       className="bg-background text-foreground"
                     >
-                      {room.roomNumber} - {room.type} (${room.basePrice})
+                      {room.roomNumber} - {room.type} (₱{room.basePrice})
                     </option>
                   ))}
                 </select>
@@ -332,12 +400,61 @@ function BookingsListPage() {
                   min={1}
                 />
               </div>
+
+              {!walkIn && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="nonRefundable"
+                    checked={formData.isNonRefundable}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        isNonRefundable: e.target.checked,
+                      })
+                    }
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label
+                    htmlFor="nonRefundable"
+                    className="text-sm cursor-pointer"
+                  >
+                    Non-refundable (100% deposit, auto check-in)
+                  </Label>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>Create Booking</Button>
+              <Button onClick={handleSave}>
+                {walkIn ? 'Check In Walk-in' : 'Create Booking'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={error != null} onOpenChange={() => setError(null)}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Error</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <DialogFooter>
+              <Button onClick={() => setError(null)}>OK</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={success != null} onOpenChange={() => setSuccess(null)}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Success</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">{success}</p>
+            <DialogFooter>
+              <Button onClick={() => setSuccess(null)}>OK</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

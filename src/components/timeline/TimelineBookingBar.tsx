@@ -23,8 +23,9 @@ export function TimelineBookingBar({
   isSelected,
   onSelect,
 }: TimelineBookingBarProps) {
+  const guestName = `${booking.firstName} ${booking.lastName}`
   const presentation = getBookingStatusPresentation(booking.status)
-  const tooltipLabel = `${booking.guestName} · ${format(parseISO(booking.checkInDate), 'd MMM')} – ${format(parseISO(booking.checkOutDate), 'd MMM')}`
+  const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkInDate), 'd MMM')} – ${format(parseISO(booking.checkOutDate), 'd MMM')}`
   const isHatched = booking.status === 'RESERVED'
 
   return (
@@ -34,7 +35,7 @@ export function TimelineBookingBar({
           <button
             type="button"
             aria-pressed={isSelected}
-            aria-label={`${booking.guestName}, ${presentation.label}`}
+            aria-label={`${guestName}, ${presentation.label}`}
             onClick={() => onSelect(booking.id)}
             className={cn(
               'absolute inset-y-2 flex min-w-8 items-center rounded-md border px-3 text-left text-xs font-medium tracking-tight shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -52,7 +53,7 @@ export function TimelineBookingBar({
           />
         }
       >
-        <span className="truncate">{booking.guestName}</span>
+        <span className="truncate">{guestName}</span>
       </TooltipTrigger>
       <TooltipContent>{tooltipLabel}</TooltipContent>
     </Tooltip>

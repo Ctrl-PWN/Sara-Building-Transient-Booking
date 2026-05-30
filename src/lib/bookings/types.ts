@@ -1,4 +1,9 @@
-export type BookingStatus = 'RESERVED' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED'
+export type BookingStatus =
+  | 'RESERVED'
+  | 'CHECKED_IN'
+  | 'CHECKED_OUT'
+  | 'CANCELLED'
+  | 'EVICTED'
 
 export type BookingWithRoom = {
   id: number
@@ -10,15 +15,15 @@ export type BookingWithRoom = {
   checkInDate: string
   checkOutDate: string
   occupantsCount: number
-  status: BookingStatus
+  status: string
   paymentStatus: string
-  depositDeadline: string
-  finalDueDate: string | null
+  depositDeadline: string | Date | null
+  finalDueDate: string | Date | null
   depositPctSnapshot: string
   cancellationReason: string | null
-  cancelledAt: string | null
-  createdAt: string | null
-  deletedAt: string | null
+  cancelledAt: string | Date | null
+  createdAt: string | Date | null
+  deletedAt: string | Date | null
   roomNumber: string | null
 }
 

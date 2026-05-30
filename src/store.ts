@@ -7,10 +7,17 @@ import {
 } from '@/lib/bookings/bookings.functions'
 
 import type { BookingWithRoom } from '@/lib/bookings/types'
-import type { InferSelectModel } from 'drizzle-orm'
-import type { rooms } from '@/db/schema'
 
-type Room = InferSelectModel<typeof rooms>
+type Room = {
+  id: number
+  roomNumber: string
+  type: string
+  capacity: number
+  basePrice: string
+  status: string
+  createdAt: Date | null
+  deletedAt: Date | null
+}
 
 export type StoreBooking = BookingWithRoom & {
   roomSnapshot: {
@@ -35,13 +42,23 @@ type StoreState = {
     checkInDate: string
     checkOutDate: string
     occupantsCount: number
+    depositPercentage?: number
+    isNonRefundable?: boolean
+    walkIn?: boolean
   }) => Promise<void>
-  updateBooking: (id: number, data: Partial<{ status: string; paymentStatus: string }>) => Promise<void>
+  updateBooking: (
+    id: number,
+    data: Partial<{ status: string; paymentStatus: string }>,
+  ) => Promise<void>
+  cancelBooking: (id: number, reason: string) => Promise<void>
   refresh: () => Promise<void>
   refreshRooms: () => Promise<void>
 }
 
-function withRoomSnapshot(booking: BookingWithRoom, room: Room | undefined): StoreBooking {
+function withRoomSnapshot(
+  booking: BookingWithRoom,
+  room: Room | undefined,
+): StoreBooking {
   return {
     ...booking,
     roomSnapshot: {
@@ -66,20 +83,50 @@ export const useStore = create<StoreState>((set, get) => ({
       getRooms(),
     ])
     const roomMap = new Map(roomRows.map((r) => [r.id, r]))
-    const bookings = bookingRows.map((b) => withRoomSnapshot(b, roomMap.get(b.roomId)))
+    const bookings = bookingRows.map((b) =>
+      withRoomSnapshot(b, roomMap.get(b.roomId)),
+    )
     set({ bookings, rooms: roomRows, loading: false, initialized: true })
   },
 
   addBooking: async (data) => {
     await createBooking({
-      data: { ...data, depositPercentage: 20 },
+      data: {
+        ...data,
+        depositPercentage: data.depositPercentage ?? 20,
+        isNonRefundable: data.isNonRefundable ?? false,
+        walkIn: data.walkIn ?? false,
+      },
     })
     const [bookingRows, roomRows] = await Promise.all([
       getBookings(),
       getRooms(),
     ])
     const roomMap = new Map(roomRows.map((r) => [r.id, r]))
-    const bookings = bookingRows.map((b) => withRoomSnapshot(b, roomMap.get(b.roomId)))
+    const bookings = bookingRows.map((b) =>
+      withRoomSnapshot(b, roomMap.get(b.roomId)),
+    )
+    set({ bookings, rooms: roomRows })
+  },
+
+  cancelBooking: async (id: number, reason: string) => {
+    const booking = get().bookings.find((b) => b.id === id)
+    if (!booking) return
+    await updateBookingStatus({
+      data: {
+        bookingRef: booking.bookingRef,
+        status: 'CANCELLED',
+        cancellationReason: reason,
+      },
+    })
+    const [bookingRows, roomRows] = await Promise.all([
+      getBookings(),
+      getRooms(),
+    ])
+    const roomMap = new Map(roomRows.map((r) => [r.id, r]))
+    const bookings = bookingRows.map((b) =>
+      withRoomSnapshot(b, roomMap.get(b.roomId)),
+    )
     set({ bookings, rooms: roomRows })
   },
 
@@ -90,8 +137,7 @@ export const useStore = create<StoreState>((set, get) => ({
       await updateBookingStatus({
         data: {
           bookingRef: booking.bookingRef,
-          status: data.status as any,
-          cancellationReason: data.status === 'CANCELLED' ? 'Cancelled by staff' : undefined,
+          status: data.status as 'RESERVED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'EVICTED',
         },
       })
     }
@@ -109,7 +155,9 @@ export const useStore = create<StoreState>((set, get) => ({
       getRooms(),
     ])
     const roomMap = new Map(roomRows.map((r) => [r.id, r]))
-    const bookings = bookingRows.map((b) => withRoomSnapshot(b, roomMap.get(b.roomId)))
+    const bookings = bookingRows.map((b) =>
+      withRoomSnapshot(b, roomMap.get(b.roomId)),
+    )
     set({ bookings, rooms: roomRows, loading: false })
   },
 

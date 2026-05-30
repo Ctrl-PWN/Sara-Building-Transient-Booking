@@ -28,15 +28,15 @@ function formatDate(date: string) {
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Guest" value={booking.guestName} />
-      <Field label="Reference" value={booking.bookingRef} />
       <Field
-        label="Contact"
-        value={booking.contactNumber ?? 'Not provided'}
+        label="Guest"
+        value={`${booking.firstName} ${booking.lastName}`}
       />
+      <Field label="Reference" value={booking.bookingRef} />
+      <Field label="Contact" value={booking.contactNumber ?? 'Not provided'} />
       <Field
         label="Room"
-        value={`${booking.roomNumber} · ${booking.roomType}`}
+        value={booking.roomNumber}
       />
       <Field label="Check-in" value={formatDate(booking.checkInDate)} />
       <Field label="Check-out" value={formatDate(booking.checkOutDate)} />
