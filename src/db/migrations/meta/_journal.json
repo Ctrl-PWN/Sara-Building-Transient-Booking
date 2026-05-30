@@ -8,6 +8,20 @@
       "when": 1779792420570,
       "tag": "0000_brave_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780134360973,
+      "tag": "0001_mighty_rocket_raccoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780135000000,
+      "tag": "0002_auth_and_enums",
+      "breakpoints": true
     }
   ]
 }
