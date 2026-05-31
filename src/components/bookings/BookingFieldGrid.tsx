@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
 import { formatPaymentStatus } from '@/lib/bookings/status'
+import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 
 type BookingFieldGridProps = {
@@ -28,7 +29,7 @@ function formatDate(date: string) {
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Guest" value={booking.guestName} />
+      <Field label="Guest" value={formatGuestName(booking)} />
       <Field label="Reference" value={booking.bookingRef} />
       <Field
         label="Contact"

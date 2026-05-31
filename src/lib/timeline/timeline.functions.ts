@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { bookings, rooms } from '@/db/schema'
 import { bookingStatusSchema } from '@/lib/bookings/schemas'
-import type { BookingWithRoom } from '@/lib/bookings/types'
+import type { BookingPaymentStatus, BookingWithRoom } from '@/lib/bookings/types'
 
 import type { TimelineWeekData } from './types'
 import { getWeekDays, getWeekEnd } from './week'
@@ -17,7 +17,8 @@ const timelineWeekSchema = z.object({
 function mapBookingRow(row: {
   id: number
   bookingRef: string
-  guestName: string
+  firstName: string
+  lastName: string
   contactNumber: string | null
   roomId: number
   roomNumber: string
@@ -31,7 +32,8 @@ function mapBookingRow(row: {
   return {
     id: row.id,
     bookingRef: row.bookingRef,
-    guestName: row.guestName,
+    firstName: row.firstName,
+    lastName: row.lastName,
     contactNumber: row.contactNumber,
     roomId: row.roomId,
     roomNumber: row.roomNumber,
@@ -40,7 +42,7 @@ function mapBookingRow(row: {
     checkOutDate: row.checkOutDate,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
-    paymentStatus: row.paymentStatus,
+    paymentStatus: row.paymentStatus as BookingPaymentStatus,
   }
 }
 
@@ -62,7 +64,8 @@ async function getTimelineWeekFromDb(
       .select({
         id: bookings.id,
         bookingRef: bookings.bookingRef,
-        guestName: bookings.guestName,
+        firstName: bookings.firstName,
+        lastName: bookings.lastName,
         contactNumber: bookings.contactNumber,
         roomId: bookings.roomId,
         roomNumber: rooms.roomNumber,
