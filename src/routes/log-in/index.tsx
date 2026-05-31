@@ -2,6 +2,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
+import { getSession } from '@/lib/session/session.functions'
 import { authClient } from '@/lib/auth-client'
 
 const emailSchema = z.email('Enter a valid email')
@@ -10,9 +11,8 @@ const passwordSchema = z.string().min(8, 'Use at least 8 characters')
 
 export const Route = createFileRoute('/log-in/')({
   beforeLoad: async () => {
-    const { data } = await authClient.getSession()
-
-    if (data?.session) {
+    const session = await getSession()
+    if (session) {
       throw redirect({ to: '/', replace: true })
     }
   },
