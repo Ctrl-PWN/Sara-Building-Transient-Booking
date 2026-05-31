@@ -2,9 +2,9 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
-import { authClient } from '#/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
 
-const emailSchema = z.email('Enter a valid email');
+const emailSchema = z.email('Enter a valid email')
 
 const passwordSchema = z.string().min(8, 'Use at least 8 characters')
 
@@ -37,7 +37,7 @@ function LogInPage() {
         setError(result.error.message || 'Sign in failed')
         return
       }
-      await router.navigate({ to: '/dashboard' })
+      await router.navigate({ to: '/' })
     },
   })
 

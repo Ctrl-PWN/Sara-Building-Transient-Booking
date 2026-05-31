@@ -9,65 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-<<<<<<< HEAD
-import { Route as AboutRouteImport } from './routes/about'
-<<<<<<< HEAD
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as LogInIndexRouteImport } from './routes/log-in/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
-import { Route as DemoNeonRouteImport } from './routes/demo/neon'
-=======
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
->>>>>>> development
-import { Route as DemoDrizzleRouteImport } from './routes/demo/drizzle'
-import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
-=======
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
 import { Route as AuthenticatedTimelineIndexRouteImport } from './routes/_authenticated/timeline/index'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
 import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
->>>>>>> origin/development
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedBookingsBookingIdRouteImport } from './routes/_authenticated/bookings/$bookingId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/_admin/users'
 import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
 import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-<<<<<<< HEAD
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-=======
->>>>>>> development
-const IndexRoute = IndexRouteImport.update({
-=======
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
->>>>>>> origin/development
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-<<<<<<< HEAD
-<<<<<<< HEAD
 const LogInIndexRoute = LogInIndexRouteImport.update({
   id: '/log-in/',
   path: '/log-in/',
@@ -78,26 +44,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
-=======
->>>>>>> development
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-<<<<<<< HEAD
-const DemoNeonRoute = DemoNeonRouteImport.update({
-  id: '/demo/neon',
-  path: '/demo/neon',
-  getParentRoute: () => rootRouteImport,
-} as any)
-=======
->>>>>>> development
-const DemoDrizzleRoute = DemoDrizzleRouteImport.update({
-  id: '/demo/drizzle',
-  path: '/demo/drizzle',
-  getParentRoute: () => rootRouteImport,
-=======
 const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
@@ -106,7 +57,6 @@ const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/_admin',
   getParentRoute: () => AuthenticatedRoute,
->>>>>>> origin/development
 } as any)
 const AuthenticatedTimelineIndexRoute =
   AuthenticatedTimelineIndexRouteImport.update({
@@ -155,30 +105,13 @@ const AuthenticatedRoomsRoomIdHistoryRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-<<<<<<< HEAD
-  '/': typeof IndexRoute
-<<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/drizzle': typeof DemoDrizzleRoute
-  '/demo/neon': typeof DemoNeonRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/ledger': typeof AuthenticatedLedgerRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/log-in/': typeof LogInIndexRoute
-=======
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/drizzle': typeof DemoDrizzleRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
->>>>>>> development
-=======
-  '/': typeof AuthenticatedIndexRoute
-  '/login': typeof LoginRoute
-  '/ledger': typeof AuthenticatedLedgerRoute
   '/users': typeof AuthenticatedAdminUsersRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
->>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/bookings/': typeof AuthenticatedBookingsIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
@@ -187,26 +120,12 @@ export interface FileRoutesByFullPath {
   '/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRoutesByTo {
-<<<<<<< HEAD
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/drizzle': typeof DemoDrizzleRoute
-<<<<<<< HEAD
-  '/demo/neon': typeof DemoNeonRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/log-in': typeof LogInIndexRoute
-=======
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
->>>>>>> development
-=======
-  '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/log-in': typeof LogInIndexRoute
   '/users': typeof AuthenticatedAdminUsersRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
->>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/bookings': typeof AuthenticatedBookingsIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
@@ -216,32 +135,15 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-<<<<<<< HEAD
-  '/': typeof IndexRoute
-<<<<<<< HEAD
   '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/drizzle': typeof DemoDrizzleRoute
-  '/demo/neon': typeof DemoNeonRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/log-in/': typeof LogInIndexRoute
-=======
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/drizzle': typeof DemoDrizzleRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
->>>>>>> development
-=======
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/login': typeof LoginRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/log-in/': typeof LogInIndexRoute
   '/_authenticated/_admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
->>>>>>> origin/development
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/bookings/': typeof AuthenticatedBookingsIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
@@ -252,29 +154,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-<<<<<<< HEAD
-<<<<<<< HEAD
     | '/dashboard'
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/drizzle'
-    | '/demo/neon'
-    | '/demo/tanstack-query'
+    | '/'
+    | '/ledger'
     | '/dashboard/'
     | '/log-in/'
-=======
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/drizzle'
-    | '/demo/tanstack-query'
->>>>>>> development
-=======
-    | '/login'
-    | '/ledger'
     | '/users'
     | '/bookings/$bookingId'
->>>>>>> origin/development
     | '/api/auth/$'
     | '/bookings/'
     | '/rooms/'
@@ -283,25 +169,12 @@ export interface FileRouteTypes {
     | '/rooms/$roomId/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
     | '/'
-<<<<<<< HEAD
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/drizzle'
-<<<<<<< HEAD
-    | '/demo/neon'
-    | '/demo/tanstack-query'
+    | '/ledger'
     | '/dashboard'
     | '/log-in'
-=======
-    | '/demo/tanstack-query'
->>>>>>> development
-=======
-    | '/ledger'
     | '/users'
     | '/bookings/$bookingId'
->>>>>>> origin/development
     | '/api/auth/$'
     | '/bookings'
     | '/rooms'
@@ -310,32 +183,15 @@ export interface FileRouteTypes {
     | '/rooms/$roomId'
   id:
     | '__root__'
-<<<<<<< HEAD
-    | '/'
-<<<<<<< HEAD
     | '/dashboard'
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/drizzle'
-    | '/demo/neon'
-    | '/demo/tanstack-query'
-    | '/dashboard/'
-    | '/log-in/'
-=======
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/drizzle'
-    | '/demo/tanstack-query'
->>>>>>> development
-=======
     | '/_authenticated'
-    | '/login'
     | '/_authenticated/_admin'
     | '/_authenticated/ledger'
     | '/_authenticated/'
+    | '/dashboard/'
+    | '/log-in/'
     | '/_authenticated/_admin/users'
     | '/_authenticated/bookings/$bookingId'
->>>>>>> origin/development
     | '/api/auth/$'
     | '/_authenticated/bookings/'
     | '/_authenticated/rooms/'
@@ -345,52 +201,14 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-<<<<<<< HEAD
-  IndexRoute: typeof IndexRoute
-<<<<<<< HEAD
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
-  AboutRoute: typeof AboutRoute
-  DemoBetterAuthRoute: typeof DemoBetterAuthRoute
-  DemoDrizzleRoute: typeof DemoDrizzleRoute
-  DemoNeonRoute: typeof DemoNeonRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
-  LogInIndexRoute: typeof LogInIndexRoute
-=======
-  AboutRoute: typeof AboutRoute
-  DemoBetterAuthRoute: typeof DemoBetterAuthRoute
-  DemoDrizzleRoute: typeof DemoDrizzleRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
->>>>>>> development
-=======
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  LoginRoute: typeof LoginRoute
->>>>>>> origin/development
+  LogInIndexRoute: typeof LogInIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-<<<<<<< HEAD
-<<<<<<< HEAD
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-=======
->>>>>>> development
-    '/': {
-      id: '/'
-=======
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -398,16 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
->>>>>>> origin/development
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
     '/log-in/': {
       id: '/log-in/'
       path: '/log-in'
@@ -422,32 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-=======
->>>>>>> development
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-<<<<<<< HEAD
-    '/demo/neon': {
-      id: '/demo/neon'
-      path: '/demo/neon'
-      fullPath: '/demo/neon'
-      preLoaderRoute: typeof DemoNeonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-=======
->>>>>>> development
-    '/demo/drizzle': {
-      id: '/demo/drizzle'
-      path: '/demo/drizzle'
-      fullPath: '/demo/drizzle'
-      preLoaderRoute: typeof DemoDrizzleRouteImport
-      parentRoute: typeof rootRouteImport
-=======
     '/_authenticated/ledger': {
       id: '/_authenticated/ledger'
       path: '/ledger'
@@ -461,7 +257,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
->>>>>>> origin/development
     }
     '/_authenticated/timeline/': {
       id: '/_authenticated/timeline/'
@@ -522,8 +317,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -536,24 +329,6 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
   DashboardRouteRouteChildren,
 )
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
-  AboutRoute: AboutRoute,
-  DemoBetterAuthRoute: DemoBetterAuthRoute,
-  DemoDrizzleRoute: DemoDrizzleRoute,
-  DemoNeonRoute: DemoNeonRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
-  LogInIndexRoute: LogInIndexRoute,
-=======
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  DemoBetterAuthRoute: DemoBetterAuthRoute,
-  DemoDrizzleRoute: DemoDrizzleRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
->>>>>>> development
-=======
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
@@ -594,9 +369,9 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  LoginRoute: LoginRoute,
->>>>>>> origin/development
+  LogInIndexRoute: LogInIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
