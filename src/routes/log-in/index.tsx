@@ -1,16 +1,12 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
-import { z } from 'zod'
 import { getSession } from '@/lib/session/session.functions'
 import { authClient } from '@/lib/auth-client'
-
-const emailSchema = z.email('Enter a valid email')
-
-const passwordSchema = z.string().min(8, 'Use at least 8 characters')
+import { logInSchema } from '@/lib/session/schemas'
+import { useAppForm } from '@/integrations/tanstack-form'
 
 export const Route = createFileRoute('/log-in/')({
-  beforeLoad: async () => {
+  loader: async () => {
     const session = await getSession()
     if (session) {
       throw redirect({ to: '/', replace: true })
@@ -23,16 +19,13 @@ function LogInPage() {
   const router = useRouter()
   const [error, setError] = useState('')
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       email: '',
       password: '',
     },
     validators: {
-      onChange: z.object({
-        email: emailSchema,
-        password: passwordSchema,
-      }),
+      onChange: logInSchema,
     },
     onSubmit: async ({ value }) => {
       setError('')
@@ -84,49 +77,14 @@ function LogInPage() {
             className="grid gap-4"
             noValidate
           >
-            <form.Field name="email">
-              {(field) => (
-                <div className="grid gap-2">
-                  <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-white/15 bg-[#1c1b1a]/90 px-3 text-sm text-[var(--on-surface)] outline-none transition focus:border-[var(--secondary)]"
-                  />
-                  {field.state.meta.errors?.length ? (
-                    <p className="text-xs text-red-400">
-                      {field.state.meta.errors.join(', ')}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-            </form.Field>
+            <form.AppField name="email">
+              {(field) => <field.TextField label="Email" type="email" autoComplete="email" />}
+              
+            </form.AppField>
 
-            <form.Field name="password">
-              {(field) => (
-                <div className="grid gap-2">
-                  <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-white/15 bg-[#1c1b1a]/90 px-3 text-sm text-[var(--on-surface)] outline-none transition focus:border-[var(--secondary)]"
-                  />
-                  {field.state.meta.errors?.length ? (
-                    <p className="text-xs text-red-400">
-                      {field.state.meta.errors.join(', ')}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-            </form.Field>
+            <form.AppField name="password">
+              {(field) => ( <field.TextField label="Password" type="password" autoComplete="current-password" /> )}
+            </form.AppField>
 
             {error ? (
               <div className="rounded-xl border border-red-400/30 bg-red-950/60 p-3 text-xs text-red-300">
