@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
-import { admin } from "better-auth/plugins"
+import { admin } from 'better-auth/plugins'
 
 import { db } from '@/db/index.ts'
 
@@ -12,8 +12,18 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
   },
-  user: {additionalFields: {
+  user: {
+    additionalFields: {
+      firstName: {
+        type: 'string',
+        required: true,
+      },
+      lastName: {
+        type: 'string',
+        required: true,
+      },
       role: {
         type: ['ADMIN', 'STAFF'], // enum in Better Auth — not type: 'string'
         defaultValue: 'STAFF',
@@ -25,6 +35,10 @@ export const auth = betterAuth({
         defaultValue: true,
         input: false,
       },
-    },},
-  plugins: [admin(), tanstackStartCookies()],
+    },
+  },
+  plugins: [
+    admin({ defaultRole: 'STAFF', adminRoles: ['ADMIN'] }),
+    tanstackStartCookies(),
+  ],
 })
