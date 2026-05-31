@@ -1,12 +1,14 @@
 import { z } from 'zod'
 
-export const bookingStatusSchema = z.enum([
-  'RESERVED',
-  'CHECKED_IN',
-  'CHECKED_OUT',
-  'CANCELLED',
-  'EVICTED',
-])
+import {
+  bookingPaymentStatusEnum,
+  bookingStatusEnum,
+} from '@/db/schema/enums'
+
+export const bookingStatusSchema = z.enum(bookingStatusEnum.enumValues)
+export const bookingPaymentStatusSchema = z.enum(
+  bookingPaymentStatusEnum.enumValues,
+)
 
 export const bookingByIdSchema = z.object({
   id: z.number().int().positive(),

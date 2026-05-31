@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { bookings, rooms } from '@/db/schema'
 import { bookingStatusSchema } from '@/lib/bookings/schemas'
-import type { BookingWithRoom } from '@/lib/bookings/types'
+import type { BookingPaymentStatus, BookingWithRoom } from '@/lib/bookings/types'
 
 import type { TimelineWeekData } from './types'
 import { getWeekDays, getWeekEnd } from './week'
@@ -40,8 +40,10 @@ function mapBookingRow(row: {
     checkOutDate: row.checkOutDate,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
-    paymentStatus: row.paymentStatus,
-    depositDeadline: '',
+    paymentStatus: row.paymentStatus as BookingPaymentStatus,
+    roomType: '',
+    roomBasePrice: null,
+    depositDeadline: null,
     finalDueDate: null,
     depositPctSnapshot: '',
     cancellationReason: null,

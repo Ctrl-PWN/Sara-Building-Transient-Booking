@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { getBookingStatusPresentation } from '@/lib/bookings/status'
+import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 import type { TimelineBarPosition } from '@/lib/timeline/types'
 import { cn } from '@/lib/utils'
@@ -23,7 +24,7 @@ export function TimelineBookingBar({
   isSelected,
   onSelect,
 }: TimelineBookingBarProps) {
-  const guestName = `${booking.firstName} ${booking.lastName}`
+  const guestName = formatGuestName(booking)
   const presentation = getBookingStatusPresentation(booking.status)
   const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkInDate), 'd MMM')} – ${format(parseISO(booking.checkOutDate), 'd MMM')}`
   const isHatched = booking.status === 'RESERVED'

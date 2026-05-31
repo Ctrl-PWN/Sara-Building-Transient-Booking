@@ -7,6 +7,12 @@ import {
   text,
   timestamp,
 } from 'drizzle-orm/pg-core'
+
+import {
+  ledgerTransactionCategoryEnum,
+  ledgerTransactionTypeEnum,
+  paymentMethodEnum,
+} from './enums'
 import { bookings } from './bookings'
 
 export const ledgerTransactions = pgTable('ledger_transactions', {
@@ -14,11 +20,11 @@ export const ledgerTransactions = pgTable('ledger_transactions', {
   bookingId: integer('booking_id')
     .references(() => bookings.id)
     .notNull(),
-  type: varchar('type').notNull(), // DEPOSIT, PAYMENT, REFUND, ADJUSTMENT
-  category: varchar('category').notNull(), // ROOM_CHARGE, DEPOSIT, PAYMENT, REFUND, LATE_FEE, ADJUSTMENT
+  type: ledgerTransactionTypeEnum('type').notNull(),
+  category: ledgerTransactionCategoryEnum('category').notNull(),
   amount: decimal('amount', { precision: 19, scale: 4 }).notNull(),
   description: text('description'),
-  paymentMethod: varchar('payment_method'), // CASH, CARD, BANK_TRANSFER
+  paymentMethod: paymentMethodEnum('payment_method'),
   referenceNumber: varchar('reference_number'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
