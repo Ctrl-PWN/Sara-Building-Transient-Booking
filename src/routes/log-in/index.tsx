@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -9,6 +9,13 @@ const emailSchema = z.email('Enter a valid email')
 const passwordSchema = z.string().min(8, 'Use at least 8 characters')
 
 export const Route = createFileRoute('/log-in/')({
+  beforeLoad: async () => {
+    const { data } = await authClient.getSession()
+
+    if (data?.session) {
+      throw redirect({ to: '/', replace: true })
+    }
+  },
   component: LogInPage,
 })
 
@@ -37,7 +44,7 @@ function LogInPage() {
         setError(result.error.message || 'Sign in failed')
         return
       }
-      await router.navigate({ to: '/' })
+      await router.navigate({ to: '/dashboard', replace: true })
     },
   })
 
