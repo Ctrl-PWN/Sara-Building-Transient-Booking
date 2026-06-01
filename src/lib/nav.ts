@@ -20,7 +20,7 @@ export const mainNavItems: NavItem[] = [
   { label: 'Bookings', to: '/bookings', icon: CalendarCheckIcon },
   { label: 'Rooms', to: '/rooms', icon: DoorIcon },
   { label: 'Ledger', to: '/ledger', icon: CurrencyDollarIcon },
-  { label: 'Users', to: '/users', icon: UsersIcon },
+  { label: 'Users', to: '/user-management', icon: UsersIcon },
 ]
 
 export function isNavItemActive(pathname: string, to: string): boolean {

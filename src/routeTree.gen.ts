@@ -20,8 +20,8 @@ import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedBookingsBookingIdRouteImport } from './routes/_authenticated/bookings/$bookingId'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/_admin/users'
 import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
+import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from './routes/_authenticated/_admin/user-management/index'
 import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -81,16 +81,17 @@ const AuthenticatedBookingsBookingIdRoute =
     path: '/bookings/$bookingId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
 const AuthenticatedRoomsRoomIdIndexRoute =
   AuthenticatedRoomsRoomIdIndexRouteImport.update({
     id: '/rooms/$roomId/',
     path: '/rooms/$roomId/',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdminUserManagementIndexRoute =
+  AuthenticatedAdminUserManagementIndexRouteImport.update({
+    id: '/user-management/',
+    path: '/user-management/',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedRoomsRoomIdHistoryRoute =
   AuthenticatedRoomsRoomIdHistoryRouteImport.update({
@@ -103,7 +104,6 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/log-in/': typeof LogInIndexRoute
-  '/users': typeof AuthenticatedAdminUsersRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/bookings/': typeof AuthenticatedBookingsIndexRoute
@@ -111,13 +111,13 @@ export interface FileRoutesByFullPath {
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/log-in': typeof LogInIndexRoute
-  '/users': typeof AuthenticatedAdminUsersRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/bookings': typeof AuthenticatedBookingsIndexRoute
@@ -125,6 +125,7 @@ export interface FileRoutesByTo {
   '/rooms': typeof AuthenticatedRoomsIndexRoute
   '/timeline': typeof AuthenticatedTimelineIndexRoute
   '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/user-management': typeof AuthenticatedAdminUserManagementIndexRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRoutesById {
@@ -134,7 +135,6 @@ export interface FileRoutesById {
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/log-in/': typeof LogInIndexRoute
-  '/_authenticated/_admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/bookings/': typeof AuthenticatedBookingsIndexRoute
@@ -142,6 +142,7 @@ export interface FileRoutesById {
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
   '/_authenticated/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/_authenticated/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/_authenticated/_admin/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/_authenticated/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -150,7 +151,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ledger'
     | '/log-in/'
-    | '/users'
     | '/bookings/$bookingId'
     | '/api/auth/$'
     | '/bookings/'
@@ -158,13 +158,13 @@ export interface FileRouteTypes {
     | '/rooms/'
     | '/timeline/'
     | '/rooms/$roomId/history'
+    | '/user-management/'
     | '/rooms/$roomId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/ledger'
     | '/log-in'
-    | '/users'
     | '/bookings/$bookingId'
     | '/api/auth/$'
     | '/bookings'
@@ -172,6 +172,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/timeline'
     | '/rooms/$roomId/history'
+    | '/user-management'
     | '/rooms/$roomId'
   id:
     | '__root__'
@@ -180,7 +181,6 @@ export interface FileRouteTypes {
     | '/_authenticated/ledger'
     | '/_authenticated/'
     | '/log-in/'
-    | '/_authenticated/_admin/users'
     | '/_authenticated/bookings/$bookingId'
     | '/api/auth/$'
     | '/_authenticated/bookings/'
@@ -188,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rooms/'
     | '/_authenticated/timeline/'
     | '/_authenticated/rooms/$roomId/history'
+    | '/_authenticated/_admin/user-management/'
     | '/_authenticated/rooms/$roomId/'
   fileRoutesById: FileRoutesById
 }
@@ -276,19 +277,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsBookingIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_admin/users': {
-      id: '/_authenticated/_admin/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
     '/_authenticated/rooms/$roomId/': {
       id: '/_authenticated/rooms/$roomId/'
       path: '/rooms/$roomId'
       fullPath: '/rooms/$roomId/'
       preLoaderRoute: typeof AuthenticatedRoomsRoomIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_admin/user-management/': {
+      id: '/_authenticated/_admin/user-management/'
+      path: '/user-management'
+      fullPath: '/user-management/'
+      preLoaderRoute: typeof AuthenticatedAdminUserManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/rooms/$roomId/history': {
       id: '/_authenticated/rooms/$roomId/history'
@@ -301,11 +302,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminUserManagementIndexRoute: typeof AuthenticatedAdminUserManagementIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminUserManagementIndexRoute:
+    AuthenticatedAdminUserManagementIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

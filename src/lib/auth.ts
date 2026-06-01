@@ -24,11 +24,16 @@ export const auth = betterAuth({
         type: 'string',
         required: true,
       },
+      phone: {
+        type: 'string',
+        required: false,
+        input: true,
+      },
       role: {
         type: ['ADMIN', 'STAFF'], // enum in Better Auth — not type: 'string'
         defaultValue: 'STAFF',
         required: true,
-        input: false, // don’t let signup body set role
+        input: true, // don’t let signup body set role
       },
       isActive: {
         type: 'boolean',

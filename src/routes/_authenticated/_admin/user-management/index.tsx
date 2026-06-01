@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PlaceholderPanel } from '@/components/layout/PlaceholderPanel'
 
-export const Route = createFileRoute('/_authenticated/_admin/users')({
+export const Route = createFileRoute('/_authenticated/_admin/user-management/')({
   component: UsersPage,
 })
 
