@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { select } from '@/components/ui/select'
 import { useAppForm } from '@/integrations/tanstack-form'
 import { bookingMutations } from '@/lib/bookings/bookings.mutations'
 import { createBookingFormSchema } from '@/lib/bookings/schemas'
@@ -133,6 +134,15 @@ export function CreateBookingDialog({
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <form.AppField name="checkInDate">
+                  {(field) => <field.TextField label="Check-in" type="date" />}
+                </form.AppField>
+                <form.AppField name="checkOutDate">
+                  {(field) => <field.TextField label="Check-out" type="date" />}
+                </form.AppField>
+              </div>
+
               <form.AppField name="roomId">
                 {(field) => {
                   const isInvalid =
@@ -161,7 +171,13 @@ export function CreateBookingDialog({
                           <option
                             key={room.id}
                             value={room.id.toString()}
-                            disabled={room.status !== 'AVAILABLE'}
+                            disabled={
+                              walkIn
+                                ? room.status !== 'AVAILABLE'
+                                : ['MAINTENANCE', 'OUT_OF_ORDER'].includes(
+                                    room.status,
+                                  )
+                            }
                             className="bg-background text-foreground"
                           >
                             {room.roomNumber} - {room.type} (₱{room.basePrice})
@@ -205,15 +221,6 @@ export function CreateBookingDialog({
                   <field.TextField label="Contact" placeholder="Phone number" />
                 )}
               </form.AppField>
-
-              <div className="grid grid-cols-2 gap-4">
-                <form.AppField name="checkInDate">
-                  {(field) => <field.TextField label="Check-in" type="date" />}
-                </form.AppField>
-                <form.AppField name="checkOutDate">
-                  {(field) => <field.TextField label="Check-out" type="date" />}
-                </form.AppField>
-              </div>
 
               <form.AppField name="occupantsCount">
                 {(field) => {
