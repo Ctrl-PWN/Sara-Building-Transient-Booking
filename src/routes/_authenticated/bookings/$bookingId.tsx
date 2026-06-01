@@ -5,14 +5,9 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
-import {
-  bookingKeys,
-  bookingQueries,
-  roomKeys,
-} from '@/lib/bookings/bookings.queries'
-import type { BookingStatus } from '@/lib/bookings/bookings.actions'
-import { updateBookingStatus } from '@/lib/bookings/bookings.actions'
-import { ArrowLeft } from '@phosphor-icons/react'
+import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { bookingMutations } from '@/lib/bookings/bookings.mutations'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 import { Spinner } from '@/components/ui/spinner'
 import { BookingDetailHeader } from '@/components/bookings/BookingDetailHeader'
 import { BookingInfoCards } from '@/components/bookings/BookingInfoCards'
@@ -27,7 +22,7 @@ function BookingNotFound() {
           to="/bookings"
           className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
         >
-          <ArrowLeft className="mr-2" size={16} />
+          <ArrowLeftIcon className="mr-2" size={16} />
           Back to Bookings
         </Link>
         <div className="text-center py-20">
@@ -77,18 +72,7 @@ function BookingDetailPage() {
   const [cancelOpen, setCancelOpen] = useState(false)
   const [evictOpen, setEvictOpen] = useState(false)
 
-  const updateStatus = useMutation({
-    mutationFn: (data: {
-      bookingRef: string
-      status: BookingStatus
-      cancellationReason?: string
-      evictionReason?: string
-    }) => updateBookingStatus({ data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-      queryClient.invalidateQueries({ queryKey: roomKeys.all })
-    },
-  })
+  const updateStatus = useMutation(bookingMutations.updateStatus(queryClient))
 
   const handleCancel = (reason: string) => {
     updateStatus.mutate({

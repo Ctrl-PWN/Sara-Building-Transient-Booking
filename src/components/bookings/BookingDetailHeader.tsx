@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from '@phosphor-icons/react'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 
 const statusColorMap: Record<
@@ -48,7 +48,7 @@ export function BookingDetailHeader({
         to="/bookings"
         className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
       >
-        <ArrowLeft className="mr-2" size={16} />
+        <ArrowLeftIcon className="mr-2" size={16} />
         Back to Bookings
       </Link>
       <div className="flex justify-between items-end">
@@ -78,14 +78,10 @@ export function BookingDetailHeader({
             </Button>
           )}
           {canCheckIn(booking.status) && (
-            <Button onClick={onCheckIn}>
-              Check In
-            </Button>
+            <Button onClick={onCheckIn}>Check In</Button>
           )}
           {canCheckOut(booking.status) && (
-            <Button onClick={onCheckOut}>
-              Check Out
-            </Button>
+            <Button onClick={onCheckOut}>Check Out</Button>
           )}
           {canEvict(booking.status, booking.depositPctSnapshot) && (
             <Button variant="destructive" onClick={onEvictClick}>

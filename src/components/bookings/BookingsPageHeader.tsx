@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Plus } from '@phosphor-icons/react'
+import { PlusIcon } from '@phosphor-icons/react'
 
 type BookingsPageHeaderProps = {
   onNewReservation: () => void
@@ -21,11 +21,8 @@ export function BookingsPageHeader({
         </p>
       </div>
       <div className="flex gap-2 shrink-0">
-        <Button
-          className="gap-2 font-medium"
-          onClick={onNewReservation}
-        >
-          <Plus size={16} />
+        <Button className="gap-2 font-medium" onClick={onNewReservation}>
+          <PlusIcon size={16} />
           New Reservation
         </Button>
         <Button
@@ -33,7 +30,7 @@ export function BookingsPageHeader({
           className="gap-2 font-medium"
           onClick={onWalkIn}
         >
-          <Plus size={16} />
+          <PlusIcon size={16} />
           Walk-in
         </Button>
       </div>

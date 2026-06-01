@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
-import { MagnifyingGlass } from '@phosphor-icons/react'
+import { MagnifyingGlassIcon } from '@phosphor-icons/react'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 
 const statusColorMap: Record<
@@ -41,7 +41,7 @@ export function BookingsTable({
       <CardHeader className="border-b border-border p-4 bg-muted/20">
         <div className="flex gap-4">
           <div className="relative flex-1 max-w-sm">
-            <MagnifyingGlass
+            <MagnifyingGlassIcon
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               size={18}
             />
@@ -81,7 +81,10 @@ export function BookingsTable({
                   </p>
                 </TableCell>
                 <TableCell>
-                  <p className="text-sm">{format(parseISO(booking.checkInDate), 'MMMM d, yyyy')} &rarr;</p>
+                  <p className="text-sm">
+                    {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')}{' '}
+                    &rarr;
+                  </p>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}
                   </p>
