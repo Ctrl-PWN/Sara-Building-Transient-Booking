@@ -2,7 +2,8 @@ import { mutationOptions } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 
 import { createBooking, updateBookingStatus } from './bookings.functions'
-import { bookingKeys, roomKeys } from './bookings.queries'
+import { bookingKeys } from './bookings.queries'
+import { roomKeys } from '@/lib/rooms/rooms.queries'
 
 export type UpdateBookingStatusInput = Parameters<
   typeof updateBookingStatus
@@ -34,8 +35,7 @@ export const bookingMutations = {
         createBooking({
           data: {
             ...input,
-            depositPercentage:
-              input.walkIn || input.isNonRefundable ? 100 : 20,
+            depositPercentage: 100,
           },
         }),
       onSuccess: (result) => {

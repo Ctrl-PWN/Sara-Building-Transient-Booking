@@ -1,7 +1,8 @@
-import { createFormHook, formOptions } from '@tanstack/react-form'
+import { createFormHook } from '@tanstack/react-form'
 
 import {
   CheckboxField,
+  SelectField,
   TextField,
   TextareaField,
 } from '@/components/form/form-fields'
@@ -16,6 +17,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TextField,
     TextareaField,
     CheckboxField,
+    SelectField,
   },
   formComponents: {
     SubmitButton,
@@ -23,4 +25,5 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
   },
 })
 
-export { formOptions }
+export { formOptions } from '@tanstack/react-form'
+export { DateRangeField } from '@/components/form/form-fields'

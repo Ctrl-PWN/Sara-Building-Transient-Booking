@@ -102,7 +102,15 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
     .select(bookingSelect)
     .from(bookings)
     .innerJoin(rooms, eq(bookings.roomId, rooms.id))
-    .where(isNull(bookings.deletedAt))
+    .where(
+      and(
+        isNull(bookings.deletedAt),
+        or(
+          eq(bookings.status, 'RESERVED'),
+          eq(bookings.status, 'CHECKED_IN'),
+        ),
+      ),
+    )
     .orderBy(desc(bookings.createdAt))
 
   return rows.map(mapBookingRow)
@@ -131,12 +139,6 @@ export const getBookingById = createServerFn({ method: 'GET' })
     return mapBookingRow(rows[0])
   })
 
-export const getRooms = createServerFn({ method: 'GET' }).handler(async () => {
-  return await db.query.rooms.findMany({
-    where: isNull(rooms.deletedAt),
-    orderBy: [rooms.roomNumber],
-  })
-})
 
 const bookingRefSchema = z.object({
   bookingRef: z.string().min(1, 'Booking reference is required'),
@@ -169,7 +171,6 @@ const createBookingSchema = z.object({
   checkOutDate: z.string().min(1, 'Check-out date is required'),
   occupantsCount: z.number().int().positive('At least 1 occupant required'),
   depositPercentage: z.number().min(0).max(100),
-  isNonRefundable: z.boolean().optional(),
   walkIn: z.boolean().optional(),
 }).refine(
   (data) => new Date(data.checkOutDate) > new Date(data.checkInDate),
@@ -230,13 +231,10 @@ export const createBooking = createServerFn({ method: 'POST' })
 
     const bookingRef = generateBookingRef()
 
-    let status: 'CHECKED_IN' | 'RESERVED' = data.isNonRefundable ? 'CHECKED_IN' : 'RESERVED'
-    let paymentStatus: 'PAID_IN_FULL' | 'CURRENT' = data.isNonRefundable ? 'PAID_IN_FULL' : 'CURRENT'
-
-    if (data.walkIn) {
-      status = 'CHECKED_IN'
-      paymentStatus = 'PAID_IN_FULL'
-    }
+    // Reservations are non-refundable by policy, so they are always
+    // recorded as CHECKED_IN with payment settled in full.
+    const status: 'CHECKED_IN' | 'RESERVED' = 'CHECKED_IN'
+    const paymentStatus: 'PAID_IN_FULL' | 'CURRENT' = 'PAID_IN_FULL'
 
     await db.insert(bookings).values({
       bookingRef,
@@ -254,12 +252,12 @@ export const createBooking = createServerFn({ method: 'POST' })
       depositPctSnapshot: data.depositPercentage.toString(),
     })
 
-    if (status === 'CHECKED_IN') {
-      await db
-        .update(rooms)
-        .set({ status: 'OCCUPIED' })
-        .where(eq(rooms.id, data.roomId))
-    }
+    // All new bookings are CHECKED_IN with full payment, so the room is
+    // immediately marked OCCUPIED.
+    await db
+      .update(rooms)
+      .set({ status: 'OCCUPIED' })
+      .where(eq(rooms.id, data.roomId))
 
     return { success: true, bookingRef }
   })

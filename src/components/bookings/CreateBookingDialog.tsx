@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -10,11 +11,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { select } from '@/components/ui/select'
-import { useAppForm } from '@/integrations/tanstack-form'
+import { useAppForm, DateRangeField } from '@/integrations/tanstack-form'
 import { bookingMutations } from '@/lib/bookings/bookings.mutations'
 import { createBookingFormSchema } from '@/lib/bookings/schemas'
 import type { rooms } from '@/db/schema'
+import type { BookingWithRoom } from '@/lib/bookings/types'
 
 type Room = typeof rooms.$inferSelect
 
@@ -22,6 +23,7 @@ type CreateBookingDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   rooms: Room[]
+  bookings: BookingWithRoom[]
   walkIn: boolean
   onSuccess: (bookingRef: string) => void
   onError: (error: string) => void
@@ -44,6 +46,7 @@ export function CreateBookingDialog({
   open,
   onOpenChange,
   rooms,
+  bookings,
   walkIn,
   onSuccess,
   onError,
@@ -64,7 +67,6 @@ export function CreateBookingDialog({
       checkInDate: dates.checkInDate,
       checkOutDate: dates.checkOutDate,
       occupantsCount: 2,
-      isNonRefundable: false,
     },
     validators: { onSubmit: createBookingFormSchema },
     onSubmit: async ({ value }) => {
@@ -76,7 +78,6 @@ export function CreateBookingDialog({
         checkInDate: value.checkInDate,
         checkOutDate: value.checkOutDate,
         occupantsCount: value.occupantsCount,
-        isNonRefundable: walkIn ? false : value.isNonRefundable,
         walkIn,
       })
     },
@@ -92,7 +93,6 @@ export function CreateBookingDialog({
       checkInDate: freshDates.checkInDate,
       checkOutDate: freshDates.checkOutDate,
       occupantsCount: 2,
-      isNonRefundable: false,
     })
   }, [form])
 
@@ -103,10 +103,97 @@ export function CreateBookingDialog({
         : { message: String(error) },
     )
 
+  const { checkInDate, checkOutDate } = useStore(form.store, (state) => ({
+    checkInDate: state.values.checkInDate,
+    checkOutDate: state.values.checkOutDate,
+  }))
+
+  const conflictedRoomIds = new Set<number>()
+  if (checkInDate && checkOutDate) {
+    const start = new Date(checkInDate).getTime()
+    const end = new Date(checkOutDate).getTime()
+    if (end > start) {
+      for (const booking of bookings) {
+        if (booking.status !== 'RESERVED' && booking.status !== 'CHECKED_IN') {
+          continue
+        }
+        const bStart = new Date(booking.checkInDate).getTime()
+        const bEnd = new Date(booking.checkOutDate).getTime()
+        if (bStart < end && bEnd > start) {
+          conflictedRoomIds.add(booking.roomId)
+        }
+      }
+    }
+  }
+
+  // Per-room set of booked day timestamps (start-of-day ms).
+  const bookedDaysByRoom = new Map<number, Set<number>>()
+  for (const booking of bookings) {
+    if (booking.status !== 'RESERVED' && booking.status !== 'CHECKED_IN') {
+      continue
+    }
+    const bStart = new Date(booking.checkInDate)
+    bStart.setHours(0, 0, 0, 0)
+    const bEnd = new Date(booking.checkOutDate)
+    bEnd.setHours(0, 0, 0, 0)
+    let set = bookedDaysByRoom.get(booking.roomId)
+    if (!set) {
+      set = new Set<number>()
+      bookedDaysByRoom.set(booking.roomId, set)
+    }
+    for (let t = bStart.getTime(); t < bEnd.getTime(); t += 86_400_000) {
+      set.add(t)
+    }
+  }
+
+  // A date is fully booked when every room is unavailable on it
+  // (either has a booking covering it, or has a non-AVAILABLE status).
+  // Walk only dates that appear in some booking — that covers the visible
+  // range. The calendar's minDate guards against past dates.
+  const fullyBookedDays = new Set<number>()
+  for (const set of bookedDaysByRoom.values()) {
+    for (const day of set) {
+      const allUnavailable = rooms.every(
+        (r) =>
+          r.status !== 'AVAILABLE' || (bookedDaysByRoom.get(r.id)?.has(day) ?? false),
+      )
+      if (allUnavailable) fullyBookedDays.add(day)
+    }
+  }
+  const isDateFullyBooked = (date: Date) => {
+    const t = new Date(date)
+    t.setHours(0, 0, 0, 0)
+    return fullyBookedDays.has(t.getTime())
+  }
+
   const allRooms = rooms.slice().sort((a, b) => {
-    if (a.status === 'AVAILABLE' && b.status !== 'AVAILABLE') return -1
-    if (a.status !== 'AVAILABLE' && b.status === 'AVAILABLE') return 1
+    const aBlocked =
+      a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
+    const bBlocked =
+      b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
+    if (!aBlocked && bBlocked) return -1
+    if (aBlocked && !bBlocked) return 1
     return a.roomNumber.localeCompare(b.roomNumber)
+  })
+
+  const roomOptions = allRooms.map((room) => {
+    const isConflicted = conflictedRoomIds.has(room.id)
+    const statusTag =
+      isConflicted && room.status === 'AVAILABLE'
+        ? '[OCCUPIED]'
+        : room.status !== 'AVAILABLE'
+          ? `[${room.status}]`
+          : ''
+
+    return {
+      value: room.id.toString(),
+      label: `${room.roomNumber} - ${room.type} (₱${room.basePrice})${
+        statusTag ? ` ${statusTag}` : ''
+      }`,
+      disabled: walkIn
+        ? room.status !== 'AVAILABLE'
+        : ['MAINTENANCE', 'OUT_OF_ORDER'].includes(room.status),
+    }
   })
 
   return (
@@ -134,67 +221,25 @@ export function CreateBookingDialog({
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <form.AppField name="checkInDate">
-                  {(field) => <field.TextField label="Check-in" type="date" />}
-                </form.AppField>
-                <form.AppField name="checkOutDate">
-                  {(field) => <field.TextField label="Check-out" type="date" />}
-                </form.AppField>
-              </div>
+              <DateRangeField
+                form={form}
+                startFieldName="checkInDate"
+                endFieldName="checkOutDate"
+                label="Stay Dates"
+                startLabel="Check-in"
+                endLabel="Check-out"
+                minDate={new Date()}
+                disabledDates={isDateFullyBooked}
+              />
 
               <form.AppField name="roomId">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
-
-                  return (
-                    <Field data-invalid={isInvalid || undefined}>
-                      <FieldLabel htmlFor={field.name}>Room</FieldLabel>
-                      <select
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        className="h-8 w-full min-w-0 rounded-lg border border-input bg-background px-2.5 py-1 text-base text-foreground transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm [color-scheme:light] dark:bg-input/30 dark:disabled:bg-input/80 dark:[color-scheme:dark]"
-                        aria-invalid={isInvalid || undefined}
-                      >
-                        <option
-                          value=""
-                          disabled
-                          className="bg-background text-foreground"
-                        >
-                          Select a room
-                        </option>
-                        {allRooms.map((room) => (
-                          <option
-                            key={room.id}
-                            value={room.id.toString()}
-                            disabled={
-                              walkIn
-                                ? room.status !== 'AVAILABLE'
-                                : ['MAINTENANCE', 'OUT_OF_ORDER'].includes(
-                                    room.status,
-                                  )
-                            }
-                            className="bg-background text-foreground"
-                          >
-                            {room.roomNumber} - {room.type} (₱{room.basePrice})
-                            {room.status !== 'AVAILABLE'
-                              ? ` [${room.status}]`
-                              : ''}
-                          </option>
-                        ))}
-                      </select>
-                      {isInvalid ? (
-                        <FieldError
-                          errors={toFieldErrors(field.state.meta.errors)}
-                        />
-                      ) : null}
-                    </Field>
-                  )
-                }}
+                {(field) => (
+                  <field.SelectField
+                    label="Room"
+                    placeholder="Select a room"
+                    options={roomOptions}
+                  />
+                )}
               </form.AppField>
 
               <div className="grid grid-cols-2 gap-4">
@@ -256,14 +301,6 @@ export function CreateBookingDialog({
                   )
                 }}
               </form.AppField>
-
-              {!walkIn && (
-                <form.AppField name="isNonRefundable">
-                  {(field) => (
-                    <field.CheckboxField label="Non-refundable (100% deposit, auto check-in)" />
-                  )}
-                </form.AppField>
-              )}
             </div>
             <DialogFooter>
               <Button

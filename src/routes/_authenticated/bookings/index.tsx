@@ -1,7 +1,8 @@
 import { Suspense, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { bookingQueries, roomQueries } from '@/lib/bookings/bookings.queries'
+import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { roomQueries } from '@/lib/rooms/rooms.queries'
 import { FeedbackDialog } from '@/components/ui/feedback-dialog'
 import { BookingsPageHeader } from '@/components/bookings/BookingsPageHeader'
 import { BookingsTable } from '@/components/bookings/BookingsTable'
@@ -70,6 +71,7 @@ function BookingsListPage() {
             setIsAddOpen(open)
           }}
           rooms={rooms}
+          bookings={bookings}
           walkIn={walkIn}
           onSuccess={(bookingRef) => {
             setIsAddOpen(false)
