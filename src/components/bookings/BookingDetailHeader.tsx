@@ -24,8 +24,8 @@ const canCheckIn = (status: string) => ['RESERVED'].includes(status)
 
 const canCheckOut = (status: string) => ['CHECKED_IN'].includes(status)
 
-const canEvict = (status: string, depositPct: string) =>
-  status === 'CHECKED_IN' && Number(depositPct) >= 100
+const canEvict = (status: string, paymentStatus: string) =>
+  status === 'CHECKED_IN' && paymentStatus === 'PAID_IN_FULL'
 
 type BookingDetailHeaderProps = {
   booking: BookingWithRoom
@@ -83,7 +83,7 @@ export function BookingDetailHeader({
           {canCheckOut(booking.status) && (
             <Button onClick={onCheckOut}>Check Out</Button>
           )}
-          {canEvict(booking.status, booking.depositPctSnapshot) && (
+          {canEvict(booking.status, booking.paymentStatus) && (
             <Button variant="destructive" onClick={onEvictClick}>
               Evict
             </Button>

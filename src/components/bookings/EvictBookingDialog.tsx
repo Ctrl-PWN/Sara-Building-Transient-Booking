@@ -40,7 +40,8 @@ export function EvictBookingDialog({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <p className="text-sm text-muted-foreground">
-            This is a non-refundable booking. Evicting {guestName} from {roomNumber}.
+            This is a non-refundable booking. Evicting {guestName} from{' '}
+            {roomNumber}.
           </p>
           <div className="space-y-2">
             <Label>Eviction Reason</Label>
