@@ -4,7 +4,6 @@ import { useStore } from '@tanstack/react-form'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
@@ -209,9 +208,7 @@ function SelectField({
           {description}
         </p>
       ) : null}
-      {isInvalid ? (
-        <FieldError errors={toFieldErrors(field.state.meta.errors)} />
-      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
     </Field>
   )
 }
