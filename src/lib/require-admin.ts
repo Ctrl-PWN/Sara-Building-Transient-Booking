@@ -1,8 +1,11 @@
-import { createMiddleware } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
-import { auth } from './auth'
+import { createMiddleware, createServerOnlyFn } from '@tanstack/react-start'
 
-export async function requireAdmin() {
+export const requireAdmin = createServerOnlyFn(async () => {
+  const [{ auth }, { getRequestHeaders }] = await Promise.all([
+    import('./auth'),
+    import('@tanstack/react-start/server'),
+  ])
+
   const session = await auth.api.getSession({
     headers: getRequestHeaders(),
   })
@@ -14,7 +17,7 @@ export async function requireAdmin() {
   }
 
   return session
-}
+})
 
 export function authMiddleware() {
   return createMiddleware().server(async ({ next }) => {

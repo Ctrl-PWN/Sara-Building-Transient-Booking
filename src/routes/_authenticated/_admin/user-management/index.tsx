@@ -1,50 +1,103 @@
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { PlaceholderPanel } from '@/components/layout/PlaceholderPanel'
+import { useQuery } from '@tanstack/react-query'
+import { PlusIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 
-export const Route = createFileRoute('/_authenticated/_admin/user-management/')({
-  component: UsersPage,
-})
+import { PageHeader } from '@/components/layout/PageHeader'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { CreateUserSheet } from '@/components/users/CreateUserSheet'
+import { DeleteUserDialog } from '@/components/users/DeleteUserDialog'
+import { EditUserSheet } from '@/components/users/EditUserSheet'
+import { UserTable } from '@/components/users/UserTable'
+import { userQueries } from '@/lib/users/users.queries'
+
+export const Route = createFileRoute('/_authenticated/_admin/user-management/')(
+  {
+    component: UsersPage,
+  },
+)
 
 function UsersPage() {
+  const [search, setSearch] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editUser, setEditUser] = useState<{
+    id: string
+    name: string
+    firstName?: string
+    lastName?: string
+    email: string
+    role?: string
+  } | null>(null)
+  const [deleteUser, setDeleteUser] = useState<{
+    id: string
+    name: string
+  } | null>(null)
+
+  const { data: users, isLoading } = useQuery(
+    userQueries.list(
+      search
+        ? {
+            searchValue: search,
+            searchField: 'email',
+            searchOperator: 'contains',
+          }
+        : undefined,
+    ),
+  )
+
   return (
     <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
       <PageHeader
         title="Users"
         description="Staff account management for administrators."
+        actions={
+          <Button onClick={() => setCreateOpen(true)}>
+            <PlusIcon data-icon="inline-start" />
+            New user
+          </Button>
+        }
       />
 
+      <div className="relative max-w-sm">
+        <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
+      </div>
+
       <section className="block-card overflow-hidden">
-        <table className="w-full font-body text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/30 text-left">
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Name
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Email
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Role
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="px-4 py-3 text-muted-foreground" colSpan={4}>
-                No users loaded yet.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {isLoading ? (
+          <div className="p-4">
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+        ) : (
+          <UserTable
+            users={users ?? []}
+            onEdit={(user) => setEditUser(user)}
+            onDelete={(user) => setDeleteUser(user)}
+          />
+        )}
       </section>
 
-      <PlaceholderPanel
-        title="User management"
-        description="Create, edit, and deactivate users will be added in CTR-12."
+      <CreateUserSheet open={createOpen} onOpenChange={setCreateOpen} />
+      <EditUserSheet
+        user={editUser}
+        open={editUser !== null}
+        onOpenChange={(o) => {
+          if (!o) setEditUser(null)
+        }}
+      />
+      <DeleteUserDialog
+        user={deleteUser}
+        open={deleteUser !== null}
+        onOpenChange={(o) => {
+          if (!o) setDeleteUser(null)
+        }}
       />
     </main>
   )
