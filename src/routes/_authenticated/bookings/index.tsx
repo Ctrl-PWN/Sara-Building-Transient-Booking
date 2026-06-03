@@ -18,7 +18,13 @@ export const Route = createFileRoute('/_authenticated/bookings/')({
 
 function BookingsRoute() {
   return (
-    <Suspense fallback={<div className="px-4 py-20 text-center text-muted-foreground">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="px-4 py-20 text-center text-muted-foreground">
+          Loading...
+        </div>
+      }
+    >
       <BookingsListPage />
     </Suspense>
   )

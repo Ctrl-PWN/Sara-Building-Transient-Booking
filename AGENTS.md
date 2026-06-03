@@ -124,7 +124,13 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 **Render pattern** (inline children required):
 
 ```tsx
-<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit() }}>
+<form
+  onSubmit={(e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    form.handleSubmit()
+  }}
+>
   <form.AppForm>
     <FieldGroup>
       <form.AppField name="guestName">
@@ -146,13 +152,13 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 
 ### Mutations
 
-| Layer | File | Responsibility |
-| ----- | ---- | -------------- |
-| Input schema | `{domain}.schemas.ts` | Zod — shared by server fn + form validators |
-| Server write | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).inputValidator(schema).handler(...)` |
-| Cache keys | `{domain}.queries.ts` | `queryKeys` factories |
-| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient` |
-| Route/component | form `onSubmit` | `useMutation(domainMutations.x(queryClient))` + `mutateAsync` |
+| Layer           | File                    | Responsibility                                                           |
+| --------------- | ----------------------- | ------------------------------------------------------------------------ |
+| Input schema    | `{domain}.schemas.ts`   | Zod — shared by server fn + form validators                              |
+| Server write    | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).inputValidator(schema).handler(...)` |
+| Cache keys      | `{domain}.queries.ts`   | `queryKeys` factories                                                    |
+| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient`                      |
+| Route/component | form `onSubmit`         | `useMutation(domainMutations.x(queryClient))` + `mutateAsync`            |
 
 ```ts
 // bookings.mutations.ts

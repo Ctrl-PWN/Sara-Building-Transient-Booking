@@ -33,7 +33,12 @@ export function FeedbackDialog({
     )
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose()
+      }}
+    >
       <DialogContent className="sm:max-w-[400px]">
         <div className="flex flex-col items-center gap-3 pt-2">
           {icon}

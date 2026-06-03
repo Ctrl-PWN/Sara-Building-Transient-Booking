@@ -1,8 +1,5 @@
 import type { bookings } from '@/db/schema'
-import type {
-  BookingPaymentStatus,
-  BookingStatus,
-} from '@/db/schema/enums'
+import type { BookingPaymentStatus, BookingStatus } from '@/db/schema/enums'
 
 export type { BookingPaymentStatus, BookingStatus }
 
