@@ -1,4 +1,8 @@
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { SignOutIcon } from '@phosphor-icons/react'
+
+import { authClient } from '@/lib/auth-client'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -6,6 +10,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarFooter,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,6 +20,12 @@ import { isNavItemActive, mainNavItems } from '@/lib/nav'
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await authClient.signOut()
+    await navigate({ to: '/log-in', replace: true })
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -54,6 +65,19 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={() => {
+            void handleLogout()
+          }}
+        >
+          <SignOutIcon data-icon="inline-start" />
+          <span>Log out</span>
+        </Button>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
