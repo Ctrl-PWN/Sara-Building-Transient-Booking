@@ -53,7 +53,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-body antialiased wrap-anywhere" suppressHydrationWarning>
+      <body
+        className="font-body antialiased wrap-anywhere"
+        suppressHydrationWarning
+      >
         {children}
         <TanStackDevtools
           config={{

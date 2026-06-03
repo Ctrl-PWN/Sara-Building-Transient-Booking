@@ -1,16 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { db } from '@/db/index'
-import {
-  eq,
-  and,
-  or,
-  desc,
-  gt,
-  lt,
-  isNull,
-  sql,
-} from 'drizzle-orm'
+import { eq, and, or, desc, gt, lt, isNull, sql } from 'drizzle-orm'
 import { bookings, rooms } from '@/db/schema'
 
 import { bookingByIdSchema, bookingStatusSchema } from './schemas'
@@ -105,10 +96,7 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
     .where(
       and(
         isNull(bookings.deletedAt),
-        or(
-          eq(bookings.status, 'RESERVED'),
-          eq(bookings.status, 'CHECKED_IN'),
-        ),
+        or(eq(bookings.status, 'RESERVED'), eq(bookings.status, 'CHECKED_IN')),
       ),
     )
     .orderBy(desc(bookings.createdAt))
@@ -139,7 +127,6 @@ export const getBookingById = createServerFn({ method: 'GET' })
     return mapBookingRow(rows[0])
   })
 
-
 const bookingRefSchema = z.object({
   bookingRef: z.string().min(1, 'Booking reference is required'),
 })
@@ -162,20 +149,22 @@ export const getBookingByRef = createServerFn({ method: 'GET' })
     return rows[0] ? mapBookingRow(rows[0]) : null
   })
 
-const createBookingSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  roomId: z.number().int().positive('Room is required'),
-  contactNumber: z.string().optional(),
-  checkInDate: z.string().min(1, 'Check-in date is required'),
-  checkOutDate: z.string().min(1, 'Check-out date is required'),
-  occupantsCount: z.number().int().positive('At least 1 occupant required'),
-  depositPercentage: z.number().min(0).max(100),
-  walkIn: z.boolean().optional(),
-}).refine(
-  (data) => new Date(data.checkOutDate) > new Date(data.checkInDate),
-  { message: 'Check-out date must be after check-in date', path: ['checkOutDate'] },
-)
+const createBookingSchema = z
+  .object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    roomId: z.number().int().positive('Room is required'),
+    contactNumber: z.string().optional(),
+    checkInDate: z.string().min(1, 'Check-in date is required'),
+    checkOutDate: z.string().min(1, 'Check-out date is required'),
+    occupantsCount: z.number().int().positive('At least 1 occupant required'),
+    depositPercentage: z.number().min(0).max(100),
+    walkIn: z.boolean().optional(),
+  })
+  .refine((data) => new Date(data.checkOutDate) > new Date(data.checkInDate), {
+    message: 'Check-out date must be after check-in date',
+    path: ['checkOutDate'],
+  })
 
 export const createBooking = createServerFn({ method: 'POST' })
   .inputValidator(createBookingSchema)
@@ -225,9 +214,7 @@ export const createBooking = createServerFn({ method: 'POST' })
     const depositDeadline = new Date(
       checkIn.getTime() - depositHours * 60 * 60 * 1000,
     )
-    const finalDueDate = new Date(
-      checkOut.getTime() + 7 * 24 * 60 * 60 * 1000,
-    )
+    const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000)
 
     const bookingRef = generateBookingRef()
 
@@ -326,9 +313,7 @@ export const updateBookingStatus = createServerFn({ method: 'POST' })
         .update(rooms)
         .set({ status: 'OCCUPIED' })
         .where(eq(rooms.id, roomId))
-    } else if (
-      ['CANCELLED', 'CHECKED_OUT', 'EVICTED'].includes(data.status)
-    ) {
+    } else if (['CANCELLED', 'CHECKED_OUT', 'EVICTED'].includes(data.status)) {
       await db
         .update(rooms)
         .set({ status: 'AVAILABLE' })

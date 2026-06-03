@@ -228,6 +228,7 @@ function SelectField({
 // a permissive `form: any` on the prop to avoid re-typing the entire form
 // schema here.
 type DateRangeFieldProps = {
+  // biome-ignore lint/suspicious/noExplicitAny: permissive type for generic form store
   form: any
   startFieldName: string
   endFieldName: string

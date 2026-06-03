@@ -19,7 +19,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TextareaField,
     CheckboxField,
     SelectField,
-     NumberField,
+    NumberField,
   },
   formComponents: {
     SubmitButton,
