@@ -1,71 +1,140 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
-
-import { BookingFieldGrid } from '@/components/bookings/BookingFieldGrid'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { bookingMutations } from '@/lib/bookings/bookings.mutations'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
+import { Spinner } from '@/components/ui/spinner'
+import { BookingDetailHeader } from '@/components/bookings/BookingDetailHeader'
+import { BookingInfoCards } from '@/components/bookings/BookingInfoCards'
+import { CancelBookingDialog } from '@/components/bookings/CancelBookingDialog'
+import { EvictBookingDialog } from '@/components/bookings/EvictBookingDialog'
 
-export const Route = createFileRoute('/_authenticated/bookings/$bookingId')({
-  loader: async ({ context, params }) => {
-    const id = Number(params.bookingId)
-    if (!Number.isInteger(id) || id <= 0) {
-      throw notFound()
-    }
-
-    try {
-      await context.queryClient.ensureQueryData(bookingQueries.detail(id))
-    } catch {
-      throw notFound()
-    }
-
-    return { id }
-  },
-  component: BookingDetailPage,
-})
-
-function BookingDetailPage() {
-  const { id } = Route.useLoaderData()
-
+function BookingNotFound() {
   return (
-    <Suspense fallback={<BookingDetailFallback bookingId={id} />}>
-      <BookingDetailContent id={id} />
-    </Suspense>
-  )
-}
-
-function BookingDetailContent({ id }: { id: number }) {
-  const { data: booking } = useSuspenseQuery(bookingQueries.detail(id))
-
-  return (
-    <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
-      <PageHeader
-        title={`Booking ${booking.bookingRef}`}
-        description="Full booking information for operational review."
-        actions={
-          <Button variant="outline" render={<Link to="/bookings" />}>
-            Back to list
-          </Button>
-        }
-      />
-
-      <section className="block-card p-5">
-        <BookingFieldGrid booking={booking} />
-      </section>
+    <main className="page-wrap px-4 py-6 pb-8">
+      <div className="space-y-8">
+        <Link
+          to="/bookings"
+          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeftIcon className="mr-2" size={16} />
+          Back to Bookings
+        </Link>
+        <div className="text-center py-20">
+          <p className="text-muted-foreground">Booking not found.</p>
+        </div>
+      </div>
     </main>
   )
 }
 
-function BookingDetailFallback({ bookingId }: { bookingId: number }) {
+export const Route = createFileRoute('/_authenticated/bookings/$bookingId')({
+  loader: async ({ params, context }) => {
+    try {
+      await context.queryClient.ensureQueryData(
+        bookingQueries.detail(Number(params.bookingId)),
+      )
+    } catch {
+      throw notFound()
+    }
+  },
+  notFoundComponent: BookingNotFound,
+  component: BookingDetailRoute,
+})
+
+function BookingDetailRoute() {
   return (
-    <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
-      <PageHeader
-        title={`Booking ${bookingId}`}
-        description="Full booking information for operational review."
-      />
-      <Skeleton className="h-64 w-full rounded-xl" />
+    <Suspense
+      fallback={
+        <main className="page-wrap px-4 py-6 pb-8">
+          <div className="flex items-center justify-center py-20">
+            <Spinner className="size-6 text-muted-foreground animate-spin" />
+          </div>
+        </main>
+      }
+    >
+      <BookingDetailPage />
+    </Suspense>
+  )
+}
+
+function BookingDetailPage() {
+  const { bookingId } = Route.useParams()
+  const queryClient = useQueryClient()
+  const { data: booking } = useSuspenseQuery(
+    bookingQueries.detail(Number(bookingId)),
+  )
+  const [cancelOpen, setCancelOpen] = useState(false)
+  const [evictOpen, setEvictOpen] = useState(false)
+
+  const updateStatus = useMutation(bookingMutations.updateStatus(queryClient))
+
+  const handleCancel = (reason: string) => {
+    updateStatus.mutate({
+      bookingRef: booking.bookingRef,
+      status: 'CANCELLED',
+      cancellationReason: reason,
+    })
+    setCancelOpen(false)
+  }
+
+  const handleEvict = (reason: string) => {
+    updateStatus.mutate({
+      bookingRef: booking.bookingRef,
+      status: 'EVICTED',
+      evictionReason: reason,
+    })
+    setEvictOpen(false)
+  }
+
+  const handleCheckIn = () => {
+    updateStatus.mutate({
+      bookingRef: booking.bookingRef,
+      status: 'CHECKED_IN',
+    })
+  }
+
+  const handleCheckOut = () => {
+    updateStatus.mutate({
+      bookingRef: booking.bookingRef,
+      status: 'CHECKED_OUT',
+    })
+  }
+
+  return (
+    <main className="page-wrap px-4 py-6 pb-8">
+      <div className="space-y-8">
+        <BookingDetailHeader
+          booking={booking}
+          onCancelClick={() => setCancelOpen(true)}
+          onEvictClick={() => setEvictOpen(true)}
+          onCheckIn={handleCheckIn}
+          onCheckOut={handleCheckOut}
+        />
+
+        <BookingInfoCards booking={booking} />
+
+        <CancelBookingDialog
+          open={cancelOpen}
+          onOpenChange={setCancelOpen}
+          bookingRef={booking.bookingRef}
+          guestName={`${booking.firstName} ${booking.lastName}`}
+          onConfirm={handleCancel}
+        />
+
+        <EvictBookingDialog
+          open={evictOpen}
+          onOpenChange={setEvictOpen}
+          guestName={`${booking.firstName} ${booking.lastName}`}
+          roomNumber={booking.roomNumber}
+          onConfirm={handleEvict}
+        />
+      </div>
     </main>
   )
 }

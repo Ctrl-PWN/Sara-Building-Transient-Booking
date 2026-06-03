@@ -1,5 +1,8 @@
 import type { bookings } from '@/db/schema'
-import type { BookingPaymentStatus, BookingStatus } from '@/db/schema/enums'
+import type {
+  BookingPaymentStatus,
+  BookingStatus,
+} from '@/db/schema/enums'
 
 export type { BookingPaymentStatus, BookingStatus }
 
@@ -12,11 +15,19 @@ export type BookingWithRoom = {
   roomId: number
   roomNumber: string
   roomType: string
+  roomBasePrice: string | null
   checkInDate: string
   checkOutDate: string
   occupantsCount: number
   status: BookingStatus
   paymentStatus: BookingPaymentStatus
+  depositDeadline: string | Date | null
+  finalDueDate: string | Date | null
+  depositPctSnapshot: string
+  cancellationReason: string | null
+  cancelledAt: string | Date | null
+  createdAt: string | Date | null
+  deletedAt: string | Date | null
 }
 
 export type TimelineLegendStatus = 'RESERVED' | 'CHECKED_IN' | 'CHECKED_OUT'

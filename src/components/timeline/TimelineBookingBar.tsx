@@ -24,8 +24,8 @@ export function TimelineBookingBar({
   isSelected,
   onSelect,
 }: TimelineBookingBarProps) {
-  const presentation = getBookingStatusPresentation(booking.status)
   const guestName = formatGuestName(booking)
+  const presentation = getBookingStatusPresentation(booking.status)
   const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkInDate), 'd MMM')} – ${format(parseISO(booking.checkOutDate), 'd MMM')}`
   const isHatched = booking.status === 'RESERVED'
 

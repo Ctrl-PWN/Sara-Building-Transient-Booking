@@ -39,7 +39,9 @@ export function BookingOverviewSheet({
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="font-display">
-            {displayBooking ? `Booking ${displayBooking.bookingRef}` : 'Booking'}
+            {displayBooking
+              ? `Booking ${displayBooking.bookingRef}`
+              : 'Booking'}
           </SheetTitle>
           <SheetDescription>
             Quick review without leaving the timeline.
