@@ -7,5 +7,5 @@ export const Route = createFileRoute('/_authenticated/')({
     if (session) {
       throw redirect({ to: '/dashboard', replace: true })
     }
-  }
+  },
 })

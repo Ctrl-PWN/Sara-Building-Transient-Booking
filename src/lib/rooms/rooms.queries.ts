@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db/index'
-import { isNull} from 'drizzle-orm'
+import { isNull } from 'drizzle-orm'
 import { rooms } from '@/db/schema'
 
 export const getRooms = createServerFn({ method: 'GET' }).handler(async () => {
