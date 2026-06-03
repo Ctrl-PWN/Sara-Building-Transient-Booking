@@ -26,16 +26,13 @@ jobs:
         run: npm ci
 
       - name: Run Biome lint
-        run: npm run lint:biome
+        run: npm run check
 
       - name: Run TypeScript type check
         run: npx tsc --noEmit
 
       - name: Run build
         run: npm run build
-
-      - name: Check formatting (Prettier)
-        run: npm run check
 
   auto-format:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && !endsWith(github.actor, '[bot]')
