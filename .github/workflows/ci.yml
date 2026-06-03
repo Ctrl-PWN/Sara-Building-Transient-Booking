@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run Biome lint
+        run: npm run lint:biome
 
       - name: Run TypeScript type check
         run: npx tsc --noEmit
