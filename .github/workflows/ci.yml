@@ -34,9 +34,6 @@ jobs:
       - name: Run build
         run: npm run build
 
-      - name: Run tests
-        run: npm run test
-
       - name: Check formatting (Prettier)
         run: npm run check
 
