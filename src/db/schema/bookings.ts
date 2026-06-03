@@ -9,7 +9,10 @@ import {
   timestamp,
 } from 'drizzle-orm/pg-core'
 
-import { bookingPaymentStatusEnum, bookingStatusEnum } from './enums'
+import {
+  bookingPaymentStatusEnum,
+  bookingStatusEnum,
+} from './enums'
 import { rooms } from './rooms'
 
 export const bookings = pgTable('bookings', {

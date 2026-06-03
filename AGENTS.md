@@ -14,19 +14,19 @@
 
 ## Key commands
 
-| Command               | What it does                         |
-| --------------------- | ------------------------------------ |
-| `npm run dev`         | Dev server on port 3000              |
+| Command               | What it does                          |
+| --------------------- | ------------------------------------- |
+| `npm run dev`         | Dev server on port 3000               |
 | `npm run build`       | Production build → `.output/` (Nitro) |
-| `npm run test`        | Vitest (no tests exist yet)          |
-| `npm run lint`        | ESLint (tanstack config)             |
-| `npm run format`      | Prettier --write + ESLint --fix      |
-| `npm run check`       | Prettier --check only                |
-| `npm run db:generate` | Drizzle Kit generate migrations      |
-| `npm run db:migrate`  | Drizzle Kit migrate                  |
-| `npm run db:push`     | Drizzle Kit push (quick schema push) |
-| `npm run db:pull`     | Drizzle Kit pull (introspect)        |
-| `npm run db:studio`   | Drizzle Kit studio                   |
+| `npm run test`        | Vitest (no tests exist yet)           |
+| `npm run lint`        | ESLint (tanstack config)              |
+| `npm run format`      | Prettier --write + ESLint --fix       |
+| `npm run check`       | Prettier --check only                 |
+| `npm run db:generate` | Drizzle Kit generate migrations       |
+| `npm run db:migrate`  | Drizzle Kit migrate                   |
+| `npm run db:push`     | Drizzle Kit push (quick schema push)  |
+| `npm run db:pull`     | Drizzle Kit pull (introspect)         |
+| `npm run db:studio`   | Drizzle Kit studio                    |
 
 ## Architecture
 
