@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint",
+    "lint:biome": "npx @biomejs/biome lint",
     "format": "prettier --write . && eslint --fix",
     "check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
