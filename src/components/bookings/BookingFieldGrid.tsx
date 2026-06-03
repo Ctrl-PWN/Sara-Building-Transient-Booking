@@ -14,7 +14,7 @@ type BookingFieldGridProps = {
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="font-body text-xs font-bold uppercase tracking-[0.05em] text-muted-foreground m-0">
+      <p className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">
         {label}
       </p>
       <div className="font-body text-sm text-foreground">{value}</div>
@@ -32,10 +32,7 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
       <Field label="Guest" value={formatGuestName(booking)} />
       <Field label="Reference" value={booking.bookingRef} />
       <Field label="Contact" value={booking.contactNumber ?? 'Not provided'} />
-      <Field
-        label="Room"
-        value={booking.roomNumber}
-      />
+      <Field label="Room" value={booking.roomNumber} />
       <Field label="Check-in" value={formatDate(booking.checkInDate)} />
       <Field label="Check-out" value={formatDate(booking.checkOutDate)} />
       <Field label="Occupants" value={booking.occupantsCount} />

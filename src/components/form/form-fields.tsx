@@ -24,6 +24,16 @@ function useFieldInvalidState() {
   return { field, isInvalid }
 }
 
+type NumberFieldProps = {
+  label: string
+  description?: string
+  placeholder?: string
+  autoComplete?: string
+  min?: number
+  max?: number
+  step?: number
+}
+
 type TextFieldProps = {
   label: string
   description?: string
@@ -263,6 +273,40 @@ function toIsoDate(date: Date | null) {
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
+// form field for numbers
+function NumberField({
+  label,
+  description,
+  placeholder,
+  autoComplete,
+}: NumberFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const value = field.state.value as number
+  return (
+    <Field data-invalid={isInvalid || undefined}>
+      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <Input
+        id={field.name}
+        name={field.name}
+        type="number"
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        onBlur={field.handleBlur}
+        onChange={(event) => field.handleChange(event.target.valueAsNumber)}
+      />
+      {description ? (
+        <p
+          id={`${field.name}-description`}
+          className="text-sm text-muted-foreground"
+        >
+          {description}
+        </p>
+      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+    </Field>
+  )
+}
 
 function DateRangeField({
   form,
@@ -337,4 +381,11 @@ function DateRangeField({
   )
 }
 
-export { CheckboxField, TextField, TextareaField, SelectField, DateRangeField }
+export {
+  CheckboxField,
+  TextField,
+  TextareaField,
+  SelectField,
+  DateRangeField,
+  NumberField,
+}

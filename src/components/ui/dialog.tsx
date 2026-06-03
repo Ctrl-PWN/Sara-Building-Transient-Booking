@@ -22,7 +22,7 @@ function DialogBackdrop({
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        'fixed inset-0 z-50 bg-black/40 data-[ending-style]:fade-out data-[starting-style]:fade-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150',
+        'fixed inset-0 z-50 bg-black/40 data-ending-style:fade-out data-starting-style:fade-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150',
         className,
       )}
       {...props}

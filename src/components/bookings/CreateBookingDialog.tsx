@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-form'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import {
   Dialog,
   DialogContent,
@@ -96,17 +93,7 @@ export function CreateBookingDialog({
     })
   }, [form])
 
-  const toFieldErrors = (errors: readonly unknown[]) =>
-    errors.map((error) =>
-      typeof error === 'string'
-        ? { message: error }
-        : { message: String(error) },
-    )
-
-  const { checkInDate, checkOutDate } = useStore(form.store, (state) => ({
-    checkInDate: state.values.checkInDate,
-    checkOutDate: state.values.checkOutDate,
-  }))
+  const { checkInDate, checkOutDate } = form.state.values
 
   const conflictedRoomIds = new Set<number>()
   if (checkInDate && checkOutDate) {
@@ -155,7 +142,8 @@ export function CreateBookingDialog({
     for (const day of set) {
       const allUnavailable = rooms.every(
         (r) =>
-          r.status !== 'AVAILABLE' || (bookedDaysByRoom.get(r.id)?.has(day) ?? false),
+          r.status !== 'AVAILABLE' ||
+          (bookedDaysByRoom.get(r.id)?.has(day) ?? false),
       )
       if (allUnavailable) fullyBookedDays.add(day)
     }
@@ -167,10 +155,8 @@ export function CreateBookingDialog({
   }
 
   const allRooms = rooms.slice().sort((a, b) => {
-    const aBlocked =
-      a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
-    const bBlocked =
-      b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
+    const aBlocked = a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
+    const bBlocked = b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
     if (!aBlocked && bBlocked) return -1
     if (aBlocked && !bBlocked) return 1
     return a.roomNumber.localeCompare(b.roomNumber)
@@ -206,7 +192,7 @@ export function CreateBookingDialog({
         onOpenChange(newOpen)
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -268,38 +254,7 @@ export function CreateBookingDialog({
               </form.AppField>
 
               <form.AppField name="occupantsCount">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
-                  const value = field.state.value
-
-                  return (
-                    <Field data-invalid={isInvalid || undefined}>
-                      <FieldLabel htmlFor={field.name}>
-                        Occupants Count
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="number"
-                        min={1}
-                        value={Number.isFinite(value) ? value : 1}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          const next = Number(e.target.value)
-                          field.handleChange(Number.isNaN(next) ? 1 : next)
-                        }}
-                        aria-invalid={isInvalid || undefined}
-                      />
-                      {isInvalid ? (
-                        <FieldError
-                          errors={toFieldErrors(field.state.meta.errors)}
-                        />
-                      ) : null}
-                    </Field>
-                  )
-                }}
+                {(field) => <field.NumberField label="Occupants" />}
               </form.AppField>
             </div>
             <DialogFooter>
