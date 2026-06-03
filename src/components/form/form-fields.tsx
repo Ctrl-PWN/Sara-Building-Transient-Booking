@@ -4,6 +4,7 @@ import { useStore } from '@tanstack/react-form'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
@@ -15,12 +16,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useFieldContext } from '@/integrations/tanstack-form/form-context'
-
-function toFieldErrors(errors: readonly unknown[]) {
-  return errors.map((error) =>
-    typeof error === 'string' ? { message: error } : { message: String(error) },
-  )
-}
 
 function useFieldInvalidState() {
   const field = useFieldContext<unknown>()
@@ -71,9 +66,7 @@ function TextField({
           {description}
         </p>
       ) : null}
-      {isInvalid ? (
-        <FieldError errors={toFieldErrors(field.state.meta.errors)} />
-      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
     </Field>
   )
 }
@@ -116,9 +109,7 @@ function TextareaField({
           {description}
         </p>
       ) : null}
-      {isInvalid ? (
-        <FieldError errors={toFieldErrors(field.state.meta.errors)} />
-      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
     </Field>
   )
 }
@@ -149,9 +140,7 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
         {description ? (
           <p className="text-sm text-muted-foreground">{description}</p>
         ) : null}
-        {isInvalid ? (
-          <FieldError errors={toFieldErrors(field.state.meta.errors)} />
-        ) : null}
+        {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
       </div>
     </Field>
   )
