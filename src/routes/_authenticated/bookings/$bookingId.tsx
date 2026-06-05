@@ -1,15 +1,13 @@
 import { ArrowLeftIcon } from '@phosphor-icons/react'
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
 import { BookingDetailHeader } from '@/components/bookings/BookingDetailHeader'
 import { BookingInfoCards } from '@/components/bookings/BookingInfoCards'
 import { BookingLedgerView } from '@/components/bookings/BookingLedgerView'
 import { CancelBookingDialog } from '@/components/bookings/CancelBookingDialog'
+import { CheckInBookingDialog } from '@/components/bookings/CheckInBookingDialog'
+import { CheckOutBookingDialog } from '@/components/bookings/CheckOutBookingDialog'
 import { EvictBookingDialog } from '@/components/bookings/EvictBookingDialog'
 import { Spinner } from '@/components/ui/spinner'
 import { bookingMutations } from '@/lib/bookings/bookings.mutations'
@@ -70,12 +68,15 @@ function BookingDetailRoute() {
 
 function BookingDetailPage() {
   const { bookingId } = Route.useParams()
+  const numericBookingId = Number(bookingId)
   const queryClient = useQueryClient()
   const { data: booking } = useSuspenseQuery(
-    bookingQueries.detail(Number(bookingId)),
+    bookingQueries.detail(numericBookingId),
   )
   const [cancelOpen, setCancelOpen] = useState(false)
   const [evictOpen, setEvictOpen] = useState(false)
+  const [checkInOpen, setCheckInOpen] = useState(false)
+  const [checkOutOpen, setCheckOutOpen] = useState(false)
 
   const updateStatus = useMutation(bookingMutations.updateStatus(queryClient))
 
@@ -97,20 +98,6 @@ function BookingDetailPage() {
     setEvictOpen(false)
   }
 
-  const handleCheckIn = () => {
-    updateStatus.mutate({
-      bookingRef: booking.bookingRef,
-      status: 'CHECKED_IN',
-    })
-  }
-
-  const handleCheckOut = () => {
-    updateStatus.mutate({
-      bookingRef: booking.bookingRef,
-      status: 'CHECKED_OUT',
-    })
-  }
-
   return (
     <main className="page-wrap px-4 py-6 pb-8">
       <div className="space-y-8">
@@ -118,13 +105,16 @@ function BookingDetailPage() {
           booking={booking}
           onCancelClick={() => setCancelOpen(true)}
           onEvictClick={() => setEvictOpen(true)}
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
+          onCheckIn={() => setCheckInOpen(true)}
+          onCheckOut={() => setCheckOutOpen(true)}
         />
 
         <BookingInfoCards booking={booking} />
 
-        <BookingLedgerView bookingId={Number(bookingId)} />
+        <BookingLedgerView
+          bookingId={numericBookingId}
+          bookingStatus={booking.status}
+        />
 
         <CancelBookingDialog
           open={cancelOpen}
@@ -140,6 +130,20 @@ function BookingDetailPage() {
           guestName={`${booking.firstName} ${booking.lastName}`}
           roomNumber={booking.roomNumber}
           onConfirm={handleEvict}
+        />
+
+        <CheckInBookingDialog
+          open={checkInOpen}
+          onOpenChange={setCheckInOpen}
+          booking={booking}
+          bookingId={numericBookingId}
+        />
+
+        <CheckOutBookingDialog
+          open={checkOutOpen}
+          onOpenChange={setCheckOutOpen}
+          booking={booking}
+          bookingId={numericBookingId}
         />
       </div>
     </main>
