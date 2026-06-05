@@ -1,9 +1,15 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type * as React from 'react'
 import { useStore } from '@tanstack/react-form'
 
 import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
@@ -14,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useFieldContext } from '@/integrations/tanstack-form/form-context'
 
 function useFieldInvalidState() {
@@ -223,6 +230,63 @@ function SelectField({
   )
 }
 
+type RadioOption = {
+  value: string
+  label: string
+}
+
+type RadioGroupFieldProps = {
+  label: string
+  description?: string
+  options: RadioOption[]
+}
+
+function RadioGroupField({
+  label,
+  description,
+  options,
+}: RadioGroupFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const value = field.state.value as string
+  const legendId = useId()
+
+  return (
+    <Field data-invalid={isInvalid || undefined}>
+      <FieldSet className="gap-3 border-0 p-0">
+        <FieldLegend id={legendId} variant="label">
+          {label}
+        </FieldLegend>
+        <RadioGroup
+          aria-labelledby={legendId}
+          name={field.name}
+          value={value}
+          onValueChange={field.handleChange}
+          className="flex flex-row flex-wrap gap-4"
+          data-slot="radio-group"
+        >
+          {options.map((option) => (
+            <label
+              key={option.value}
+              htmlFor={`${field.name}-${option.value}`}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <RadioGroupItem
+                id={`${field.name}-${option.value}`}
+                value={option.value}
+              />
+              {option.label}
+            </label>
+          ))}
+        </RadioGroup>
+      </FieldSet>
+      {description ? (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+    </Field>
+  )
+}
+
 // We accept any form whose store can be read by useStore. The actual form
 // type's setFieldValue is generic over the form's field-name union, so we use
 // a permissive `form: any` on the prop to avoid re-typing the entire form
@@ -386,6 +450,7 @@ export {
   TextField,
   TextareaField,
   SelectField,
+  RadioGroupField,
   DateRangeField,
   NumberField,
 }

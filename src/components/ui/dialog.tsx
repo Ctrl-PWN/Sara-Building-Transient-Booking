@@ -106,7 +106,7 @@ function DialogContent({
       <DialogBackdrop />
       <DialogPrimitive.Popup
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-border bg-background p-6 shadow-lg overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden data-[ending-style]:fade-out data-[starting-style]:fade-in data-[ending-style]:zoom-out data-[starting-style]:zoom-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150',
+          'fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-lg data-[ending-style]:fade-out data-[starting-style]:fade-in data-[ending-style]:zoom-out data-[starting-style]:zoom-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150',
           className,
         )}
         {...props}

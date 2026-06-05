@@ -21,20 +21,9 @@ export const roomStatusEnum = pgEnum('room_status', [
   'OCCUPIED',
 ])
 
-export const ledgerTransactionTypeEnum = pgEnum('ledger_transaction_type', [
-  'DEPOSIT',
-  'PAYMENT',
-  'REFUND',
-])
-
 export const ledgerTransactionCategoryEnum = pgEnum(
   'ledger_transaction_category',
-  [
-    'ROOM_CHARGE',
-    'DEPOSIT',
-    'PAYMENT',
-    'REFUND'
-  ],
+  ['ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND'],
 )
 
 export const paymentMethodEnum = pgEnum('payment_method', [
@@ -48,7 +37,6 @@ export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'STAFF'])
 export const bookingStatusValues = bookingStatusEnum.enumValues
 export const bookingPaymentStatusValues = bookingPaymentStatusEnum.enumValues
 export const roomStatusValues = roomStatusEnum.enumValues
-export const ledgerTransactionTypeValues = ledgerTransactionTypeEnum.enumValues
 export const ledgerTransactionCategoryValues =
   ledgerTransactionCategoryEnum.enumValues
 export const paymentMethodValues = paymentMethodEnum.enumValues
@@ -58,8 +46,6 @@ export type BookingStatus = (typeof bookingStatusEnum.enumValues)[number]
 export type BookingPaymentStatus =
   (typeof bookingPaymentStatusEnum.enumValues)[number]
 export type RoomStatus = (typeof roomStatusEnum.enumValues)[number]
-export type LedgerTransactionType =
-  (typeof ledgerTransactionTypeEnum.enumValues)[number]
 export type LedgerTransactionCategory =
   (typeof ledgerTransactionCategoryEnum.enumValues)[number]
 export type PaymentMethod = (typeof paymentMethodEnum.enumValues)[number]

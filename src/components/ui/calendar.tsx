@@ -76,8 +76,7 @@ export function Calendar({
     onMonthChange(new Date(currentYear, currentMonth + 1, 1))
   }
 
-  const buildDate = (day: number) =>
-    new Date(currentYear, currentMonth, day)
+  const buildDate = (day: number) => new Date(currentYear, currentMonth, day)
 
   const handleDateClick = (day: number) => {
     const date = buildDate(day)
@@ -201,7 +200,8 @@ export function Calendar({
         {calendarDays.map((day, index) => {
           const isStart = day !== null && isRangeStart(day)
           const isEnd = day !== null && isRangeEnd(day)
-          const isMiddle = day !== null && isRangeMiddle(day) && !isStart && !isEnd
+          const isMiddle =
+            day !== null && isRangeMiddle(day) && !isStart && !isEnd
           // Edge cells of a week (Sun/Sat) need a half-band on the inner side
           // so the highlight visually connects across the week gap.
           const colIndex = index % 7
@@ -238,10 +238,15 @@ export function Calendar({
                     'hover:bg-accent/60',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:z-10',
                     'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent',
-                    isStart && 'bg-primary text-primary-foreground hover:bg-primary/90',
-                    isEnd && 'bg-primary text-primary-foreground hover:bg-primary/90',
+                    isStart &&
+                      'bg-primary text-primary-foreground hover:bg-primary/90',
+                    isEnd &&
+                      'bg-primary text-primary-foreground hover:bg-primary/90',
                     isMiddle && 'text-foreground',
-                    !isStart && !isEnd && !isMiddle && 'bg-transparent text-foreground',
+                    !isStart &&
+                      !isEnd &&
+                      !isMiddle &&
+                      'bg-transparent text-foreground',
                   )}
                 >
                   {showLeftBand && !isStart ? (

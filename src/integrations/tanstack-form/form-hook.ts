@@ -3,6 +3,7 @@ import { createFormHook } from '@tanstack/react-form'
 import {
   CheckboxField,
   NumberField,
+  RadioGroupField,
   SelectField,
   TextField,
   TextareaField,
@@ -19,7 +20,8 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TextareaField,
     CheckboxField,
     SelectField,
-     NumberField,
+    NumberField,
+    RadioGroupField,
   },
   formComponents: {
     SubmitButton,
