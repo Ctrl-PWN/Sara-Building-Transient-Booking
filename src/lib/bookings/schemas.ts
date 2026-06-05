@@ -206,3 +206,14 @@ export const updateStatusSchema = z.object({
   cancellationReason: z.string().optional(),
   evictionReason: z.string().optional(),
 })
+
+export const checkInBookingSchema = z
+  .object({
+    bookingRef: z.string().min(1, 'Booking reference is required'),
+    ...ledgerPaymentFieldsShape,
+  })
+  .superRefine(paymentReferenceRefine)
+
+export const checkOutBookingSchema = z.object({
+  bookingRef: z.string().min(1, 'Booking reference is required'),
+})

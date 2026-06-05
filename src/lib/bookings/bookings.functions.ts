@@ -6,8 +6,17 @@ import { bookings, ledgerTransactions, rooms } from '@/db/schema'
 
 import { buildCreateBookingLedgerLines } from './create-booking-ledger'
 import {
+  computeRemainingBalance,
+  normalizeReferenceNumber,
+  RESERVATION_BALANCE_DESCRIPTION,
+  syncBookingPaymentStatus,
+} from '@/lib/ledger/ledger.helpers'
+
+import {
   bookingByIdSchema,
   bookingStatusSchema,
+  checkInBookingSchema,
+  checkOutBookingSchema,
   createBookingServerSchema,
   updateStatusSchema,
 } from './schemas'
@@ -326,6 +335,135 @@ export const updateBookingStatus = createServerFn({ method: 'POST' })
         .set({ status: 'AVAILABLE' })
         .where(eq(rooms.id, roomId))
     }
+
+    return { success: true }
+  })
+
+export const checkInBooking = createServerFn({ method: 'POST' })
+  .inputValidator(checkInBookingSchema)
+  .handler(async ({ data }) => {
+    const rows = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        roomId: bookings.roomId,
+      })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.bookingRef, data.bookingRef),
+          isNull(bookings.deletedAt),
+        ),
+      )
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new Error('Booking not found')
+    }
+
+    const booking = rows[0]
+
+    if (booking.status !== 'RESERVED') {
+      throw new Error('Only reserved bookings can be checked in')
+    }
+
+    const unpaidRoomCharges = await db
+      .select()
+      .from(ledgerTransactions)
+      .where(
+        and(
+          eq(ledgerTransactions.bookingId, booking.id),
+          eq(ledgerTransactions.category, 'ROOM_CHARGE'),
+          eq(ledgerTransactions.isPaid, false),
+        ),
+      )
+
+    if (unpaidRoomCharges.length !== 1) {
+      throw new Error('Expected exactly one unpaid room balance to settle')
+    }
+
+    const roomBalance = unpaidRoomCharges[0]
+    if (roomBalance.description !== RESERVATION_BALANCE_DESCRIPTION) {
+      throw new Error('Unpaid room balance does not match reservation ledger')
+    }
+
+    const referenceNumber = normalizeReferenceNumber(
+      data.paymentMethod,
+      data.referenceNumber,
+    )
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(ledgerTransactions)
+        .set({
+          isPaid: true,
+          paymentMethod: data.paymentMethod,
+          referenceNumber,
+        })
+        .where(eq(ledgerTransactions.id, roomBalance.id))
+
+      await tx
+        .update(bookings)
+        .set({ status: 'CHECKED_IN' })
+        .where(eq(bookings.id, booking.id))
+
+      await syncBookingPaymentStatus(booking.id, tx)
+
+      await tx
+        .update(rooms)
+        .set({ status: 'OCCUPIED' })
+        .where(eq(rooms.id, booking.roomId))
+    })
+
+    return { success: true }
+  })
+
+export const checkOutBooking = createServerFn({ method: 'POST' })
+  .inputValidator(checkOutBookingSchema)
+  .handler(async ({ data }) => {
+    const rows = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        roomId: bookings.roomId,
+      })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.bookingRef, data.bookingRef),
+          isNull(bookings.deletedAt),
+        ),
+      )
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new Error('Booking not found')
+    }
+
+    const booking = rows[0]
+
+    if (booking.status !== 'CHECKED_IN') {
+      throw new Error('Only checked-in bookings can be checked out')
+    }
+
+    const remainingBalance = await computeRemainingBalance(booking.id, db)
+    if (remainingBalance > 0) {
+      throw new Error(
+        'Cannot check out while there is an outstanding balance. Settle all charges first.',
+      )
+    }
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(bookings)
+        .set({ status: 'CHECKED_OUT' })
+        .where(eq(bookings.id, booking.id))
+
+      await tx
+        .update(rooms)
+        .set({ status: 'AVAILABLE' })
+        .where(eq(rooms.id, booking.roomId))
+    })
 
     return { success: true }
   })

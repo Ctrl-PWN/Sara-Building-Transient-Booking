@@ -86,8 +86,26 @@ export const createExpenseSchema = z.object({
   bookingId: z.number().int().positive(),
   amount: z.string().min(1, 'Amount is required'),
   description: z.string().min(1, 'Description is required'),
-  category: ledgerTransactionCategorySchema,
 })
+
+const payExpenseItemSchema = z
+  .object({
+    id: z.number().int().positive(),
+    ...ledgerPaymentFieldsShape,
+  })
+  .superRefine(paymentReferenceRefine)
+
+export const payExpensesSchema = z.object({
+  bookingId: z.number().int().positive(),
+  items: z.array(payExpenseItemSchema).min(1, 'At least one item is required'),
+})
+
+export const payExpensesBulkSchema = z
+  .object({
+    bookingId: z.number().int().positive(),
+    ...ledgerPaymentFieldsShape,
+  })
+  .superRefine(paymentReferenceRefine)
 
 export const payExpenseSchema = z
   .object({
