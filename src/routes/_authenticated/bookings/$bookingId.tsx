@@ -1,18 +1,20 @@
-import { Suspense, useState } from 'react'
-import { createFileRoute, Link, notFound } from '@tanstack/react-router'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
-import { bookingQueries } from '@/lib/bookings/bookings.queries'
-import { bookingMutations } from '@/lib/bookings/bookings.mutations'
-import { ArrowLeftIcon } from '@phosphor-icons/react'
-import { Spinner } from '@/components/ui/spinner'
+import { createFileRoute, Link, notFound } from '@tanstack/react-router'
+import { Suspense, useState } from 'react'
 import { BookingDetailHeader } from '@/components/bookings/BookingDetailHeader'
 import { BookingInfoCards } from '@/components/bookings/BookingInfoCards'
+import { BookingLedgerView } from '@/components/bookings/BookingLedgerView'
 import { CancelBookingDialog } from '@/components/bookings/CancelBookingDialog'
 import { EvictBookingDialog } from '@/components/bookings/EvictBookingDialog'
+import { Spinner } from '@/components/ui/spinner'
+import { bookingMutations } from '@/lib/bookings/bookings.mutations'
+import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { ledgerQueries } from '@/lib/ledger/ledger.queries'
 
 function BookingNotFound() {
   return (
@@ -35,10 +37,13 @@ function BookingNotFound() {
 
 export const Route = createFileRoute('/_authenticated/bookings/$bookingId')({
   loader: async ({ params, context }) => {
+    const id = Number(params.bookingId)
     try {
-      await context.queryClient.ensureQueryData(
-        bookingQueries.detail(Number(params.bookingId)),
-      )
+      await Promise.all([
+        context.queryClient.ensureQueryData(bookingQueries.detail(id)),
+        context.queryClient.ensureQueryData(ledgerQueries.transactions(id)),
+        context.queryClient.ensureQueryData(ledgerQueries.details(id)),
+      ])
     } catch {
       throw notFound()
     }
@@ -118,6 +123,8 @@ function BookingDetailPage() {
         />
 
         <BookingInfoCards booking={booking} />
+
+        <BookingLedgerView bookingId={Number(bookingId)} />
 
         <CancelBookingDialog
           open={cancelOpen}

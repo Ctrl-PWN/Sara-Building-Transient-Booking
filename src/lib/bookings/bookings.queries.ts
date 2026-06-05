@@ -1,9 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import {
-  getBookings,
-  getBookingById,
-} from './bookings.functions'
+import { getBookingById, getBookings } from './bookings.functions'
 
 export const bookingKeys = {
   all: ['bookings'] as const,
@@ -11,8 +8,6 @@ export const bookingKeys = {
   details: () => [...bookingKeys.all, 'detail'] as const,
   detail: (id: number) => [...bookingKeys.details(), id] as const,
 }
-
-
 
 export const bookingQueries = {
   list: () =>

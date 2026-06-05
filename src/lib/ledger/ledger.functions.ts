@@ -1,21 +1,29 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, eq, isNotNull, isNull, sum } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { ledgerTransactions } from '@/db/schema'
+
+import type { LedgerDetails } from './types'
+
 import {
   createExpenseSchema,
   deleteLedgerTransactionSchema,
   getLedgerDetailsSchema,
+  getLedgerTransactionsSchema,
   payExpenseSchema,
 } from './schemas'
 
 export const createExpense = createServerFn({ method: 'POST' })
   .inputValidator(createExpenseSchema)
   .handler(async ({ data }) => {
-    return await db.insert(ledgerTransactions).values({
-      ...data,
-      type: 'EXPENSE',
-    })
+    const [row] = await db
+      .insert(ledgerTransactions)
+      .values({
+        ...data,
+        isPaid: false,
+      })
+      .returning()
+    return row
   })
 
 export const payExpense = createServerFn({ method: 'POST' })
@@ -24,7 +32,7 @@ export const payExpense = createServerFn({ method: 'POST' })
     const [transaction] = await db
       .update(ledgerTransactions)
       .set({
-        amount: data.amount,
+        isPaid: true,
         paymentMethod: data.paymentMethod,
         referenceNumber: data.referenceNumber,
       })
@@ -35,33 +43,40 @@ export const payExpense = createServerFn({ method: 'POST' })
 
 export const getLedgerDetails = createServerFn({ method: 'GET' })
   .inputValidator(getLedgerDetailsSchema)
+  .handler(async ({ data }): Promise<LedgerDetails> => {
+    const rows = await db
+      .select({
+        amount: ledgerTransactions.amount,
+        isPaid: ledgerTransactions.isPaid,
+      })
+      .from(ledgerTransactions)
+      .where(eq(ledgerTransactions.bookingId, data.bookingId))
+
+    let total = 0
+    let payments = 0
+    let remainingBalance = 0
+
+    for (const row of rows) {
+      const amount = Number(row.amount) || 0
+      total += amount
+      if (row.isPaid) {
+        payments += amount
+      } else {
+        remainingBalance += amount
+      }
+    }
+
+    return { total, payments, remainingBalance }
+  })
+
+export const getLedgerTransactions = createServerFn({ method: 'GET' })
+  .inputValidator(getLedgerTransactionsSchema)
   .handler(async ({ data }) => {
-    // return total, remaining balance, payments
-    const [total, remainingBalance, payments] = await Promise.all([
-      db
-        .select({ total: sum(ledgerTransactions.amount) })
-        .from(ledgerTransactions)
-        .where(eq(ledgerTransactions.bookingId, data.bookingId)),
-      db
-        .select({ remainingBalance: sum(ledgerTransactions.amount) })
-        .from(ledgerTransactions)
-        .where(
-          and(
-            eq(ledgerTransactions.bookingId, data.bookingId),
-            isNull(ledgerTransactions.amount),
-          ),
-        ),
-      db
-        .select({ payments: sum(ledgerTransactions.amount) })
-        .from(ledgerTransactions)
-        .where(
-          and(
-            eq(ledgerTransactions.bookingId, data.bookingId),
-            isNotNull(ledgerTransactions.amount),
-          ),
-        ),
-    ])
-    return { total, remainingBalance, payments }
+    const transactions = await db
+      .select()
+      .from(ledgerTransactions)
+      .where(eq(ledgerTransactions.bookingId, data.bookingId))
+    return transactions
   })
 
 export const deleteLedgerTransaction = createServerFn({ method: 'POST' })

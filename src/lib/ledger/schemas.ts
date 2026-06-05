@@ -1,25 +1,109 @@
-import z from 'zod'
+import { z } from 'zod'
+
+import {
+  ledgerTransactionCategoryEnum,
+  paymentMethodEnum,
+} from '@/db/schema/enums'
+
+export const ledgerTransactionCategorySchema = z.enum(
+  ledgerTransactionCategoryEnum.enumValues,
+)
+export const paymentMethodSchema = z.enum(paymentMethodEnum.enumValues)
+
+export const paymentReferenceRefine = (
+  data: {
+    paymentMethod: z.infer<typeof paymentMethodSchema>
+    referenceNumber?: string
+  },
+  ctx: z.RefinementCtx,
+) => {
+  if (
+    (data.paymentMethod === 'GCASH' ||
+      data.paymentMethod === 'BANK_TRANSFER') &&
+    !data.referenceNumber?.trim()
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Reference number is required for this payment method',
+      path: ['referenceNumber'],
+    })
+  }
+}
+
+export const ledgerPaymentFieldsShape = {
+  paymentMethod: paymentMethodSchema,
+  referenceNumber: z.string(),
+} as const
+
+export const ledgerPaymentFieldsSchema = z
+  .object(ledgerPaymentFieldsShape)
+  .superRefine(paymentReferenceRefine)
+
+export const createBookingLedgerCategorySchema = z.enum([
+  'ROOM_CHARGE',
+  'DEPOSIT',
+])
+
+export const createBookingLedgerLineSchema = z
+  .object({
+    category: createBookingLedgerCategorySchema,
+    amount: z.string().min(1, 'Amount is required'),
+    isPaid: z.boolean(),
+    description: z.string().optional(),
+    paymentMethod: paymentMethodSchema.optional(),
+    referenceNumber: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.isPaid) return
+
+    if (!data.paymentMethod) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Payment method is required for paid transactions',
+        path: ['paymentMethod'],
+      })
+      return
+    }
+
+    paymentReferenceRefine(
+      {
+        paymentMethod: data.paymentMethod,
+        referenceNumber: data.referenceNumber,
+      },
+      ctx,
+    )
+  })
+
+export type CreateBookingLedgerLine = z.infer<
+  typeof createBookingLedgerLineSchema
+>
+
+export const createBookingLedgerLinesSchema = z.array(
+  createBookingLedgerLineSchema,
+)
 
 export const createExpenseSchema = z.object({
-  bookingId: z.number(),
-  amount: z.string(),
-  description: z.string(),
-  category: z.string(),
-  paymentMethod: z.string().optional(),
-  referenceNumber: z.string().optional(),
+  bookingId: z.number().int().positive(),
+  amount: z.string().min(1, 'Amount is required'),
+  description: z.string().min(1, 'Description is required'),
+  category: ledgerTransactionCategorySchema,
 })
 
-export const payExpenseSchema = z.object({
-  id: z.number(),
-  amount: z.string(),
-  paymentMethod: z.string(),
-  referenceNumber: z.string(),
-})
+export const payExpenseSchema = z
+  .object({
+    id: z.number().int().positive(),
+    ...ledgerPaymentFieldsShape,
+  })
+  .superRefine(paymentReferenceRefine)
 
 export const getLedgerDetailsSchema = z.object({
-  bookingId: z.number(),
+  bookingId: z.number().int().positive(),
+})
+
+export const getLedgerTransactionsSchema = z.object({
+  bookingId: z.number().int().positive(),
 })
 
 export const deleteLedgerTransactionSchema = z.object({
-  id: z.number(),
+  id: z.number().int().positive(),
 })

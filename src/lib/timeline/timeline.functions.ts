@@ -5,7 +5,10 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { bookings, rooms } from '@/db/schema'
 import { bookingStatusSchema } from '@/lib/bookings/schemas'
-import type { BookingPaymentStatus, BookingWithRoom } from '@/lib/bookings/types'
+import type {
+  BookingPaymentStatus,
+  BookingWithRoom,
+} from '@/lib/bookings/types'
 
 import type { TimelineWeekData } from './types'
 import { getWeekDays, getWeekEnd } from './week'

@@ -1,19 +1,17 @@
 import { createServerFn } from '@tanstack/react-start'
+import { and, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db/index'
-import {
-  eq,
-  and,
-  or,
-  desc,
-  gt,
-  lt,
-  isNull,
-  sql,
-} from 'drizzle-orm'
-import { bookings, rooms } from '@/db/schema'
+import { bookings, ledgerTransactions, rooms } from '@/db/schema'
 
-import { bookingByIdSchema, bookingStatusSchema } from './schemas'
+import { buildCreateBookingLedgerLines } from './create-booking-ledger'
+import {
+  bookingByIdSchema,
+  bookingStatusSchema,
+  createBookingServerSchema,
+  updateStatusSchema,
+} from './schemas'
+import { calculateStayPricing } from './stay-pricing'
 import type { BookingPaymentStatus, BookingWithRoom } from './types'
 
 function mapBookingRow(row: {
@@ -105,10 +103,7 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
     .where(
       and(
         isNull(bookings.deletedAt),
-        or(
-          eq(bookings.status, 'RESERVED'),
-          eq(bookings.status, 'CHECKED_IN'),
-        ),
+        or(eq(bookings.status, 'RESERVED'), eq(bookings.status, 'CHECKED_IN')),
       ),
     )
     .orderBy(desc(bookings.createdAt))
@@ -139,7 +134,6 @@ export const getBookingById = createServerFn({ method: 'GET' })
     return mapBookingRow(rows[0])
   })
 
-
 const bookingRefSchema = z.object({
   bookingRef: z.string().min(1, 'Booking reference is required'),
 })
@@ -162,23 +156,8 @@ export const getBookingByRef = createServerFn({ method: 'GET' })
     return rows[0] ? mapBookingRow(rows[0]) : null
   })
 
-const createBookingSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  roomId: z.number().int().positive('Room is required'),
-  contactNumber: z.string().optional(),
-  checkInDate: z.string().min(1, 'Check-in date is required'),
-  checkOutDate: z.string().min(1, 'Check-out date is required'),
-  occupantsCount: z.number().int().positive('At least 1 occupant required'),
-  depositPercentage: z.number().min(0).max(100),
-  walkIn: z.boolean().optional(),
-}).refine(
-  (data) => new Date(data.checkOutDate) > new Date(data.checkInDate),
-  { message: 'Check-out date must be after check-in date', path: ['checkOutDate'] },
-)
-
 export const createBooking = createServerFn({ method: 'POST' })
-  .inputValidator(createBookingSchema)
+  .inputValidator(createBookingServerSchema)
   .handler(async ({ data }) => {
     const conflicts = await db
       .select({ id: bookings.id })
@@ -192,8 +171,8 @@ export const createBooking = createServerFn({ method: 'POST' })
             eq(bookings.status, 'CHECKED_IN'),
           ),
           and(
-            lt(bookings.checkInDate, data.checkOutDate),
-            gt(bookings.checkOutDate, data.checkInDate),
+            lte(bookings.checkInDate, data.checkOutDate),
+            gte(bookings.checkOutDate, data.checkInDate),
           ),
         ),
       )
@@ -204,7 +183,7 @@ export const createBooking = createServerFn({ method: 'POST' })
     }
 
     const roomRows = await db
-      .select({ capacity: rooms.capacity })
+      .select({ capacity: rooms.capacity, basePrice: rooms.basePrice })
       .from(rooms)
       .where(eq(rooms.id, data.roomId))
       .limit(1)
@@ -213,11 +192,30 @@ export const createBooking = createServerFn({ method: 'POST' })
       throw new Error('Room not found')
     }
 
-    if (data.occupantsCount > roomRows[0].capacity) {
+    const room = roomRows[0]
+
+    if (data.occupantsCount > room.capacity) {
       throw new Error(
-        `Room capacity exceeded (max ${roomRows[0].capacity} occupants)`,
+        `Room capacity exceeded (max ${room.capacity} occupants)`,
       )
     }
+
+    const { subtotal: stayTotal } = calculateStayPricing({
+      basePrice: room.basePrice,
+      checkInDate: data.checkInDate,
+      checkOutDate: data.checkOutDate,
+    })
+
+    const ledgerLines = buildCreateBookingLedgerLines(
+      {
+        walkIn: data.walkIn,
+        paymentMethod: data.paymentMethod,
+        referenceNumber: data.referenceNumber,
+        reservationFeeType: data.reservationFeeType,
+        reservationFeeValue: data.reservationFeeValue,
+      },
+      stayTotal,
+    )
 
     const checkIn = new Date(data.checkInDate)
     const checkOut = new Date(data.checkOutDate)
@@ -225,62 +223,58 @@ export const createBooking = createServerFn({ method: 'POST' })
     const depositDeadline = new Date(
       checkIn.getTime() - depositHours * 60 * 60 * 1000,
     )
-    const finalDueDate = new Date(
-      checkOut.getTime() + 7 * 24 * 60 * 60 * 1000,
-    )
+    const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000)
 
     const bookingRef = generateBookingRef()
+    const status = data.walkIn ? 'CHECKED_IN' : 'RESERVED'
+    const paymentStatus = data.walkIn ? 'PAID_IN_FULL' : 'CURRENT'
 
-    // Reservations are non-refundable by policy, so they are always
-    // recorded as CHECKED_IN with payment settled in full.
-    const status: 'CHECKED_IN' | 'RESERVED' = 'CHECKED_IN'
-    const paymentStatus: 'PAID_IN_FULL' | 'CURRENT' = 'PAID_IN_FULL'
+    const { bookingId } = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(bookings)
+        .values({
+          bookingRef,
+          roomId: data.roomId,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          contactNumber: data.contactNumber,
+          checkInDate: data.checkInDate,
+          checkOutDate: data.checkOutDate,
+          occupantsCount: data.occupantsCount,
+          status,
+          paymentStatus,
+          depositDeadline,
+          finalDueDate,
+          depositPctSnapshot: data.depositPercentage.toFixed(2),
+        })
+        .returning()
 
-    await db.insert(bookings).values({
-      bookingRef,
-      roomId: data.roomId,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      contactNumber: data.contactNumber,
-      checkInDate: data.checkInDate,
-      checkOutDate: data.checkOutDate,
-      occupantsCount: data.occupantsCount,
-      status,
-      paymentStatus,
-      depositDeadline,
-      finalDueDate,
-      depositPctSnapshot: data.depositPercentage.toString(),
+      await tx.insert(ledgerTransactions).values(
+        ledgerLines.map((line) => ({
+          bookingId: row.id,
+          category: line.category,
+          amount: line.amount,
+          isPaid: line.isPaid,
+          description: line.description ?? null,
+          paymentMethod: line.isPaid ? (line.paymentMethod ?? null) : null,
+          referenceNumber: line.isPaid
+            ? line.referenceNumber?.trim() || null
+            : null,
+        })),
+      )
+
+      if (data.walkIn) {
+        await tx
+          .update(rooms)
+          .set({ status: 'OCCUPIED' })
+          .where(eq(rooms.id, data.roomId))
+      }
+
+      return { bookingId: row.id }
     })
 
-    // All new bookings are CHECKED_IN with full payment, so the room is
-    // immediately marked OCCUPIED.
-    await db
-      .update(rooms)
-      .set({ status: 'OCCUPIED' })
-      .where(eq(rooms.id, data.roomId))
-
-    return { success: true, bookingRef }
+    return { success: true, bookingRef, bookingId }
   })
-
-export type BookingStatus =
-  | 'RESERVED'
-  | 'CHECKED_IN'
-  | 'CHECKED_OUT'
-  | 'CANCELLED'
-  | 'EVICTED'
-
-const updateStatusSchema = z.object({
-  bookingRef: z.string().min(1),
-  status: z.enum([
-    'RESERVED',
-    'CHECKED_IN',
-    'CHECKED_OUT',
-    'CANCELLED',
-    'EVICTED',
-  ]),
-  cancellationReason: z.string().optional(),
-  evictionReason: z.string().optional(),
-})
 
 export const updateBookingStatus = createServerFn({ method: 'POST' })
   .inputValidator(updateStatusSchema)
@@ -326,9 +320,7 @@ export const updateBookingStatus = createServerFn({ method: 'POST' })
         .update(rooms)
         .set({ status: 'OCCUPIED' })
         .where(eq(rooms.id, roomId))
-    } else if (
-      ['CANCELLED', 'CHECKED_OUT', 'EVICTED'].includes(data.status)
-    ) {
+    } else if (['CANCELLED', 'CHECKED_OUT', 'EVICTED'].includes(data.status)) {
       await db
         .update(rooms)
         .set({ status: 'AVAILABLE' })
