@@ -87,7 +87,7 @@ export function AddExpenseDialog({
             </form.AppField>
             <form.AppField name="isPaid">
               {(field) => (
-                <field.CheckboxField label="Mark as paid" />
+                <field.ToggleField label="Mark as paid" />
               )}
             </form.AppField>
             <form.Subscribe selector={(state) => state.values.isPaid}>

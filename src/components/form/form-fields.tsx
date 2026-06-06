@@ -4,6 +4,7 @@ import type * as React from 'react'
 import { useId, useState } from 'react'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import {
   Field,
   FieldContent,
@@ -148,6 +149,38 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
   return (
     <Field data-invalid={isInvalid || undefined} orientation="horizontal">
       <Checkbox
+        id={field.name}
+        name={field.name}
+        checked={checked}
+        onBlur={field.handleBlur}
+        onCheckedChange={(value) => field.handleChange(value)}
+        aria-invalid={isInvalid || undefined}
+      />
+      <div className="flex flex-col gap-1">
+        <FieldLabel htmlFor={field.name} className="font-normal">
+          {label}
+        </FieldLabel>
+        {description ? (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        ) : null}
+        {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+      </div>
+    </Field>
+  )
+}
+
+type ToggleFieldProps = {
+  label: string
+  description?: string
+}
+
+function ToggleField({ label, description }: ToggleFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const checked = field.state.value as boolean
+
+  return (
+    <Field data-invalid={isInvalid || undefined} orientation="horizontal">
+      <Switch
         id={field.name}
         name={field.name}
         checked={checked}
@@ -552,4 +585,5 @@ export {
   SelectField,
   TextareaField,
   TextField,
+  ToggleField,
 }

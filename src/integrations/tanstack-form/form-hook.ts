@@ -9,6 +9,7 @@ import {
   SelectField,
   TextareaField,
   TextField,
+  ToggleField,
 } from '@/components/form/form-fields'
 
 import { fieldContext, formContext } from './form-context'
@@ -25,6 +26,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     RadioGroupField,
     RadioChoiceCardField,
     DateRangeField,
+    ToggleField,
   },
   formComponents: {
     SubmitButton,
