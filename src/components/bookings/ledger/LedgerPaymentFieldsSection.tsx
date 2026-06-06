@@ -33,8 +33,12 @@ export function LedgerPaymentFieldsSection({
           />
         )}
       </form.AppField>
-      <form.Subscribe selector={/* biome-ignore lint/suspicious/noExplicitAny: form state shape varies by caller */
-        (state: any) => state.values.paymentMethod}>
+      <form.Subscribe
+        selector={
+          /* biome-ignore lint/suspicious/noExplicitAny: form state shape varies by caller */
+          (state: any) => state.values.paymentMethod
+        }
+      >
         {(paymentMethod: string) => (
           <form.AppField name="referenceNumber">
             {/* biome-ignore lint/suspicious/noExplicitAny: field API is complex, cannot narrow */}
