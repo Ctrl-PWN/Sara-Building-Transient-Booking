@@ -67,6 +67,20 @@ export const updateUser = createServerFn({
   .inputValidator(updateUserSchema)
   .handler(async ({ data }) => {
     const { auth, headers } = await getAuthRequestContext()
+
+    if (
+      typeof data.data.firstName === 'string' &&
+      data.data.firstName.trim() === ''
+    ) {
+      throw new Error('First name cannot be blank')
+    }
+    if (
+      typeof data.data.lastName === 'string' &&
+      data.data.lastName.trim() === ''
+    ) {
+      throw new Error('Last name cannot be blank')
+    }
+
     return auth.api.adminUpdateUser({
       body: data,
       headers,

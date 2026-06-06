@@ -1,6 +1,4 @@
 import { PencilIcon, TrashIcon, UserIcon } from '@phosphor-icons/react'
-
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -50,13 +48,13 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
         <thead>
           <tr className="border-b border-border bg-muted/30 text-left">
             <th className="px-4 py-3 font-medium text-muted-foreground">
-              Name
+              First name
+            </th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">
+              Last name
             </th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               Email
-            </th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">
-              Role
             </th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               <span className="sr-only">Actions</span>
@@ -69,24 +67,21 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
               key={user.id}
               className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors"
             >
-              <td className="px-4 py-3">
-                <span className="font-medium text-foreground">{user.name}</span>
+              <td className="px-4 py-3 text-muted-foreground">
+                {user.firstName ?? ''}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {user.lastName ?? ''}
               </td>
               <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
-              <td className="px-4 py-3">
-                <Badge
-                  variant={user.role === 'admin' ? 'default' : 'secondary'}
-                >
-                  {user.role ?? 'staff'}
-                </Badge>
-              </td>
+
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
                     size="icon-xs"
                     onClick={() => onEdit(user)}
-                    aria-label={`Edit ${user.name}`}
+                    aria-label={`Edit ${user.firstName} ${user.lastName}`}
                   >
                     <PencilIcon />
                   </Button>
@@ -94,7 +89,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                     variant="ghost"
                     size="icon-xs"
                     onClick={() => onDelete(user)}
-                    aria-label={`Delete ${user.name}`}
+                    aria-label={`Delete ${user.firstName} ${user.lastName}`}
                   >
                     <TrashIcon />
                   </Button>

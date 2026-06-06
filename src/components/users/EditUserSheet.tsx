@@ -11,7 +11,7 @@ import {
 import { useAppForm } from '@/integrations/tanstack-form'
 import { userMutations } from '@/lib/users/users.mutations'
 import { updateUserSchema } from '@/lib/users/schemas'
-
+import { toast } from 'sonner'
 type UserRow = {
   id: string
   name: string
@@ -53,8 +53,21 @@ export function EditUserSheet({
     defaultValues,
     validators: { onSubmit: updateUserSchema },
     onSubmit: async ({ value }) => {
-      await updateUser.mutateAsync(value)
-      onOpenChange(false)
+      const { firstName, lastName } = value.data
+      if (typeof firstName === 'string' && firstName.trim() === '') {
+        toast.error('First name cannot be blank')
+        return
+      }
+      if (typeof lastName === 'string' && lastName.trim() === '') {
+        toast.error('Last name cannot be blank')
+        return
+      }
+      try {
+        await updateUser.mutateAsync(value)
+        onOpenChange(false)
+      } catch (err) {
+        toast.error('Failed to update user')
+      }
     },
   })
 
@@ -137,7 +150,6 @@ export function EditUserSheet({
                       }}
                     />
                   </div>
-
                 </div>
               )}
             </form.AppField>
