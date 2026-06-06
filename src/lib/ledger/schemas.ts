@@ -82,11 +82,51 @@ export const createBookingLedgerLinesSchema = z.array(
   createBookingLedgerLineSchema,
 )
 
-export const createExpenseSchema = z.object({
-  bookingId: z.number().int().positive(),
-  amount: z.string().min(1, 'Amount is required'),
-  description: z.string().min(1, 'Description is required'),
-})
+export function chargeWithPaymentRefine(
+  data: {
+    isPaid?: boolean
+    paymentMethod?: string
+    referenceNumber?: string
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (!data.isPaid) return
+
+  if (!data.paymentMethod) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Payment method is required for paid transactions',
+      path: ['paymentMethod'],
+    })
+    return
+  }
+
+  paymentReferenceRefine(
+    { paymentMethod: data.paymentMethod, referenceNumber: data.referenceNumber },
+    ctx,
+  )
+}
+
+export const addExpenseFormSchema = z
+  .object({
+    amount: z.number().positive('Amount must be greater than zero'),
+    description: z.string().min(1, 'Description is required'),
+    isPaid: z.boolean(),
+    paymentMethod: paymentMethodSchema.optional(),
+    referenceNumber: z.string().optional(),
+  })
+  .superRefine(chargeWithPaymentRefine)
+
+export const createExpenseSchema = z
+  .object({
+    bookingId: z.number().int().positive(),
+    amount: z.number().positive('Amount must be greater than zero'),
+    description: z.string().min(1, 'Description is required'),
+    isPaid: z.boolean().optional(),
+    paymentMethod: paymentMethodSchema.optional(),
+    referenceNumber: z.string().optional(),
+  })
+  .superRefine(chargeWithPaymentRefine)
 
 const payExpenseItemSchema = z
   .object({

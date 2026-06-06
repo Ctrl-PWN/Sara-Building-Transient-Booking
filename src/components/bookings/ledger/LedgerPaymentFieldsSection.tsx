@@ -40,7 +40,8 @@ export function LedgerPaymentFieldsSection({
             {(field) => (
               <field.TextField
                 label="Reference number"
-                placeholder="Required for GCash and bank transfer"
+                placeholder="e.g. GCash-1234567890"
+                description="Required for GCash and bank transfer"
                 disabled={paymentMethod === 'CASH'}
               />
             )}

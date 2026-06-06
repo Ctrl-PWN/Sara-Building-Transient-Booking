@@ -25,24 +25,26 @@ import type { LedgerDetails } from './types'
 export const createExpense = createServerFn({ method: 'POST' })
   .inputValidator(createExpenseSchema)
   .handler(async ({ data }) => {
-    const amount = Number(data.amount)
-    if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error('Amount must be greater than zero')
-    }
-
     const booking = await getBookingForLedger(data.bookingId, db)
     if (booking.status !== 'CHECKED_IN') {
       throw new Error('Charges can only be added while the guest is checked in')
     }
+
+    const isPaid = data.isPaid ?? false
+    const referenceNumber = isPaid
+      ? normalizeReferenceNumber(data.paymentMethod!, data.referenceNumber)
+      : null
 
     const [row] = await db
       .insert(ledgerTransactions)
       .values({
         bookingId: data.bookingId,
         category: 'ROOM_CHARGE',
-        amount: data.amount,
+        amount: String(data.amount),
         description: data.description,
-        isPaid: false,
+        isPaid,
+        paymentMethod: isPaid ? data.paymentMethod : null,
+        referenceNumber,
       })
       .returning()
 

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,11 +13,9 @@ import {
   useAppForm,
 } from '@/integrations/tanstack-form'
 import { ledgerMutations } from '@/lib/ledger/ledger.mutations'
+import { addExpenseFormSchema } from '@/lib/ledger/schemas'
 
-const addExpenseFormSchema = z.object({
-  amount: z.string().min(1, 'Amount is required'),
-  description: z.string().min(1, 'Description is required'),
-})
+import { LedgerPaymentFieldsSection } from './LedgerPaymentFieldsSection'
 
 type AddExpenseDialogProps = {
   open: boolean
@@ -36,8 +33,11 @@ export function AddExpenseDialog({
 
   const form = useAppForm({
     defaultValues: {
-      amount: '',
+      amount: 0,
       description: '',
+      isPaid: false,
+      paymentMethod: undefined,
+      referenceNumber: '',
     },
     ...dynamicSchemaValidators(addExpenseFormSchema),
     onSubmit: async ({ value }) => {
@@ -45,6 +45,9 @@ export function AddExpenseDialog({
         bookingId,
         amount: value.amount,
         description: value.description.trim(),
+        isPaid: value.isPaid,
+        paymentMethod: value.isPaid ? value.paymentMethod : undefined,
+        referenceNumber: value.isPaid ? value.referenceNumber : undefined,
       })
       form.reset()
       onOpenChange(false)
@@ -75,13 +78,23 @@ export function AddExpenseDialog({
             </form.AppField>
             <form.AppField name="amount">
               {(field) => (
-                <field.TextField
+                <field.NumberField
                   label="Amount"
-                  type="number"
                   placeholder="0.00"
+                  min={0}
                 />
               )}
             </form.AppField>
+            <form.AppField name="isPaid">
+              {(field) => (
+                <field.CheckboxField label="Mark as paid" />
+              )}
+            </form.AppField>
+            <form.Subscribe selector={(state) => state.values.isPaid}>
+              {(isPaid) =>
+                isPaid ? <LedgerPaymentFieldsSection form={form} /> : null
+              }
+            </form.Subscribe>
             <DialogFooter>
               <Button
                 type="button"
