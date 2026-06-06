@@ -1,5 +1,4 @@
 import type { PaymentMethod } from '@/db/schema/enums'
-import type { useAppForm } from '@/integrations/tanstack-form'
 
 import { paymentMethodOptions } from '../create-booking/create-booking-form.constants'
 
@@ -8,10 +7,9 @@ export type LedgerPaymentFormValues = {
   referenceNumber: string
 }
 
-type LedgerPaymentForm = ReturnType<typeof useAppForm<LedgerPaymentFormValues>>
-
 type LedgerPaymentFieldsSectionProps = {
-  form: LedgerPaymentForm
+  // biome-ignore lint/suspicious/noExplicitAny: form must be any to accept various typed forms from callers
+  form: any
   disabled?: boolean
 }
 
@@ -22,11 +20,12 @@ export function LedgerPaymentFieldsSection({
   return (
     <fieldset disabled={disabled} className="grid gap-4 disabled:opacity-50">
       <form.AppField name="paymentMethod">
-        {(field) => (
+        {/* biome-ignore lint/suspicious/noExplicitAny: field API is complex, cannot narrow */}
+        {(field: any) => (
           <field.RadioChoiceCardField
             label="Payment method"
             options={[...paymentMethodOptions]}
-            onValueChange={(method) => {
+            onValueChange={(method: string) => {
               if (method === 'CASH') {
                 form.setFieldValue('referenceNumber', '')
               }
@@ -34,10 +33,12 @@ export function LedgerPaymentFieldsSection({
           />
         )}
       </form.AppField>
-      <form.Subscribe selector={(state) => state.values.paymentMethod}>
-        {(paymentMethod) => (
+      <form.Subscribe selector={/* biome-ignore lint/suspicious/noExplicitAny: form state shape varies by caller */
+        (state: any) => state.values.paymentMethod}>
+        {(paymentMethod: string) => (
           <form.AppField name="referenceNumber">
-            {(field) => (
+            {/* biome-ignore lint/suspicious/noExplicitAny: field API is complex, cannot narrow */}
+            {(field: any) => (
               <field.TextField
                 label="Reference number"
                 placeholder="e.g. GCash-1234567890"

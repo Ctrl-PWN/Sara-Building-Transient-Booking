@@ -194,7 +194,7 @@ export function CheckOutBookingDialog({
 
   const unifiedForm = useAppForm({
     defaultValues: {
-      paymentMethod: 'CASH' as const,
+      paymentMethod: 'CASH' as PaymentMethod,
       referenceNumber: '',
     },
     ...dynamicSchemaValidators(ledgerPaymentFieldsSchema),
