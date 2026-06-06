@@ -9,8 +9,8 @@ import { Link } from '@tanstack/react-router'
 import { lazy, Suspense, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { formatGuestName } from '@/lib/bookings/types'
 import type { LedgerTransactionListItem } from '@/lib/ledger/types'
 
 import { InvoiceDocument } from './InvoiceDocument'
@@ -25,6 +25,7 @@ type InvoicePdfPreviewProps = {
   total: number
   payments: number
   remainingBalance: number
+  issuedBy: string
 }
 
 function ViewerSkeleton() {
@@ -68,6 +69,7 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
           total={props.total}
           payments={props.payments}
           remainingBalance={props.remainingBalance}
+          issuedBy={props.issuedBy}
         />,
       ).toBlob()
       const url = URL.createObjectURL(blob)
@@ -127,6 +129,7 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
               total={props.total}
               payments={props.payments}
               remainingBalance={props.remainingBalance}
+              issuedBy={props.issuedBy}
             />
           </PDFViewer>
         </Suspense>

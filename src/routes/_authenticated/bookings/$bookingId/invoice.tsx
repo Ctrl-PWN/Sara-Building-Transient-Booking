@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react'
 import { Spinner } from '@/components/ui/spinner'
 import { bookingQueries } from '@/lib/bookings/bookings.queries'
 import { ledgerQueries } from '@/lib/ledger/ledger.queries'
+import { getSession } from '@/lib/session/session.functions'
 
 const InvoicePdfPreview = lazy(() =>
   import('@/components/bookings/invoice/InvoicePdfPreview').then((m) => ({
@@ -17,11 +18,15 @@ export const Route = createFileRoute(
   loader: async ({ params, context }) => {
     const id = Number(params.bookingId)
     try {
-      const [booking, transactions] = await Promise.all([
+      const [session, booking, transactions] = await Promise.all([
+        getSession(),
         context.queryClient.ensureQueryData(bookingQueries.detail(id)),
         context.queryClient.ensureQueryData(ledgerQueries.transactions(id)),
       ])
-      return { booking, transactions }
+      const issuedBy = session?.user
+        ? `${session.user.firstName} ${session.user.lastName}`.trim()
+        : 'Unknown'
+      return { booking, transactions, issuedBy }
     } catch {
       throw notFound()
     }
@@ -46,9 +51,12 @@ function InvoiceRoute() {
 }
 
 function InvoicePage() {
-  const { booking, transactions } = Route.useLoaderData()
+  const { booking, transactions, issuedBy } = Route.useLoaderData()
 
-  const total = transactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
+  const total = transactions.reduce(
+    (sum, tx) => sum + Number(tx.amount),
+    0,
+  )
   const payments = transactions
     .filter((tx) => tx.isPaid)
     .reduce((sum, tx) => sum + Number(tx.amount), 0)
@@ -61,6 +69,7 @@ function InvoicePage() {
       total={total}
       payments={payments}
       remainingBalance={remainingBalance}
+      issuedBy={issuedBy}
     />
   )
 }

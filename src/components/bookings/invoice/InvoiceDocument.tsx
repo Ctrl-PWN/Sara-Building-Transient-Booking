@@ -4,8 +4,8 @@ import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 import { format } from 'date-fns'
 
 import { formatPeso } from '@/lib/bookings/stay-pricing'
-import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { formatGuestName } from '@/lib/bookings/types'
 import type { LedgerTransactionListItem } from '@/lib/ledger/types'
 
 const COLORS = {
@@ -199,6 +199,7 @@ function formatPaymentMethod(method: string | null): string {
 
 type InvoiceDocumentProps = {
   booking: BookingWithRoom
+  issuedBy: string
   transactions: LedgerTransactionListItem[]
   total: number
   payments: number
@@ -208,6 +209,7 @@ type InvoiceDocumentProps = {
 export function InvoiceDocument({
   booking,
   transactions,
+  issuedBy,
   total,
   payments,
   remainingBalance,
@@ -230,6 +232,9 @@ export function InvoiceDocument({
           <View>
             <Text style={styles.issuedLabel}>
               Issued: <Text style={styles.issuedValue}>{issuedDate}</Text>
+            </Text>
+            <Text style={styles.issuedLabel}>
+              Issued by: <Text style={styles.issuedValue}>{issuedBy}</Text>
             </Text>
           </View>
         </View>
@@ -323,7 +328,7 @@ export function InvoiceDocument({
             </Text>
           </View>
           <View style={styles.totalsDivider}>
-            <Text style={styles.totalsBalanceLabel}>Balance due</Text>
+            <Text style={styles.totalsBalanceLabel}>Balance</Text>
             <Text
               style={
                 remainingBalance > 0
