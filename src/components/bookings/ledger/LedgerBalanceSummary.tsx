@@ -74,14 +74,13 @@ function StatColumn({
   settled?: boolean
 }) {
   const styles =
-    variant === 'balance' && settled ? balanceSettledStyles : statStyles[variant]
+    variant === 'balance' && settled
+      ? balanceSettledStyles
+      : statStyles[variant]
 
   return (
     <div
-      className={cn(
-        'overflow-hidden rounded-lg border p-3',
-        styles.container,
-      )}
+      className={cn('overflow-hidden rounded-lg border p-3', styles.container)}
     >
       <div className={cn('mb-2 h-1 w-8 rounded-full', styles.accent)} />
       <p className={cn('text-sm font-medium', styles.label)}>{label}</p>
@@ -113,10 +112,7 @@ export function LedgerBalanceSummary({ details }: LedgerBalanceSummaryProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Progress
-          value={stats.progressValue}
-          aria-label="Payment progress"
-        />
+        <Progress value={stats.progressValue} aria-label="Payment progress" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <StatColumn
             variant="total"

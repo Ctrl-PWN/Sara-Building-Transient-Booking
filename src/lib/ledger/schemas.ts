@@ -102,7 +102,10 @@ export function chargeWithPaymentRefine(
   }
 
   paymentReferenceRefine(
-    { paymentMethod: data.paymentMethod, referenceNumber: data.referenceNumber },
+    {
+      paymentMethod: data.paymentMethod,
+      referenceNumber: data.referenceNumber,
+    },
     ctx,
   )
 }

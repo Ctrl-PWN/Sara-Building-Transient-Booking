@@ -34,7 +34,9 @@ export function PayExpenseDialog({
   transaction,
 }: PayExpenseDialogProps) {
   const queryClient = useQueryClient()
-  const mutation = useMutation(ledgerMutations.payExpense(queryClient, bookingId))
+  const mutation = useMutation(
+    ledgerMutations.payExpense(queryClient, bookingId),
+  )
 
   const form = useAppForm({
     defaultValues: {
