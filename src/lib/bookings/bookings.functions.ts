@@ -1,10 +1,26 @@
 import { createServerFn } from '@tanstack/react-start'
+import { and, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db/index'
-import { eq, and, or, desc, gt, lt, isNull, sql } from 'drizzle-orm'
-import { bookings, rooms } from '@/db/schema'
+import { bookings, ledgerTransactions, rooms } from '@/db/schema'
 
-import { bookingByIdSchema, bookingStatusSchema } from './schemas'
+import { buildCreateBookingLedgerLines } from './create-booking-ledger'
+import {
+  computeRemainingBalance,
+  normalizeReferenceNumber,
+  RESERVATION_BALANCE_DESCRIPTION,
+  syncBookingPaymentStatus,
+} from '@/lib/ledger/ledger.helpers'
+
+import {
+  bookingByIdSchema,
+  bookingStatusSchema,
+  checkInBookingSchema,
+  checkOutBookingSchema,
+  createBookingServerSchema,
+  updateStatusSchema,
+} from './schemas'
+import { calculateStayPricing } from './stay-pricing'
 import type { BookingPaymentStatus, BookingWithRoom } from './types'
 
 function mapBookingRow(row: {
@@ -149,25 +165,8 @@ export const getBookingByRef = createServerFn({ method: 'GET' })
     return rows[0] ? mapBookingRow(rows[0]) : null
   })
 
-const createBookingSchema = z
-  .object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
-    roomId: z.number().int().positive('Room is required'),
-    contactNumber: z.string().optional(),
-    checkInDate: z.string().min(1, 'Check-in date is required'),
-    checkOutDate: z.string().min(1, 'Check-out date is required'),
-    occupantsCount: z.number().int().positive('At least 1 occupant required'),
-    depositPercentage: z.number().min(0).max(100),
-    walkIn: z.boolean().optional(),
-  })
-  .refine((data) => new Date(data.checkOutDate) > new Date(data.checkInDate), {
-    message: 'Check-out date must be after check-in date',
-    path: ['checkOutDate'],
-  })
-
 export const createBooking = createServerFn({ method: 'POST' })
-  .inputValidator(createBookingSchema)
+  .inputValidator(createBookingServerSchema)
   .handler(async ({ data }) => {
     const conflicts = await db
       .select({ id: bookings.id })
@@ -181,8 +180,8 @@ export const createBooking = createServerFn({ method: 'POST' })
             eq(bookings.status, 'CHECKED_IN'),
           ),
           and(
-            lt(bookings.checkInDate, data.checkOutDate),
-            gt(bookings.checkOutDate, data.checkInDate),
+            lte(bookings.checkInDate, data.checkOutDate),
+            gte(bookings.checkOutDate, data.checkInDate),
           ),
         ),
       )
@@ -193,7 +192,7 @@ export const createBooking = createServerFn({ method: 'POST' })
     }
 
     const roomRows = await db
-      .select({ capacity: rooms.capacity })
+      .select({ capacity: rooms.capacity, basePrice: rooms.basePrice })
       .from(rooms)
       .where(eq(rooms.id, data.roomId))
       .limit(1)
@@ -202,11 +201,30 @@ export const createBooking = createServerFn({ method: 'POST' })
       throw new Error('Room not found')
     }
 
-    if (data.occupantsCount > roomRows[0].capacity) {
+    const room = roomRows[0]
+
+    if (data.occupantsCount > room.capacity) {
       throw new Error(
-        `Room capacity exceeded (max ${roomRows[0].capacity} occupants)`,
+        `Room capacity exceeded (max ${room.capacity} occupants)`,
       )
     }
+
+    const { subtotal: stayTotal } = calculateStayPricing({
+      basePrice: room.basePrice,
+      checkInDate: data.checkInDate,
+      checkOutDate: data.checkOutDate,
+    })
+
+    const ledgerLines = buildCreateBookingLedgerLines(
+      {
+        walkIn: data.walkIn,
+        paymentMethod: data.paymentMethod,
+        referenceNumber: data.referenceNumber,
+        reservationFeeType: data.reservationFeeType,
+        reservationFeeValue: data.reservationFeeValue,
+      },
+      stayTotal,
+    )
 
     const checkIn = new Date(data.checkInDate)
     const checkOut = new Date(data.checkOutDate)
@@ -217,57 +235,55 @@ export const createBooking = createServerFn({ method: 'POST' })
     const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000)
 
     const bookingRef = generateBookingRef()
+    const status = data.walkIn ? 'CHECKED_IN' : 'RESERVED'
+    const paymentStatus = data.walkIn ? 'PAID_IN_FULL' : 'CURRENT'
 
-    // Reservations are non-refundable by policy, so they are always
-    // recorded as CHECKED_IN with payment settled in full.
-    const status: 'CHECKED_IN' | 'RESERVED' = 'CHECKED_IN'
-    const paymentStatus: 'PAID_IN_FULL' | 'CURRENT' = 'PAID_IN_FULL'
+    const { bookingId } = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(bookings)
+        .values({
+          bookingRef,
+          roomId: data.roomId,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          contactNumber: data.contactNumber,
+          checkInDate: data.checkInDate,
+          checkOutDate: data.checkOutDate,
+          occupantsCount: data.occupantsCount,
+          status,
+          paymentStatus,
+          depositDeadline,
+          finalDueDate,
+          depositPctSnapshot: data.depositPercentage.toFixed(2),
+        })
+        .returning()
 
-    await db.insert(bookings).values({
-      bookingRef,
-      roomId: data.roomId,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      contactNumber: data.contactNumber,
-      checkInDate: data.checkInDate,
-      checkOutDate: data.checkOutDate,
-      occupantsCount: data.occupantsCount,
-      status,
-      paymentStatus,
-      depositDeadline,
-      finalDueDate,
-      depositPctSnapshot: data.depositPercentage.toString(),
+      await tx.insert(ledgerTransactions).values(
+        ledgerLines.map((line) => ({
+          bookingId: row.id,
+          category: line.category,
+          amount: line.amount,
+          isPaid: line.isPaid,
+          description: line.description ?? null,
+          paymentMethod: line.isPaid ? (line.paymentMethod ?? null) : null,
+          referenceNumber: line.isPaid
+            ? line.referenceNumber?.trim() || null
+            : null,
+        })),
+      )
+
+      if (data.walkIn) {
+        await tx
+          .update(rooms)
+          .set({ status: 'OCCUPIED' })
+          .where(eq(rooms.id, data.roomId))
+      }
+
+      return { bookingId: row.id }
     })
 
-    // All new bookings are CHECKED_IN with full payment, so the room is
-    // immediately marked OCCUPIED.
-    await db
-      .update(rooms)
-      .set({ status: 'OCCUPIED' })
-      .where(eq(rooms.id, data.roomId))
-
-    return { success: true, bookingRef }
+    return { success: true, bookingRef, bookingId }
   })
-
-export type BookingStatus =
-  | 'RESERVED'
-  | 'CHECKED_IN'
-  | 'CHECKED_OUT'
-  | 'CANCELLED'
-  | 'EVICTED'
-
-const updateStatusSchema = z.object({
-  bookingRef: z.string().min(1),
-  status: z.enum([
-    'RESERVED',
-    'CHECKED_IN',
-    'CHECKED_OUT',
-    'CANCELLED',
-    'EVICTED',
-  ]),
-  cancellationReason: z.string().optional(),
-  evictionReason: z.string().optional(),
-})
 
 export const updateBookingStatus = createServerFn({ method: 'POST' })
   .inputValidator(updateStatusSchema)
@@ -319,6 +335,135 @@ export const updateBookingStatus = createServerFn({ method: 'POST' })
         .set({ status: 'AVAILABLE' })
         .where(eq(rooms.id, roomId))
     }
+
+    return { success: true }
+  })
+
+export const checkInBooking = createServerFn({ method: 'POST' })
+  .inputValidator(checkInBookingSchema)
+  .handler(async ({ data }) => {
+    const rows = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        roomId: bookings.roomId,
+      })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.bookingRef, data.bookingRef),
+          isNull(bookings.deletedAt),
+        ),
+      )
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new Error('Booking not found')
+    }
+
+    const booking = rows[0]
+
+    if (booking.status !== 'RESERVED') {
+      throw new Error('Only reserved bookings can be checked in')
+    }
+
+    const unpaidRoomCharges = await db
+      .select()
+      .from(ledgerTransactions)
+      .where(
+        and(
+          eq(ledgerTransactions.bookingId, booking.id),
+          eq(ledgerTransactions.category, 'ROOM_CHARGE'),
+          eq(ledgerTransactions.isPaid, false),
+        ),
+      )
+
+    if (unpaidRoomCharges.length !== 1) {
+      throw new Error('Expected exactly one unpaid room balance to settle')
+    }
+
+    const roomBalance = unpaidRoomCharges[0]
+    if (roomBalance.description !== RESERVATION_BALANCE_DESCRIPTION) {
+      throw new Error('Unpaid room balance does not match reservation ledger')
+    }
+
+    const referenceNumber = normalizeReferenceNumber(
+      data.paymentMethod,
+      data.referenceNumber,
+    )
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(ledgerTransactions)
+        .set({
+          isPaid: true,
+          paymentMethod: data.paymentMethod,
+          referenceNumber,
+        })
+        .where(eq(ledgerTransactions.id, roomBalance.id))
+
+      await tx
+        .update(bookings)
+        .set({ status: 'CHECKED_IN' })
+        .where(eq(bookings.id, booking.id))
+
+      await syncBookingPaymentStatus(booking.id, tx)
+
+      await tx
+        .update(rooms)
+        .set({ status: 'OCCUPIED' })
+        .where(eq(rooms.id, booking.roomId))
+    })
+
+    return { success: true }
+  })
+
+export const checkOutBooking = createServerFn({ method: 'POST' })
+  .inputValidator(checkOutBookingSchema)
+  .handler(async ({ data }) => {
+    const rows = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        roomId: bookings.roomId,
+      })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.bookingRef, data.bookingRef),
+          isNull(bookings.deletedAt),
+        ),
+      )
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new Error('Booking not found')
+    }
+
+    const booking = rows[0]
+
+    if (booking.status !== 'CHECKED_IN') {
+      throw new Error('Only checked-in bookings can be checked out')
+    }
+
+    const remainingBalance = await computeRemainingBalance(booking.id, db)
+    if (remainingBalance > 0) {
+      throw new Error(
+        'Cannot check out while there is an outstanding balance. Settle all charges first.',
+      )
+    }
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(bookings)
+        .set({ status: 'CHECKED_OUT' })
+        .where(eq(bookings.id, booking.id))
+
+      await tx
+        .update(rooms)
+        .set({ status: 'AVAILABLE' })
+        .where(eq(rooms.id, booking.roomId))
+    })
 
     return { success: true }
   })

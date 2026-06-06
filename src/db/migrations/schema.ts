@@ -13,6 +13,7 @@ import {
   boolean,
   pgEnum,
 } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 export const bookingPaymentStatus = pgEnum('booking_payment_status', [
   'CURRENT',

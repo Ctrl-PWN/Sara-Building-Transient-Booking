@@ -1,5 +1,5 @@
-import { revalidateLogic } from '@tanstack/react-form'
 import type { StandardSchemaV1, ValidationLogicFn } from '@tanstack/react-form'
+import { revalidateLogic } from '@tanstack/react-form'
 
 /** Default: validate on submit only until first submission, then on every change. */
 export const defaultValidationLogic = revalidateLogic()

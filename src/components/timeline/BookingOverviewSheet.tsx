@@ -69,6 +69,7 @@ export function BookingOverviewSheet({
         {displayBooking ? (
           <SheetFooter>
             <Button
+              nativeButton={false}
               render={
                 <Link
                   to="/bookings/$bookingId"

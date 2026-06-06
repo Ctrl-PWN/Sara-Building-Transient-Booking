@@ -20,7 +20,8 @@ export const user = pgTable('user', {
   banExpires: timestamp('ban_expires'),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
-  isActive: boolean('is_active').default(true),
+  phone: text('phone'),
+  isActive: boolean('is_active').default(true).notNull(),
 })
 
 export const session = pgTable(
