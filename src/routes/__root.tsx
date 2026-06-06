@@ -6,6 +6,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { Toaster } from 'sonner'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -48,6 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-body antialiased wrap-anywhere">
         {children}
+        <Toaster />
         <TanStackDevtools
           config={{
             position: 'bottom-right',
