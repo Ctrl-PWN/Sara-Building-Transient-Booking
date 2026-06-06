@@ -21,6 +21,9 @@ import { isNavItemActive, mainNavItems } from '@/lib/nav'
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const navigate = useNavigate()
+  const { data: session } = authClient.useSession()
+  const isAdmin = session?.user.role === 'admin'
+  const visibleNavItems = isAdmin ? mainNavItems : mainNavItems.filter((item) => item.to !== '/user-management')
 
   async function handleLogout() {
     await authClient.signOut()
@@ -44,7 +47,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon
                 const active = isNavItemActive(pathname, item.to)
 
