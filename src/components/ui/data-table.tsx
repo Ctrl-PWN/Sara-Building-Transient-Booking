@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/empty'
 
 type DataTableProps<TData> = {
+  // biome-ignore lint/suspicious/noExplicitAny: ColumnDef generic requires any for accessor
   columns: ColumnDef<TData, any>[]
   data: TData[]
   emptyMessage?: string

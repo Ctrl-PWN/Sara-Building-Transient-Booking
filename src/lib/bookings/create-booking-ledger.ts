@@ -4,10 +4,7 @@ import { createBookingLedgerLinesSchema } from '@/lib/ledger/schemas'
 
 import type { CreateBookingFormValues } from './schemas'
 import type { ReservationFeeType } from './stay-pricing'
-import {
-  calculateReservationFee,
-  toDecimalString,
-} from './stay-pricing'
+import { calculateReservationFee, toDecimalString } from './stay-pricing'
 
 export { createBookingLedgerLinesSchema }
 
@@ -46,10 +43,7 @@ export function buildCreateBookingLedgerLines(
     return createBookingLedgerLinesSchema.parse(lines)
   }
 
-  if (
-    values.reservationFeeType == null ||
-    values.reservationFeeValue == null
-  ) {
+  if (values.reservationFeeType == null || values.reservationFeeValue == null) {
     throw new Error('Reservation fee type and value are required')
   }
 

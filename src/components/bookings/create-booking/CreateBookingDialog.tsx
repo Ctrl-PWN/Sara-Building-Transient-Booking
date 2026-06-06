@@ -66,7 +66,9 @@ export function CreateBookingDialog({
             ? undefined
             : value.referenceNumber.trim() || undefined,
         reservationFeeType: value.walkIn ? undefined : value.reservationFeeType,
-        reservationFeeValue: value.walkIn ? undefined : value.reservationFeeValue,
+        reservationFeeValue: value.walkIn
+          ? undefined
+          : value.reservationFeeValue,
         depositPercentage: value.walkIn
           ? 100
           : value.reservationFeeType === 'PERCENT'
@@ -126,9 +128,7 @@ export function CreateBookingDialog({
                 isDateFullyBooked={isDateFullyBooked}
               />
 
-              {!walkIn ? (
-                <CreateBookingReservationSection form={form} />
-              ) : null}
+              {!walkIn ? <CreateBookingReservationSection form={form} /> : null}
 
               <CreateBookingPaymentSection form={form} />
 

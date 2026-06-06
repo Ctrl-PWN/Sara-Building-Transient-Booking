@@ -204,9 +204,7 @@ export const createBooking = createServerFn({ method: 'POST' })
     const room = roomRows[0]
 
     if (data.occupantsCount > room.capacity) {
-      throw new Error(
-        `Room capacity exceeded (max ${room.capacity} occupants)`,
-      )
+      throw new Error(`Room capacity exceeded (max ${room.capacity} occupants)`)
     }
 
     const { subtotal: stayTotal } = calculateStayPricing({

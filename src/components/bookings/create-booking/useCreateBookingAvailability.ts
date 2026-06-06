@@ -85,10 +85,8 @@ export function useCreateBookingAvailability({
   }
 
   const allRooms = rooms.slice().sort((a, b) => {
-    const aBlocked =
-      a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
-    const bBlocked =
-      b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
+    const aBlocked = a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
+    const bBlocked = b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
     if (!aBlocked && bBlocked) return -1
     if (aBlocked && !bBlocked) return 1
     return a.roomNumber.localeCompare(b.roomNumber)

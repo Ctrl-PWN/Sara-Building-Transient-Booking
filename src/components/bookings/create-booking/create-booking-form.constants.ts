@@ -8,6 +8,7 @@ import {
 
 import { paymentMethodValues } from '@/db/schema/enums'
 
+// biome-ignore lint/suspicious/useIterableCallbackReturn: switch is exhaustive (default uses `satisfies never`)
 export const paymentMethodOptions = paymentMethodValues.map((method) => {
   switch (method) {
     case 'CASH':
@@ -31,6 +32,8 @@ export const paymentMethodOptions = paymentMethodValues.map((method) => {
         description: 'Direct bank deposit — reference number required',
         icon: BankIcon,
       }
+    default:
+      method satisfies never
   }
 })
 
