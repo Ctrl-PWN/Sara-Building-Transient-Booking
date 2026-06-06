@@ -37,7 +37,7 @@ function BookingNotFound() {
   )
 }
 
-export const Route = createFileRoute('/_authenticated/bookings/$bookingId')({
+export const Route = createFileRoute('/_authenticated/bookings/$bookingId/')({
   loader: async ({ params, context }) => {
     const id = Number(params.bookingId)
     try {
