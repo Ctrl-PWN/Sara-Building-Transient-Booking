@@ -115,14 +115,17 @@ function SeparatePaymentLines({
                 }}
                 className="flex flex-wrap gap-4"
               >
+                {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a custom form control */}
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <RadioGroupItem value="CASH" />
                   Cash
                 </label>
+                {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a custom form control */}
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <RadioGroupItem value="GCASH" />
                   GCash
                 </label>
+                {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a custom form control */}
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <RadioGroupItem value="BANK_TRANSFER" />
                   Bank transfer
@@ -191,7 +194,7 @@ export function CheckOutBookingDialog({
 
   const unifiedForm = useAppForm({
     defaultValues: {
-      paymentMethod: 'CASH' as const,
+      paymentMethod: 'CASH' as PaymentMethod,
       referenceNumber: '',
     },
     ...dynamicSchemaValidators(ledgerPaymentFieldsSchema),
@@ -315,6 +318,7 @@ export function CheckOutBookingDialog({
                   onValueChange={(value) => setMode(value as SettlementMode)}
                   className="grid gap-3"
                 >
+                  {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a custom form control */}
                   <label className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer has-[[data-state=checked]]:border-primary">
                     <RadioGroupItem value="unified" className="mt-0.5" />
                     <div>
@@ -327,6 +331,7 @@ export function CheckOutBookingDialog({
                       </p>
                     </div>
                   </label>
+                  {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a custom form control */}
                   <label className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer has-[[data-state=checked]]:border-primary">
                     <RadioGroupItem value="separate" className="mt-0.5" />
                     <div>

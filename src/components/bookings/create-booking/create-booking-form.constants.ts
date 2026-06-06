@@ -8,6 +8,7 @@ import {
 
 import { paymentMethodValues } from '@/db/schema/enums'
 
+// biome-ignore lint/suspicious/useIterableCallbackReturn: all enum branches covered, no default needed
 export const paymentMethodOptions = paymentMethodValues.map((method) => {
   switch (method) {
     case 'CASH':
