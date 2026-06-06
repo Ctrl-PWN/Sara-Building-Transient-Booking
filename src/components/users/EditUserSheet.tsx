@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import {
   Sheet,
@@ -8,10 +9,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Input } from '@/components/ui/input'
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+} from '@/components/ui/field'
 import { useAppForm } from '@/integrations/tanstack-form'
 import { userMutations } from '@/lib/users/users.mutations'
 import { updateUserSchema } from '@/lib/users/schemas'
-import { toast } from 'sonner'
+
 type UserRow = {
   id: string
   name: string
@@ -27,20 +35,6 @@ type EditUserSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-type UserUpdateData = {
-  name?: string
-  firstName?: string
-  lastName?: string
-}
-
-const defaultValues: {
-  userId: string
-  data: UserUpdateData
-} = {
-  userId: '',
-  data: {},
-}
-
 export function EditUserSheet({
   user,
   open,
@@ -50,39 +44,39 @@ export function EditUserSheet({
   const updateUser = useMutation(userMutations.update(queryClient))
 
   const form = useAppForm({
-    defaultValues,
+    defaultValues: {
+      userId: '',
+      data: {} as Record<string, any>,
+    },
     validators: { onSubmit: updateUserSchema },
     onSubmit: async ({ value }) => {
-      const { firstName, lastName } = value.data
-      if (typeof firstName === 'string' && firstName.trim() === '') {
-        toast.error('First name cannot be blank')
-        return
-      }
-      if (typeof lastName === 'string' && lastName.trim() === '') {
-        toast.error('Last name cannot be blank')
-        return
-      }
       try {
         await updateUser.mutateAsync(value)
+        toast.success('User updated successfully')
         onOpenChange(false)
       } catch (err) {
-        toast.error('Failed to update user')
+        toast.error(
+          err instanceof Error ? err.message : 'Failed to update user',
+        )
       }
     },
   })
 
   useEffect(() => {
     if (user && open) {
+      const fallbackNameParts = user.name.trim().split(/\s+/)
+      const defaultFirstName = user.firstName ?? fallbackNameParts.at(0) ?? ''
+      const defaultLastName =
+        user.lastName ?? fallbackNameParts.slice(1).join(' ')
+
       form.reset()
       form.setFieldValue('userId', user.id)
+      form.setFieldValue('data.firstName', defaultFirstName)
+      form.setFieldValue('data.lastName', defaultLastName)
     }
   }, [user, open])
 
   if (!user) return null
-
-  const fallbackNameParts = user.name.trim().split(/\s+/)
-  const defaultFirstName = user.firstName ?? fallbackNameParts.at(0) ?? ''
-  const defaultLastName = user.lastName ?? fallbackNameParts.slice(1).join(' ')
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -103,55 +97,64 @@ export function EditUserSheet({
           }}
         >
           <form.AppForm>
-            <form.AppField name="data">
-              {(field) => (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium">First name</label>
-                    <input
-                      type="text"
-                      defaultValue={defaultFirstName}
-                      className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                      onBlur={field.handleBlur}
-                      onChange={(e) => {
-                        const nextFirstName = e.target.value
-                        const lastName =
-                          typeof field.state.value.lastName === 'string'
-                            ? field.state.value.lastName
-                            : defaultLastName
+            <form.AppField name="data.firstName">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
 
-                        field.handleChange({
-                          ...field.state.value,
-                          name: `${nextFirstName} ${lastName}`.trim(),
-                          firstName: nextFirstName,
-                        })
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium">Last name</label>
-                    <input
-                      type="text"
-                      defaultValue={defaultLastName}
-                      className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                return (
+                  <Field data-invalid={isInvalid || undefined}>
+                    <FieldLabel htmlFor={field.name}>First name</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value as string}
+                      placeholder="Jane"
+                      maxLength={15}
                       onBlur={field.handleBlur}
-                      onChange={(e) => {
-                        const nextLastName = e.target.value
-                        const firstName =
-                          typeof field.state.value.firstName === 'string'
-                            ? field.state.value.firstName
-                            : defaultFirstName
-
-                        field.handleChange({
-                          ...field.state.value,
-                          name: `${firstName} ${nextLastName}`.trim(),
-                          lastName: nextLastName,
-                        })
-                      }}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid || undefined}
                     />
-                  </div>
-                </div>
-              )}
+                    <FieldDescription>
+                      Letters and spaces only, max 15 characters
+                    </FieldDescription>
+                    {isInvalid ? (
+                      <FieldError errors={field.state.meta.errors} />
+                    ) : null}
+                  </Field>
+                )
+              }}
+            </form.AppField>
+
+            <form.AppField name="data.lastName">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
+
+                return (
+                  <Field data-invalid={isInvalid || undefined}>
+                    <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value as string}
+                      placeholder="Doe"
+                      maxLength={15}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid || undefined}
+                    />
+                    <FieldDescription>
+                      Letters and spaces only, max 15 characters
+                    </FieldDescription>
+                    {isInvalid ? (
+                      <FieldError errors={field.state.meta.errors} />
+                    ) : null}
+                  </Field>
+                )
+              }}
             </form.AppField>
 
             <div className="flex justify-end gap-2 pt-2">

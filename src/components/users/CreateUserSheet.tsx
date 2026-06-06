@@ -56,13 +56,23 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
           <form.AppForm>
             <form.AppField name="firstName">
               {(field) => (
-                <field.TextField label="First name" placeholder="Jane" />
+                <field.TextField
+                  label="First name"
+                  placeholder="Jane"
+                  description="Letters and spaces only, max 15 characters"
+                  maxLength={15}
+                />
               )}
             </form.AppField>
 
             <form.AppField name="lastName">
               {(field) => (
-                <field.TextField label="Last name" placeholder="Doe" />
+                <field.TextField
+                  label="Last name"
+                  placeholder="Doe"
+                  description="Letters and spaces only, max 15 characters"
+                  maxLength={15}
+                />
               )}
             </form.AppField>
 
