@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useEffect } from 'react'
 
@@ -14,6 +18,7 @@ import {
   dynamicSchemaValidators,
   useAppForm,
 } from '@/integrations/tanstack-form'
+import type { PaymentMethod } from '@/db/schema/enums'
 import { bookingMutations } from '@/lib/bookings/bookings.mutations'
 import { formatPeso } from '@/lib/bookings/stay-pricing'
 import type { BookingWithRoom } from '@/lib/bookings/types'
@@ -52,7 +57,7 @@ export function CheckInBookingDialog({
 
   const form = useAppForm({
     defaultValues: {
-      paymentMethod: 'CASH' as const,
+      paymentMethod: 'CASH' as PaymentMethod,
       referenceNumber: '',
     },
     ...dynamicSchemaValidators(ledgerPaymentFieldsSchema),

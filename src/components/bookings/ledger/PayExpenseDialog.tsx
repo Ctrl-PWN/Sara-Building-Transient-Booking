@@ -13,6 +13,7 @@ import {
   dynamicSchemaValidators,
   useAppForm,
 } from '@/integrations/tanstack-form'
+import type { PaymentMethod } from '@/db/schema/enums'
 import { formatPeso } from '@/lib/bookings/stay-pricing'
 import { ledgerMutations } from '@/lib/ledger/ledger.mutations'
 import { ledgerPaymentFieldsSchema } from '@/lib/ledger/schemas'
@@ -34,11 +35,13 @@ export function PayExpenseDialog({
   transaction,
 }: PayExpenseDialogProps) {
   const queryClient = useQueryClient()
-  const mutation = useMutation(ledgerMutations.payExpense(queryClient, bookingId))
+  const mutation = useMutation(
+    ledgerMutations.payExpense(queryClient, bookingId),
+  )
 
   const form = useAppForm({
     defaultValues: {
-      paymentMethod: 'CASH' as const,
+      paymentMethod: 'CASH' as PaymentMethod,
       referenceNumber: '',
     },
     ...dynamicSchemaValidators(ledgerPaymentFieldsSchema),

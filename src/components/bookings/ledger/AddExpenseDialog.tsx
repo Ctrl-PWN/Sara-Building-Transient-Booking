@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -31,14 +32,16 @@ export function AddExpenseDialog({
   const queryClient = useQueryClient()
   const mutation = useMutation(ledgerMutations.createExpense(queryClient))
 
+  const defaultValues: z.input<typeof addExpenseFormSchema> = {
+    amount: 0,
+    description: '',
+    isPaid: false,
+    paymentMethod: undefined,
+    referenceNumber: '',
+  }
+
   const form = useAppForm({
-    defaultValues: {
-      amount: 0,
-      description: '',
-      isPaid: false,
-      paymentMethod: undefined,
-      referenceNumber: '',
-    },
+    defaultValues,
     ...dynamicSchemaValidators(addExpenseFormSchema),
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync({
@@ -78,17 +81,11 @@ export function AddExpenseDialog({
             </form.AppField>
             <form.AppField name="amount">
               {(field) => (
-                <field.NumberField
-                  label="Amount"
-                  placeholder="0.00"
-                  min={0}
-                />
+                <field.NumberField label="Amount" placeholder="0.00" min={0} />
               )}
             </form.AppField>
             <form.AppField name="isPaid">
-              {(field) => (
-                <field.ToggleField label="Mark as paid" />
-              )}
+              {(field) => <field.ToggleField label="Mark as paid" />}
             </form.AppField>
             <form.Subscribe selector={(state) => state.values.isPaid}>
               {(isPaid) => (

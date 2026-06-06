@@ -530,10 +530,7 @@ function DateRangeField({
     const nextStart = toIsoDate(start)
     const nextEnd = toIsoDate(end)
     if (nextStart) field.handleChange(nextStart)
-    form.setFieldValue(
-      endFieldName as (typeof form.setFieldValue)['0'],
-      nextEnd,
-    )
+    form.setFieldValue(endFieldName, nextEnd)
     field.handleBlur()
     if (start) setMonth(start)
   }

@@ -85,7 +85,7 @@ export const createBookingLedgerLinesSchema = z.array(
 export function chargeWithPaymentRefine(
   data: {
     isPaid?: boolean
-    paymentMethod?: string
+    paymentMethod?: z.infer<typeof paymentMethodSchema>
     referenceNumber?: string
   },
   ctx: z.RefinementCtx,
@@ -102,7 +102,10 @@ export function chargeWithPaymentRefine(
   }
 
   paymentReferenceRefine(
-    { paymentMethod: data.paymentMethod, referenceNumber: data.referenceNumber },
+    {
+      paymentMethod: data.paymentMethod,
+      referenceNumber: data.referenceNumber,
+    },
     ctx,
   )
 }

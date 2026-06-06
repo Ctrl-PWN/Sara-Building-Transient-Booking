@@ -2,9 +2,8 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { ledgerTransactions } from '@/db/schema'
-import { RESERVATION_BALANCE_DESCRIPTION } from './ledger.constants'
+import type { PaymentMethod } from '@/db/schema/enums'
 import {
-  computeRemainingBalance,
   getBookingForLedger,
   getLedgerTransactionWithBooking,
   isProtectedLedgerTransaction,
@@ -32,7 +31,10 @@ export const createExpense = createServerFn({ method: 'POST' })
 
     const isPaid = data.isPaid ?? false
     const referenceNumber = isPaid
-      ? normalizeReferenceNumber(data.paymentMethod!, data.referenceNumber)
+      ? normalizeReferenceNumber(
+          data.paymentMethod as PaymentMethod,
+          data.referenceNumber,
+        )
       : null
 
     const [row] = await db

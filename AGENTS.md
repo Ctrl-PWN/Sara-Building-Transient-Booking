@@ -20,6 +20,7 @@
 | `npm run build`       | Production build → `.output/` (Nitro) |
 | `npm run test`        | Vitest (no tests exist yet)           |
 | `npm run lint`        | ESLint (tanstack config)              |
+| `npm run lint:biome`  | Biome lint (scoped to `src/`)         |
 | `npm run format`      | Prettier --write + ESLint --fix       |
 | `npm run check`       | Prettier --check only                 |
 | `npm run db:generate` | Drizzle Kit generate migrations       |
