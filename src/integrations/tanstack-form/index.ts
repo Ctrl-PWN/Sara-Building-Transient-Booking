@@ -5,7 +5,6 @@ export {
   useFormContext,
 } from './form-context'
 export {
-  DateRangeField,
   formOptions,
   useAppForm,
   withFieldGroup,

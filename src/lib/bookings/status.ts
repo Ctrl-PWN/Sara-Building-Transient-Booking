@@ -33,9 +33,7 @@ export const timelineLegendStatuses: TimelineLegendStatus[] = [
   'CHECKED_OUT',
 ]
 
-export function normalizeBookingStatus(
-  status: string,
-): TimelineLegendStatus {
+export function normalizeBookingStatus(status: string): TimelineLegendStatus {
   if (status === 'CHECKED_IN') return 'CHECKED_IN'
   if (status === 'CHECKED_OUT') return 'CHECKED_OUT'
   return 'RESERVED'

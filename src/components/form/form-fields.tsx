@@ -1,12 +1,22 @@
-import { useState } from 'react'
-import type * as React from 'react'
+import type { Icon } from '@phosphor-icons/react'
 import { useStore } from '@tanstack/react-form'
-
-import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import type * as React from 'react'
+import { useId, useState } from 'react'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -14,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useFieldContext } from '@/integrations/tanstack-form/form-context'
 
 function useFieldInvalidState() {
@@ -40,6 +51,7 @@ type TextFieldProps = {
   placeholder?: string
   autoComplete?: string
   type?: React.ComponentProps<'input'>['type']
+  disabled?: boolean
 }
 
 function TextField({
@@ -48,6 +60,7 @@ function TextField({
   placeholder,
   autoComplete,
   type = 'text',
+  disabled,
 }: TextFieldProps) {
   const { field, isInvalid } = useFieldInvalidState()
   const value = field.state.value as string
@@ -62,6 +75,7 @@ function TextField({
         value={value}
         placeholder={placeholder}
         autoComplete={autoComplete}
+        disabled={disabled}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
         aria-invalid={isInvalid || undefined}
@@ -155,6 +169,38 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
   )
 }
 
+type ToggleFieldProps = {
+  label: string
+  description?: string
+}
+
+function ToggleField({ label, description }: ToggleFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const checked = field.state.value as boolean
+
+  return (
+    <Field data-invalid={isInvalid || undefined} orientation="horizontal">
+      <Switch
+        id={field.name}
+        name={field.name}
+        checked={checked}
+        onBlur={field.handleBlur}
+        onCheckedChange={(value) => field.handleChange(value)}
+        aria-invalid={isInvalid || undefined}
+      />
+      <div className="flex flex-col gap-1">
+        <FieldLabel htmlFor={field.name} className="font-normal">
+          {label}
+        </FieldLabel>
+        {description ? (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        ) : null}
+        {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+      </div>
+    </Field>
+  )
+}
+
 type SelectOption = {
   value: string
   label: string
@@ -166,6 +212,7 @@ type SelectFieldProps = {
   description?: string
   placeholder?: string
   options: SelectOption[]
+  onValueChange?: (value: string) => void
 }
 
 function SelectField({
@@ -173,16 +220,24 @@ function SelectField({
   description,
   placeholder = 'Select an option',
   options,
+  onValueChange,
 }: SelectFieldProps) {
   const { field, isInvalid } = useFieldInvalidState()
   const value = field.state.value as string
+
+  const handleChange = (next: string | null) => {
+    if (next) {
+      field.handleChange(next)
+      onValueChange?.(next)
+    }
+  }
 
   return (
     <Field data-invalid={isInvalid || undefined}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <Select
         value={value}
-        onValueChange={field.handleChange}
+        onValueChange={handleChange}
         items={options.map((option) => ({
           value: option.value,
           label: option.label,
@@ -223,13 +278,144 @@ function SelectField({
   )
 }
 
-// We accept any form whose store can be read by useStore. The actual form
-// type's setFieldValue is generic over the form's field-name union, so we use
-// a permissive `form: any` on the prop to avoid re-typing the entire form
-// schema here.
+type RadioOption = {
+  value: string
+  label: string
+}
+
+type RadioGroupFieldProps = {
+  label: string
+  description?: string
+  options: RadioOption[]
+}
+
+function RadioGroupField({
+  label,
+  description,
+  options,
+}: RadioGroupFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const value = field.state.value as string
+  const legendId = useId()
+
+  return (
+    <Field data-invalid={isInvalid || undefined}>
+      <FieldSet className="gap-3 border-0 p-0">
+        <FieldLegend id={legendId} variant="label">
+          {label}
+        </FieldLegend>
+        <RadioGroup
+          aria-labelledby={legendId}
+          name={field.name}
+          value={value}
+          onValueChange={field.handleChange}
+          className="flex flex-row flex-wrap gap-4"
+          data-slot="radio-group"
+        >
+          {options.map((option) => (
+            <label
+              key={option.value}
+              htmlFor={`${field.name}-${option.value}`}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <RadioGroupItem
+                id={`${field.name}-${option.value}`}
+                value={option.value}
+              />
+              {option.label}
+            </label>
+          ))}
+        </RadioGroup>
+      </FieldSet>
+      {description ? (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+    </Field>
+  )
+}
+
+export type RadioChoiceCardOption = {
+  value: string
+  title: string
+  description?: string
+  icon?: Icon
+}
+
+type RadioChoiceCardFieldProps = {
+  label: string
+  description?: string
+  options: RadioChoiceCardOption[]
+  onValueChange?: (value: string) => void
+}
+
+function RadioChoiceCardField({
+  label,
+  description,
+  options,
+  onValueChange,
+}: RadioChoiceCardFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const value = field.state.value as string
+  const legendId = useId()
+
+  const handleChange = (next: string) => {
+    field.handleChange(next)
+    onValueChange?.(next)
+  }
+
+  return (
+    <Field data-invalid={isInvalid || undefined}>
+      <FieldSet className="gap-3 border-0 p-0">
+        <FieldLegend id={legendId} variant="label">
+          {label}
+        </FieldLegend>
+        <RadioGroup
+          aria-labelledby={legendId}
+          name={field.name}
+          value={value}
+          onValueChange={handleChange}
+          className="flex flex-col gap-2"
+          data-slot="radio-group"
+        >
+          {options.map((option) => (
+            <FieldLabel
+              key={option.value}
+              htmlFor={`${field.name}-${option.value}`}
+            >
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>
+                    {option.icon ? (
+                      <option.icon
+                        className="size-4 shrink-0 text-muted-foreground"
+                        aria-hidden
+                      />
+                    ) : null}
+                    {option.title}
+                  </FieldTitle>
+                  {option.description ? (
+                    <FieldDescription>{option.description}</FieldDescription>
+                  ) : null}
+                </FieldContent>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`${field.name}-${option.value}`}
+                />
+              </Field>
+            </FieldLabel>
+          ))}
+        </RadioGroup>
+      </FieldSet>
+      {description ? (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+    </Field>
+  )
+}
+
 type DateRangeFieldProps = {
-  form: any
-  startFieldName: string
   endFieldName: string
   label: string
   startLabel?: string
@@ -309,8 +495,6 @@ function NumberField({
 }
 
 function DateRangeField({
-  form,
-  startFieldName,
   endFieldName,
   label,
   startLabel = 'Check-in',
@@ -319,36 +503,45 @@ function DateRangeField({
   minDate,
   disabledDates,
 }: DateRangeFieldProps) {
-  const { checkInDate, checkOutDate } = useStore(
+  const field = useFieldContext<string>()
+  const form = field.form
+
+  const { submissionAttempts, endValue, endErrors } = useStore(
     form.store,
-    (state: unknown) => {
-      const values = (state as { values: Record<string, unknown> }).values
-      const checkIn = values[startFieldName] as string | undefined
-      const checkOut = values[endFieldName] as string | undefined
-      return {
-        checkInDate: checkIn ?? '',
-        checkOutDate: checkOut ?? '',
-      }
-    },
+    (state) => ({
+      submissionAttempts: state.submissionAttempts,
+      endValue: (state.values as Record<string, string>)[endFieldName] ?? '',
+      endErrors: state.fieldMeta[endFieldName]?.errors ?? [],
+    }),
   )
 
-  const startDate = checkInDate ? new Date(checkInDate) : null
-  const endDate = checkOutDate ? new Date(checkOutDate) : null
+  const startIsInvalid =
+    (field.state.meta.isTouched || submissionAttempts > 0) &&
+    field.state.meta.errors.length > 0
+  const endIsInvalid = submissionAttempts > 0 && endErrors.length > 0
+  const isInvalid = startIsInvalid || endIsInvalid
+
+  const startDate = field.state.value ? new Date(field.state.value) : null
+  const endDate = endValue ? new Date(endValue) : null
 
   const [month, setMonth] = useState<Date>(() => startDate ?? new Date())
 
   const handleRangeChange = (start: Date | null, end: Date | null) => {
     const nextStart = toIsoDate(start)
     const nextEnd = toIsoDate(end)
-    if (nextStart) form.setFieldValue(startFieldName, nextStart)
-    form.setFieldValue(endFieldName, nextEnd)
+    if (nextStart) field.handleChange(nextStart)
+    form.setFieldValue(
+      endFieldName as (typeof form.setFieldValue)['0'],
+      nextEnd,
+    )
+    field.handleBlur()
     if (start) setMonth(start)
   }
 
   return (
-    <Field>
+    <Field data-invalid={isInvalid || undefined}>
       <div className="flex items-baseline justify-between">
-        <FieldLabel>{label}</FieldLabel>
+        <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
         <span className="text-xs text-muted-foreground">
           {formatRangeLabel(startDate, endDate)}
         </span>
@@ -377,15 +570,20 @@ function DateRangeField({
       {description ? (
         <p className="text-sm text-muted-foreground">{description}</p>
       ) : null}
+      {startIsInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+      {endIsInvalid ? <FieldError errors={endErrors} /> : null}
     </Field>
   )
 }
 
 export {
   CheckboxField,
-  TextField,
-  TextareaField,
-  SelectField,
   DateRangeField,
   NumberField,
+  RadioChoiceCardField,
+  RadioGroupField,
+  SelectField,
+  TextareaField,
+  TextField,
+  ToggleField,
 }
