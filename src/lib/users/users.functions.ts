@@ -32,7 +32,7 @@ export const listUsers = createServerFn({
       headers,
     })
 
-    return result.users
+    return result.users.filter((user) => user.role !== 'admin')
   })
 
 export const createUser = createServerFn({
