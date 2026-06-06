@@ -7,13 +7,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useAppForm } from '@/integrations/tanstack-form'
 import { userMutations } from '@/lib/users/users.mutations'
 import { createUserSchema } from '@/lib/users/schemas'
@@ -33,7 +26,6 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
       firstName: '',
       lastName: '',
       password: '',
-      role: 'STAFF' as 'ADMIN' | 'STAFF',
     },
     validators: { onSubmit: createUserSchema },
     onSubmit: async ({ value }) => {
@@ -94,29 +86,6 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
               )}
             </form.AppField>
 
-            <form.AppField name="role">
-              {(field) => (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium" htmlFor={field.name}>
-                    Role
-                  </label>
-                  <Select
-                    value={field.state.value}
-                    onValueChange={(val) => {
-                      if (val) field.handleChange(val)
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="STAFF">Staff</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </form.AppField>
 
             <div className="flex justify-end gap-2 pt-2">
               <form.ResetButton label="Cancel" />

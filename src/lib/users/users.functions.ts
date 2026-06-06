@@ -42,17 +42,16 @@ export const createUser = createServerFn({
   .inputValidator(createUserSchema)
   .handler(async ({ data }) => {
     const { auth, headers } = await getAuthRequestContext()
-    const role: 'user' | 'admin' = data.role === 'ADMIN' ? 'admin' : 'user'
     const name = `${data.firstName} ${data.lastName}`.trim()
 
     const body = {
       email: data.email,
       name,
-      firstName: data.firstName,
-      lastName: data.lastName,
       password: data.password,
-      role,
-      data: data.data,
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
     }
 
     return auth.api.createUser({

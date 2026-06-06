@@ -75,9 +75,9 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
               <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
               <td className="px-4 py-3">
                 <Badge
-                  variant={user.role === 'ADMIN' ? 'default' : 'secondary'}
+                  variant={user.role === 'admin' ? 'default' : 'secondary'}
                 >
-                  {user.role ?? 'STAFF'}
+                  {user.role ?? 'staff'}
                 </Badge>
               </td>
               <td className="px-4 py-3">

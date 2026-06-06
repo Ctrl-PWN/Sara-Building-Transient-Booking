@@ -38,7 +38,6 @@ export const createUserSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   password: z.string().min(8),
-  role: z.enum(['ADMIN', 'STAFF']),
   data: z.record(z.string(), z.any()).optional(),
 })
 

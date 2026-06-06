@@ -10,7 +10,7 @@ export const requireAdmin = createServerOnlyFn(async () => {
     headers: getRequestHeaders(),
   })
 
-  if (!session?.user || session.user.role !== 'ADMIN') {
+  if (!session?.user || session.user.role !== 'admin') {
     throw new Response('Forbidden', {
       status: 403,
     })

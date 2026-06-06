@@ -29,12 +29,7 @@ export const ledgerTransactionTypeEnum = pgEnum('ledger_transaction_type', [
 
 export const ledgerTransactionCategoryEnum = pgEnum(
   'ledger_transaction_category',
-  [
-    'ROOM_CHARGE',
-    'DEPOSIT',
-    'PAYMENT',
-    'REFUND'
-  ],
+  ['ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND'],
 )
 
 export const paymentMethodEnum = pgEnum('payment_method', [
@@ -43,7 +38,7 @@ export const paymentMethodEnum = pgEnum('payment_method', [
   'BANK_TRANSFER',
 ])
 
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'STAFF'])
+export const userRoleEnum = pgEnum('user_role', ['admin', 'staff'])
 
 export const bookingStatusValues = bookingStatusEnum.enumValues
 export const bookingPaymentStatusValues = bookingPaymentStatusEnum.enumValues

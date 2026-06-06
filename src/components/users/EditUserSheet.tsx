@@ -8,13 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useAppForm } from '@/integrations/tanstack-form'
 import { userMutations } from '@/lib/users/users.mutations'
 import { updateUserSchema } from '@/lib/users/schemas'
@@ -38,7 +31,6 @@ type UserUpdateData = {
   name?: string
   firstName?: string
   lastName?: string
-  role?: string
 }
 
 const defaultValues: {
@@ -77,8 +69,7 @@ export function EditUserSheet({
 
   const fallbackNameParts = user.name.trim().split(/\s+/)
   const defaultFirstName = user.firstName ?? fallbackNameParts.at(0) ?? ''
-  const defaultLastName =
-    user.lastName ?? fallbackNameParts.slice(1).join(' ')
+  const defaultLastName = user.lastName ?? fallbackNameParts.slice(1).join(' ')
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -146,27 +137,7 @@ export function EditUserSheet({
                       }}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium">Role</label>
-                    <Select
-                      defaultValue={user.role ?? 'STAFF'}
-                      onValueChange={(val) => {
-                        if (val)
-                          field.handleChange({
-                            ...field.state.value,
-                            role: val,
-                          })
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="STAFF">Staff</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+
                 </div>
               )}
             </form.AppField>
