@@ -14,13 +14,15 @@ type LedgerPaymentForm = ReturnType<
 
 type LedgerPaymentFieldsSectionProps = {
   form: LedgerPaymentForm
+  disabled?: boolean
 }
 
 export function LedgerPaymentFieldsSection({
   form,
+  disabled = false,
 }: LedgerPaymentFieldsSectionProps) {
   return (
-    <div className="grid gap-4">
+    <fieldset disabled={disabled} className="grid gap-4 disabled:opacity-50">
       <form.AppField name="paymentMethod">
         {(field) => (
           <field.RadioChoiceCardField
@@ -48,6 +50,6 @@ export function LedgerPaymentFieldsSection({
           </form.AppField>
         )}
       </form.Subscribe>
-    </div>
+    </fieldset>
   )
 }

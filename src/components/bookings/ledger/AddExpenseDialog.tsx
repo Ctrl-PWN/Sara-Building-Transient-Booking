@@ -91,9 +91,9 @@ export function AddExpenseDialog({
               )}
             </form.AppField>
             <form.Subscribe selector={(state) => state.values.isPaid}>
-              {(isPaid) =>
-                isPaid ? <LedgerPaymentFieldsSection form={form} /> : null
-              }
+              {(isPaid) => (
+                <LedgerPaymentFieldsSection form={form} disabled={!isPaid} />
+              )}
             </form.Subscribe>
             <DialogFooter>
               <Button
