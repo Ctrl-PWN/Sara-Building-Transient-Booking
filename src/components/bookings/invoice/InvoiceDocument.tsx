@@ -103,28 +103,26 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: COLORS.muted,
   },
-  thDescription: { width: '32%' },
-  thCategory: { width: '14%' },
-  thPayment: { width: '12%' },
-  thReference: { width: '16%' },
-  thAmount: { width: '14%', textAlign: 'right' },
-  thStatus: { width: '12%', textAlign: 'right' },
+  thDescription: { width: '38%' },
+  thPayment: { width: '14%' },
+  thReference: { width: '18%' },
+  thAmount: { width: '15%', textAlign: 'right' },
+  thStatus: { width: '15%', textAlign: 'right' },
   row: {
     flexDirection: 'row',
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  cellDescription: { width: '32%' },
-  cellCategory: { width: '14%', color: COLORS.muted },
-  cellPayment: { width: '12%', color: COLORS.muted },
-  cellReference: { width: '16%', color: COLORS.muted },
+  cellDescription: { width: '38%' },
+  cellPayment: { width: '14%', color: COLORS.muted },
+  cellReference: { width: '18%', color: COLORS.muted },
   cellAmount: {
-    width: '14%',
+    width: '15%',
     textAlign: 'right',
     fontWeight: 500,
   },
-  cellStatus: { width: '12%', alignItems: 'flex-end' },
+  cellStatus: { width: '15%', alignItems: 'flex-end' },
   descTitle: { fontSize: 10, fontWeight: 500, color: COLORS.text },
   descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
   cellMuted: { fontSize: 10, color: COLORS.muted },
@@ -263,9 +261,7 @@ export function InvoiceDocument({
             <Text style={[styles.tableHeaderCell, styles.thDescription]}>
               Description
             </Text>
-            <Text style={[styles.tableHeaderCell, styles.thCategory]}>
-              Category
-            </Text>
+
             <Text style={[styles.tableHeaderCell, styles.thPayment]}>
               Payment
             </Text>
@@ -292,13 +288,13 @@ export function InvoiceDocument({
                     {format(new Date(tx.createdAt), 'MMM d, yyyy h:mm a')}
                   </Text>
                 </View>
-                <Text style={[styles.cellMuted, styles.cellCategory]}>
-                  {formatCategory(tx.category)}
-                </Text>
                 <Text style={[styles.cellMuted, styles.cellPayment]}>
                   {formatPaymentMethod(tx.paymentMethod)}
                 </Text>
-                <Text style={[styles.cellMuted, styles.cellReference]}>
+                <Text
+                  style={[styles.cellMuted, styles.cellReference]}
+                  wrap={false}
+                >
                   {tx.referenceNumber ?? '—'}
                 </Text>
                 <Text style={[styles.cellAmount, styles.cellText]}>

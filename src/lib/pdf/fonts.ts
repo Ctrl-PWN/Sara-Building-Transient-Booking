@@ -20,3 +20,5 @@ Font.register({
     { src: interItalic, fontStyle: 'italic' },
   ],
 })
+
+Font.registerHyphenationCallback((word) => [word])
