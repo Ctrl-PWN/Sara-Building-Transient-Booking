@@ -76,7 +76,9 @@ function SeparatePaymentLines({
 }) {
   const updateLine = (
     id: number,
-    patch: Partial<Pick<SeparatePaymentLine, 'paymentMethod' | 'referenceNumber'>>,
+    patch: Partial<
+      Pick<SeparatePaymentLine, 'paymentMethod' | 'referenceNumber'>
+    >,
   ) => {
     onChange(
       lines.map((line) => (line.id === id ? { ...line, ...patch } : line)),
@@ -107,7 +109,8 @@ function SeparatePaymentLines({
                   const method = value as PaymentMethod
                   updateLine(row.id, {
                     paymentMethod: method,
-                    referenceNumber: method === 'CASH' ? '' : line.referenceNumber,
+                    referenceNumber:
+                      method === 'CASH' ? '' : line.referenceNumber,
                   })
                 }}
                 className="flex flex-wrap gap-4"
@@ -331,8 +334,7 @@ export function CheckOutBookingDialog({
                         Separate payment per line
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Record different payment details for each unpaid
-                        charge.
+                        Record different payment details for each unpaid charge.
                       </p>
                     </div>
                   </label>
@@ -386,7 +388,9 @@ export function CheckOutBookingDialog({
             onClick={() => void handleCheckOut()}
             disabled={!canCheckOut || checkOutMutation.isPending}
           >
-            {checkOutMutation.isPending ? 'Checking out…' : 'Complete check-out'}
+            {checkOutMutation.isPending
+              ? 'Checking out…'
+              : 'Complete check-out'}
           </Button>
         </DialogFooter>
       </DialogOutsideScroll>

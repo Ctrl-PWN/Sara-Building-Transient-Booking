@@ -8,9 +8,7 @@ export type LedgerPaymentFormValues = {
   referenceNumber: string
 }
 
-type LedgerPaymentForm = ReturnType<
-  typeof useAppForm<LedgerPaymentFormValues>
->
+type LedgerPaymentForm = ReturnType<typeof useAppForm<LedgerPaymentFormValues>>
 
 type LedgerPaymentFieldsSectionProps = {
   form: LedgerPaymentForm

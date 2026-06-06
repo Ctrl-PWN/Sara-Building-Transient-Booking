@@ -1,5 +1,9 @@
 import { ArrowLeftIcon } from '@phosphor-icons/react'
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
 import { BookingDetailHeader } from '@/components/bookings/BookingDetailHeader'
@@ -33,7 +37,7 @@ function BookingNotFound() {
   )
 }
 
-export const Route = createFileRoute('/_authenticated/bookings/$bookingId')({
+export const Route = createFileRoute('/_authenticated/bookings/$bookingId/')({
   loader: async ({ params, context }) => {
     const id = Number(params.bookingId)
     try {

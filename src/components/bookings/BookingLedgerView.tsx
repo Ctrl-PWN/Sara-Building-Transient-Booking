@@ -1,5 +1,10 @@
-import { PlusIcon } from '@phosphor-icons/react'
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { FileTextIcon, PlusIcon } from '@phosphor-icons/react'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -63,12 +68,23 @@ export function BookingLedgerView({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Ledger</CardTitle>
-          {canAddCharge ? (
-            <Button type="button" size="sm" onClick={() => setAddOpen(true)}>
-              <PlusIcon data-icon="inline-start" size={16} />
-              Add charge
-            </Button>
-          ) : null}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/bookings/$bookingId/invoice"
+              params={{ bookingId: String(bookingId) }}
+            >
+              <Button type="button" variant="outline" size="sm">
+                <FileTextIcon data-icon="inline-start" size={16} />
+                View invoice
+              </Button>
+            </Link>
+            {canAddCharge ? (
+              <Button type="button" size="sm" onClick={() => setAddOpen(true)}>
+                <PlusIcon data-icon="inline-start" size={16} />
+                Add charge
+              </Button>
+            ) : null}
+          </div>
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (
