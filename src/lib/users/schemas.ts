@@ -42,10 +42,7 @@ export const updateUserSchema = z.object({
           path: ['firstName'],
         })
       }
-      if (
-        typeof data.firstName === 'string' &&
-        data.firstName.length > 15
-      ) {
+      if (typeof data.firstName === 'string' && data.firstName.length > 15) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'First name must be at most 15 characters',
@@ -62,10 +59,7 @@ export const updateUserSchema = z.object({
           path: ['lastName'],
         })
       }
-      if (
-        typeof data.lastName === 'string' &&
-        data.lastName.length > 15
-      ) {
+      if (typeof data.lastName === 'string' && data.lastName.length > 15) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Last name must be at most 15 characters',

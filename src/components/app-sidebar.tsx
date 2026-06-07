@@ -23,7 +23,9 @@ export function AppSidebar() {
   const navigate = useNavigate()
   const { data: session } = authClient.useSession()
   const isAdmin = session?.user.role === 'admin'
-  const visibleNavItems = isAdmin ? mainNavItems : mainNavItems.filter((item) => item.to !== '/user-management')
+  const visibleNavItems = isAdmin
+    ? mainNavItems
+    : mainNavItems.filter((item) => item.to !== '/user-management')
 
   async function handleLogout() {
     await authClient.signOut()

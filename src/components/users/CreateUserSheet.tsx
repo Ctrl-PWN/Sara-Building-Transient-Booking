@@ -96,7 +96,6 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
               )}
             </form.AppField>
 
-
             <div className="flex justify-end gap-2 pt-2">
               <form.ResetButton label="Cancel" />
               <form.SubmitButton label="Create user" />

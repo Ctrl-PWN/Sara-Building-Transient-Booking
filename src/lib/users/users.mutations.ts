@@ -3,11 +3,7 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import { userKeys } from './users.queries'
 
-import {
-  createUser,
-  deleteUser,
-  updateUser,
-} from './users.functions'
+import { createUser, deleteUser, updateUser } from './users.functions'
 
 import type {
   createUserSchema,
