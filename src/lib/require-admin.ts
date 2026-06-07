@@ -1,27 +1,27 @@
-import { createMiddleware, createServerOnlyFn } from "@tanstack/react-start";
+import { createMiddleware, createServerOnlyFn } from '@tanstack/react-start'
 
 export const requireAdmin = createServerOnlyFn(async () => {
-	const [{ auth }, { getRequestHeaders }] = await Promise.all([
-		import("./auth"),
-		import("@tanstack/react-start/server"),
-	]);
+  const [{ auth }, { getRequestHeaders }] = await Promise.all([
+    import('./auth'),
+    import('@tanstack/react-start/server'),
+  ])
 
-	const session = await auth.api.getSession({
-		headers: getRequestHeaders(),
-	});
+  const session = await auth.api.getSession({
+    headers: getRequestHeaders(),
+  })
 
-	if (!session?.user || session.user.role !== "admin") {
-		throw new Response("Forbidden", {
-			status: 403,
-		});
-	}
+  if (!session?.user || session.user.role !== 'admin') {
+    throw new Response('Forbidden', {
+      status: 403,
+    })
+  }
 
-	return session;
-});
+  return session
+})
 
 export function authMiddleware() {
-	return createMiddleware().server(async ({ next }) => {
-		await requireAdmin();
-		return next();
-	});
+  return createMiddleware().server(async ({ next }) => {
+    await requireAdmin()
+    return next()
+  })
 }
