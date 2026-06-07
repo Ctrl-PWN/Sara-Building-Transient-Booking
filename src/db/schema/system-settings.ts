@@ -1,10 +1,10 @@
 import {
-  pgTable,
-  serial,
-  varchar,
   decimal,
   integer,
+  pgTable,
+  serial,
   timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 export const systemSettings = pgTable('system_settings', {

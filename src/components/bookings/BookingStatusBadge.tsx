@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import { getBookingStatusPresentation } from '@/lib/bookings/status'
 import type { BookingStatusPresentation } from '@/lib/bookings/status'
+import { getBookingStatusPresentation } from '@/lib/bookings/status'
+import { cn } from '@/lib/utils'
 
 type BookingStatusBadgeProps = {
   status: string

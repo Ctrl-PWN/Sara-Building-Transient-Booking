@@ -1,4 +1,4 @@
-import { formatWeekRange, formatWeekOfYearLabel } from '@/lib/timeline/week'
+import { formatWeekOfYearLabel, formatWeekRange } from '@/lib/timeline/week'
 import { PageHeader } from '../layout/PageHeader'
 import { Skeleton } from '../ui/skeleton'
 import type { TimelinePageContentProps } from './TimelinePageContent'

@@ -6,6 +6,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { Toaster } from 'sonner'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
@@ -58,6 +59,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
       >
         {children}
+        <Toaster />
         <TanStackDevtools
           config={{
             position: 'bottom-right',
@@ -70,6 +72,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             TanStackQueryDevtools,
           ]}
         />
+        <Toaster />
         <Scripts />
       </body>
     </html>

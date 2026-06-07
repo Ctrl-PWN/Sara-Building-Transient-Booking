@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 
 import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
 import { formatPaymentStatus } from '@/lib/bookings/status'
-import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { formatGuestName } from '@/lib/bookings/types'
 
 type BookingFieldGridProps = {
   booking: BookingWithRoom
