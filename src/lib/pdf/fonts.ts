@@ -1,9 +1,8 @@
 import { Font } from '@react-pdf/renderer'
-
-import interItalic from '@/assets/fonts/Inter-Italic.ttf?url'
 import interRoman from '@/assets/fonts/Inter.ttf?url'
-import newsreaderItalic from '@/assets/fonts/Newsreader-Italic.ttf?url'
+import interItalic from '@/assets/fonts/Inter-Italic.ttf?url'
 import newsreaderRoman from '@/assets/fonts/Newsreader.ttf?url'
+import newsreaderItalic from '@/assets/fonts/Newsreader-Italic.ttf?url'
 
 Font.register({
   family: 'Newsreader',

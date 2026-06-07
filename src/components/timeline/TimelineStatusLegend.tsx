@@ -1,9 +1,8 @@
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
 import {
   getBookingStatusPresentation,
   timelineLegendStatuses,
 } from '@/lib/bookings/status'
-
-import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
 
 export function TimelineStatusLegend() {
   return (

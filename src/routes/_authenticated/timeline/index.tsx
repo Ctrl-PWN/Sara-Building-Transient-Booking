@@ -1,11 +1,11 @@
-import { Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Suspense } from 'react'
 
 import { TimelinePageContent } from '@/components/timeline/TimelinePageContent'
+import { TimelinePageFallback } from '@/components/timeline/TimelinePageFallback'
 import { timelineSearchSchema } from '@/lib/bookings/schemas'
 import { timelineQueries } from '@/lib/timeline/timeline.queries'
 import { resolveWeekStart } from '@/lib/timeline/week'
-import { TimelinePageFallback } from '@/components/timeline/TimelinePageFallback'
 
 export const Route = createFileRoute('/_authenticated/timeline/')({
   validateSearch: (search) => timelineSearchSchema.parse(search),

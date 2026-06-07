@@ -1,6 +1,6 @@
+import { TrashIcon } from '@phosphor-icons/react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { TrashIcon } from '@phosphor-icons/react'
 
 import { DataTable } from '@/components/DataTable'
 import { Badge } from '@/components/ui/badge'

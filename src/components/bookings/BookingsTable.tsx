@@ -1,5 +1,10 @@
+import { MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { Link } from '@tanstack/react-router'
 import { format, parseISO } from 'date-fns'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -8,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
-import { MagnifyingGlassIcon } from '@phosphor-icons/react'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 import { computeBookingDisplayStatus } from '@/lib/bookings/status'
 

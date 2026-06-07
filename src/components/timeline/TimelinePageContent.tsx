@@ -1,8 +1,12 @@
-import { useState } from 'react'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { CalendarBlankIcon } from '@phosphor-icons/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 
 import { PageHeader } from '@/components/layout/PageHeader'
+import { BookingOverviewSheet } from '@/components/timeline/BookingOverviewSheet'
+import { TimelineGrid } from '@/components/timeline/TimelineGrid'
+import { TimelineStatusLegend } from '@/components/timeline/TimelineStatusLegend'
+import { TimelineWeekNav } from '@/components/timeline/TimelineWeekNav'
 import {
   Empty,
   EmptyDescription,
@@ -11,10 +15,6 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Separator } from '@/components/ui/separator'
-import { BookingOverviewSheet } from '@/components/timeline/BookingOverviewSheet'
-import { TimelineGrid } from '@/components/timeline/TimelineGrid'
-import { TimelineStatusLegend } from '@/components/timeline/TimelineStatusLegend'
-import { TimelineWeekNav } from '@/components/timeline/TimelineWeekNav'
 import { timelineQueries } from '@/lib/timeline/timeline.queries'
 import { formatWeekOfYearLabel, formatWeekRange } from '@/lib/timeline/week'
 

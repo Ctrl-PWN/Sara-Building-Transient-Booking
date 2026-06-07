@@ -29,12 +29,6 @@ export const auth = betterAuth({
         required: false,
         input: true,
       },
-      role: {
-        type: ['ADMIN', 'STAFF'], // enum in Better Auth — not type: 'string'
-        defaultValue: 'STAFF',
-        required: true,
-        input: false, // don’t let signup body set role
-      },
       isActive: {
         type: 'boolean',
         defaultValue: true,
@@ -43,7 +37,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    admin({ defaultRole: 'STAFF', adminRoles: ['ADMIN'] }),
+    admin({ defaultRole: 'staff', adminRoles: ['admin'] }),
     tanstackStartCookies(),
   ],
 })

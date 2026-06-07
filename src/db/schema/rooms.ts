@@ -1,10 +1,10 @@
 import {
+  decimal,
+  integer,
   pgTable,
   serial,
-  varchar,
-  integer,
-  decimal,
   timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 import { roomStatusEnum } from './enums'

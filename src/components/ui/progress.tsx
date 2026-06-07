@@ -40,5 +40,5 @@ function Progress({
   )
 }
 
-export { Progress }
 export type { ProgressProps }
+export { Progress }

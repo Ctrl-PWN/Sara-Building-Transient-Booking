@@ -32,7 +32,7 @@ export const paymentMethodEnum = pgEnum('payment_method', [
   'BANK_TRANSFER',
 ])
 
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'STAFF'])
+export const userRoleEnum = pgEnum('user_role', ['admin', 'staff'])
 
 export const bookingStatusValues = bookingStatusEnum.enumValues
 export const bookingPaymentStatusValues = bookingPaymentStatusEnum.enumValues
