@@ -1,30 +1,77 @@
-import { mutationOptions } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
-
-import { timelineKeys } from '@/lib/timeline/timeline.queries'
-
+import { mutationOptions } from '@tanstack/react-query'
+import type z from 'zod'
+import { ledgerKeys } from '@/lib/ledger/ledger.queries'
+import { roomKeys } from '@/lib/rooms/rooms.queries'
+import {
+  checkInBooking,
+  checkOutBooking,
+  createBooking,
+  updateBookingStatus,
+} from './bookings.functions'
 import { bookingKeys } from './bookings.queries'
-
-// TODO: import updateBookingStatus from './bookings.functions' when write path lands
-
-export type UpdateBookingStatusInput = {
-  id: number
-  status: string
-  cancellationReason?: string
-}
+import type {
+  checkInBookingSchema,
+  checkOutBookingSchema,
+  createBookingServerSchema,
+  updateStatusSchema,
+} from './schemas'
 
 export const bookingMutations = {
   updateStatus: (queryClient: QueryClient) =>
     mutationOptions({
-      mutationFn: async (input: UpdateBookingStatusInput) => {
-        // return updateBookingStatus({ data: input })
-        void input
-        throw new Error('updateBookingStatus server fn not implemented')
-      },
-      onSuccess: (_data, { id }) => {
-        void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) })
+      mutationFn: (input: z.infer<typeof updateStatusSchema>) =>
+        updateBookingStatus({ data: input }),
+      onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-        void queryClient.invalidateQueries({ queryKey: timelineKeys.all })
+        void queryClient.invalidateQueries({ queryKey: roomKeys.all })
+      },
+    }),
+
+  createBooking: (
+    queryClient: QueryClient,
+    onSuccess?: (bookingRef: string) => void,
+    onError?: (error: string) => void,
+  ) =>
+    mutationOptions({
+      mutationFn: (input: z.infer<typeof createBookingServerSchema>) =>
+        createBooking({ data: input }),
+      onSuccess: (result) => {
+        void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+        void queryClient.invalidateQueries({ queryKey: roomKeys.all })
+        void queryClient.invalidateQueries({
+          queryKey: ledgerKeys.byBooking(result.bookingId),
+        })
+        onSuccess?.(result.bookingRef)
+      },
+      onError: (err: Error) => {
+        onError?.(err.message || 'Failed to create booking')
+      },
+    }),
+
+  checkIn: (queryClient: QueryClient, bookingId: number) =>
+    mutationOptions({
+      mutationFn: (input: z.infer<typeof checkInBookingSchema>) =>
+        checkInBooking({ data: input }),
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+        void queryClient.invalidateQueries({ queryKey: roomKeys.all })
+        void queryClient.invalidateQueries({
+          queryKey: ledgerKeys.byBooking(bookingId),
+        })
+      },
+    }),
+
+  checkOut: (queryClient: QueryClient, bookingId: number) =>
+    mutationOptions({
+      mutationFn: (input: z.infer<typeof checkOutBookingSchema>) =>
+        checkOutBooking({ data: input }),
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
+        void queryClient.invalidateQueries({ queryKey: roomKeys.all })
+        void queryClient.invalidateQueries({
+          queryKey: ledgerKeys.byBooking(bookingId),
+        })
       },
     }),
 }

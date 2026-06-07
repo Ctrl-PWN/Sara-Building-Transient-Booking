@@ -7,10 +7,7 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
-import {
-  resolveWeekStart,
-  shiftWeek,
-} from '@/lib/timeline/week'
+import { resolveWeekStart, shiftWeek } from '@/lib/timeline/week'
 
 type TimelineWeekNavProps = {
   weekStart: string

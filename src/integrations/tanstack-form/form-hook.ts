@@ -1,11 +1,16 @@
-import { createFormHook, formOptions } from '@tanstack/react-form'
-
+import { createFormHook } from '@tanstack/react-form'
+import { ResetButton, SubmitButton } from '@/components/form/form-components'
 import {
   CheckboxField,
-  TextField,
+  DateRangeField,
+  NumberField,
+  RadioChoiceCardField,
+  RadioGroupField,
+  SelectField,
   TextareaField,
+  TextField,
+  ToggleField,
 } from '@/components/form/form-fields'
-import { ResetButton, SubmitButton } from '@/components/form/form-components'
 
 import { fieldContext, formContext } from './form-context'
 
@@ -16,6 +21,12 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TextField,
     TextareaField,
     CheckboxField,
+    SelectField,
+    NumberField,
+    RadioGroupField,
+    RadioChoiceCardField,
+    DateRangeField,
+    ToggleField,
   },
   formComponents: {
     SubmitButton,
@@ -23,4 +34,4 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
   },
 })
 
-export { formOptions }
+export { formOptions } from '@tanstack/react-form'

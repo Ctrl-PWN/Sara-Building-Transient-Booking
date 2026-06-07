@@ -1,13 +1,10 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import {
-  getBookingStatusPresentation,
-} from '@/lib/bookings/status'
+import { getBookingStatusPresentation } from '@/lib/bookings/status'
 import type { BookingStatusPresentation } from '@/lib/bookings/status'
-import type { BookingStatus, TimelineLegendStatus } from '@/lib/bookings/types'
 
 type BookingStatusBadgeProps = {
-  status: BookingStatus | TimelineLegendStatus
+  status: string
   className?: string
   presentation?: BookingStatusPresentation
 }
@@ -35,7 +32,7 @@ export function BookingStatusDot({
   status,
   className,
 }: {
-  status: BookingStatus
+  status: string
   className?: string
 }) {
   const resolved = getBookingStatusPresentation(status)

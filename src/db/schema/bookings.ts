@@ -1,12 +1,12 @@
 import {
+  date,
+  decimal,
+  integer,
   pgTable,
   serial,
-  varchar,
-  integer,
-  date,
   text,
-  decimal,
   timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 import { bookingPaymentStatusEnum, bookingStatusEnum } from './enums'

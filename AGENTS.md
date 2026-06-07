@@ -14,19 +14,20 @@
 
 ## Key commands
 
-| Command               | What it does                         |
-| --------------------- | ------------------------------------ |
-| `npm run dev`         | Dev server on port 3000              |
+| Command               | What it does                          |
+| --------------------- | ------------------------------------- |
+| `npm run dev`         | Dev server on port 3000               |
 | `npm run build`       | Production build → `.output/` (Nitro) |
-| `npm run test`        | Vitest (no tests exist yet)          |
-| `npm run lint`        | ESLint (tanstack config)             |
-| `npm run format`      | Prettier --write + ESLint --fix      |
-| `npm run check`       | Prettier --check only                |
-| `npm run db:generate` | Drizzle Kit generate migrations      |
-| `npm run db:migrate`  | Drizzle Kit migrate                  |
-| `npm run db:push`     | Drizzle Kit push (quick schema push) |
-| `npm run db:pull`     | Drizzle Kit pull (introspect)        |
-| `npm run db:studio`   | Drizzle Kit studio                   |
+| `npm run test`        | Vitest (no tests exist yet)           |
+| `npm run lint`        | ESLint (tanstack config)              |
+| `npm run lint:biome`  | Biome lint (scoped to `src/`)         |
+| `npm run format`      | Prettier --write + ESLint --fix       |
+| `npm run check`       | Prettier --check only                 |
+| `npm run db:generate` | Drizzle Kit generate migrations       |
+| `npm run db:migrate`  | Drizzle Kit migrate                   |
+| `npm run db:push`     | Drizzle Kit push (quick schema push)  |
+| `npm run db:pull`     | Drizzle Kit pull (introspect)         |
+| `npm run db:studio`   | Drizzle Kit studio                    |
 
 ## Architecture
 
@@ -124,7 +125,13 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 **Render pattern** (inline children required):
 
 ```tsx
-<form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit() }}>
+<form
+  onSubmit={(e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    form.handleSubmit()
+  }}
+>
   <form.AppForm>
     <FieldGroup>
       <form.AppField name="guestName">
@@ -146,13 +153,13 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 
 ### Mutations
 
-| Layer | File | Responsibility |
-| ----- | ---- | -------------- |
-| Input schema | `{domain}.schemas.ts` | Zod — shared by server fn + form validators |
-| Server write | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).inputValidator(schema).handler(...)` |
-| Cache keys | `{domain}.queries.ts` | `queryKeys` factories |
-| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient` |
-| Route/component | form `onSubmit` | `useMutation(domainMutations.x(queryClient))` + `mutateAsync` |
+| Layer           | File                    | Responsibility                                                           |
+| --------------- | ----------------------- | ------------------------------------------------------------------------ |
+| Input schema    | `{domain}.schemas.ts`   | Zod — shared by server fn + form validators                              |
+| Server write    | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).inputValidator(schema).handler(...)` |
+| Cache keys      | `{domain}.queries.ts`   | `queryKeys` factories                                                    |
+| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient`                      |
+| Route/component | form `onSubmit`         | `useMutation(domainMutations.x(queryClient))` + `mutateAsync`            |
 
 ```ts
 // bookings.mutations.ts

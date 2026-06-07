@@ -1,60 +1,110 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { PlaceholderPanel } from '@/components/layout/PlaceholderPanel'
+import { Suspense, useState } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { roomQueries } from '@/lib/rooms/rooms.queries'
+import { FeedbackDialog } from '@/components/ui/feedback-dialog'
+import { BookingsPageHeader } from '@/components/bookings/BookingsPageHeader'
+import { BookingsTable } from '@/components/bookings/BookingsTable'
+import { CreateBookingDialog } from '@/components/bookings/CreateBookingDialog'
 
 export const Route = createFileRoute('/_authenticated/bookings/')({
-  component: BookingsListPage,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(bookingQueries.list())
+    await context.queryClient.ensureQueryData(roomQueries.list())
+  },
+  component: BookingsRoute,
 })
 
-function BookingsListPage() {
+function BookingsRoute() {
   return (
-    <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
-      <PageHeader
-        title="Bookings"
-        description="View and manage guest reservations."
-      />
+    <Suspense
+      fallback={
+        <div className="px-4 py-20 text-center text-muted-foreground">
+          Loading...
+        </div>
+      }
+    >
+      <BookingsListPage />
+    </Suspense>
+  )
+}
 
-      <section className="block-card overflow-hidden">
-        <table className="w-full font-body text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/30 text-left">
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Ref
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Guest
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Room
-              </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-border">
-              <td className="px-4 py-3">
-                <Link
-                  to="/bookings/$bookingId"
-                  params={{ bookingId: 'sample-001' }}
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  sample-001
-                </Link>
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">Sample Guest</td>
-              <td className="px-4 py-3 text-muted-foreground">101</td>
-              <td className="px-4 py-3 text-muted-foreground">Reserved</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+function BookingsListPage() {
+  const { data: bookings } = useSuspenseQuery(bookingQueries.list())
+  const { data: rooms } = useSuspenseQuery(roomQueries.list())
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [walkIn, setWalkIn] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
-      <PlaceholderPanel
-        title="Booking list"
-        description="Live booking data and filters will be wired in CTR-17."
-      />
+  const filteredBookings = searchQuery.trim()
+    ? bookings.filter((b) => {
+        const q = searchQuery.toLowerCase()
+        return (
+          b.firstName.toLowerCase().includes(q) ||
+          b.lastName.toLowerCase().includes(q) ||
+          b.bookingRef.toLowerCase().includes(q)
+        )
+      })
+    : bookings
+
+  return (
+    <main className="page-wrap px-4 py-6 pb-8">
+      <div className="space-y-8">
+        <BookingsPageHeader
+          onNewReservation={() => {
+            setWalkIn(false)
+            setIsAddOpen(true)
+          }}
+          onWalkIn={() => {
+            setWalkIn(true)
+            setIsAddOpen(true)
+          }}
+        />
+
+        <BookingsTable
+          bookings={filteredBookings}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+
+        <CreateBookingDialog
+          open={isAddOpen}
+          onOpenChange={(open) => {
+            if (!open) setWalkIn(false)
+            setIsAddOpen(open)
+          }}
+          rooms={rooms}
+          bookings={bookings}
+          walkIn={walkIn}
+          onSuccess={(bookingRef) => {
+            setIsAddOpen(false)
+            setWalkIn(false)
+            setSuccess(`Booking ${bookingRef} created successfully`)
+          }}
+          onError={(msg) => {
+            setError(msg)
+          }}
+        />
+
+        <FeedbackDialog
+          open={error != null}
+          onClose={() => setError(null)}
+          title="Error"
+          message={error}
+          type="error"
+        />
+
+        <FeedbackDialog
+          open={success != null}
+          onClose={() => setSuccess(null)}
+          title="Success"
+          message={success}
+          type="success"
+        />
+      </div>
     </main>
   )
 }

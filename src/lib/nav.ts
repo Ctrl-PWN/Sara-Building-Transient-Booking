@@ -2,7 +2,6 @@ import type { Icon } from '@phosphor-icons/react'
 import {
   CalendarCheckIcon,
   CalendarIcon,
-  CurrencyDollarIcon,
   DoorIcon,
   HouseIcon,
   UsersIcon,
