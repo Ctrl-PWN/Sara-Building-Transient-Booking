@@ -1,17 +1,17 @@
 import {
-  pgTable,
+  boolean,
+  date,
+  foreignKey,
   index,
+  integer,
+  numeric,
+  pgEnum,
+  pgTable,
+  serial,
   text,
   timestamp,
-  foreignKey,
-  serial,
-  varchar,
-  numeric,
-  integer,
   unique,
-  date,
-  boolean,
-  pgEnum,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 export const bookingPaymentStatus = pgEnum('booking_payment_status', [

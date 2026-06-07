@@ -2,6 +2,7 @@ import type { Icon } from '@phosphor-icons/react'
 import {
   CalendarCheckIcon,
   CalendarIcon,
+  CurrencyDollarIcon,
   DoorIcon,
   HouseIcon,
   UsersIcon,
@@ -18,7 +19,8 @@ export const mainNavItems: NavItem[] = [
   { label: 'Timeline', to: '/timeline', icon: CalendarIcon },
   { label: 'Bookings', to: '/bookings', icon: CalendarCheckIcon },
   { label: 'Rooms', to: '/rooms', icon: DoorIcon },
-  { label: 'Users', to: '/users', icon: UsersIcon },
+  { label: 'Ledger', to: '/ledger', icon: CurrencyDollarIcon },
+  { label: 'Users', to: '/user-management', icon: UsersIcon },
 ]
 
 export function isNavItemActive(pathname: string, to: string): boolean {

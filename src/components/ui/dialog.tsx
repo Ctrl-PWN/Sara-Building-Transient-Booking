@@ -1,7 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
-import { useRef } from 'react'
 import type * as React from 'react'
+import { useRef } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -160,16 +160,16 @@ function DialogOutsideScroll({
 }
 
 export {
-  DialogRoot as Dialog,
-  DialogTrigger,
-  DialogPortal,
   DialogBackdrop,
-  DialogPopup,
-  DialogContent,
-  DialogOutsideScroll,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
   DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOutsideScroll,
+  DialogPopup,
+  DialogPortal,
+  DialogRoot as Dialog,
+  DialogTitle,
+  DialogTrigger,
 }

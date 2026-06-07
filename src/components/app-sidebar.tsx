@@ -1,26 +1,30 @@
-import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { SignOutIcon } from '@phosphor-icons/react'
-
-import { authClient } from '@/lib/auth-client'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarFooter,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { authClient } from '@/lib/auth-client'
 import { isNavItemActive, mainNavItems } from '@/lib/nav'
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const navigate = useNavigate()
+  const { data: session } = authClient.useSession()
+  const isAdmin = session?.user.role === 'admin'
+  const visibleNavItems = isAdmin
+    ? mainNavItems
+    : mainNavItems.filter((item) => item.to !== '/user-management')
 
   async function handleLogout() {
     await authClient.signOut()
@@ -44,7 +48,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon
                 const active = isNavItemActive(pathname, item.to)
 

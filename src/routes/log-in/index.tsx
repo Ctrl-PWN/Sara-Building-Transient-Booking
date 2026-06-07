@@ -1,9 +1,9 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { getSession } from '@/lib/session/session.functions'
+import { useAppForm } from '@/integrations/tanstack-form'
 import { authClient } from '@/lib/auth-client'
 import { logInSchema } from '@/lib/session/schemas'
-import { useAppForm } from '@/integrations/tanstack-form'
+import { getSession } from '@/lib/session/session.functions'
 
 export const Route = createFileRoute('/log-in/')({
   loader: async () => {
@@ -89,9 +89,8 @@ function LogInPage() {
 
             <form.AppField name="password">
               {(field) => (
-                <field.TextField
+                <field.PasswordField
                   label="Password"
-                  type="password"
                   autoComplete="current-password"
                 />
               )}

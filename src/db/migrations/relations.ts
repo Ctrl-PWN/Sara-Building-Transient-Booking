@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm/relations'
 import {
-  user,
   account,
-  rooms,
   bookings,
   ledgerTransactions,
+  rooms,
   session,
+  user,
 } from './schema'
 
 export const accountRelations = relations(account, ({ one }) => ({

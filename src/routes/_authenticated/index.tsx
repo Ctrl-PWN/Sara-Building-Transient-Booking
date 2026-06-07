@@ -1,5 +1,5 @@
-import { getSession } from '@/lib/session/session.functions'
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { getSession } from '@/lib/session/session.functions'
 
 export const Route = createFileRoute('/_authenticated/')({
   loader: async () => {
