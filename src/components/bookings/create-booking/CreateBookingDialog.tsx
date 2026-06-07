@@ -106,6 +106,7 @@ export function CreateBookingDialog({
         firstName: value.firstName.trim(),
         lastName: value.lastName.trim(),
         contactNumber: value.contactNumber.trim() || undefined,
+        address: value.address.trim(),
         checkInDate: value.checkInDate,
         checkOutDate: value.checkOutDate,
         occupantsCount: value.occupantsCount,

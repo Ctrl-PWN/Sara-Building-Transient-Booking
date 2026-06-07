@@ -21,6 +21,7 @@ export const bookings = pgTable('bookings', {
   firstName: varchar('first_name').notNull(),
   lastName: varchar('last_name').notNull(),
   contactNumber: varchar('contact_number'),
+  address: text('address').default(''),
   checkInDate: date('check_in_date').notNull(),
   checkOutDate: date('check_out_date').notNull(),
   occupantsCount: integer('occupants_count').notNull(),

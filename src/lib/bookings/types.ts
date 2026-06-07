@@ -9,6 +9,7 @@ export type BookingWithRoom = {
   firstName: string
   lastName: string
   contactNumber: string | null
+  address: string
   roomId: number
   roomNumber: string
   roomType: string

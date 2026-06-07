@@ -28,6 +28,7 @@ function mapBookingRow(row: {
   firstName: string
   lastName: string
   contactNumber: string | null
+  address: string
   roomId: number
   roomNumber: string
   roomType: string
@@ -51,6 +52,7 @@ function mapBookingRow(row: {
     firstName: row.firstName,
     lastName: row.lastName,
     contactNumber: row.contactNumber,
+    address: row.address,
     roomId: row.roomId,
     roomNumber: row.roomNumber,
     roomType: row.roomType,
@@ -76,6 +78,7 @@ const bookingSelect = {
   firstName: bookings.firstName,
   lastName: bookings.lastName,
   contactNumber: bookings.contactNumber,
+  address: bookings.address,
   roomId: bookings.roomId,
   roomNumber: rooms.roomNumber,
   roomType: rooms.type,
@@ -244,6 +247,7 @@ export const createBooking = createServerFn({ method: 'POST' })
           firstName: data.firstName,
           lastName: data.lastName,
           contactNumber: data.contactNumber,
+          address: data.address,
           checkInDate: data.checkInDate,
           checkOutDate: data.checkOutDate,
           occupantsCount: data.occupantsCount,
