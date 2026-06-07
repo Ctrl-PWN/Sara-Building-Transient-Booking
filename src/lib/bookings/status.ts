@@ -6,8 +6,10 @@ export type BookingStatusPresentation = {
   colorVar: string
 }
 
-const presentationByLegend: Record<
-  TimelineLegendStatus,
+export type DerivedBookingStatus = TimelineLegendStatus | 'OVERDUE'
+
+const presentationByStatus: Record<
+  DerivedBookingStatus,
   BookingStatusPresentation
 > = {
   RESERVED: {
@@ -25,6 +27,11 @@ const presentationByLegend: Record<
     legendLabel: 'Checked-Out',
     colorVar: '--status-checked-out',
   },
+  OVERDUE: {
+    label: 'Overdue',
+    legendLabel: 'Overdue',
+    colorVar: '--status-overdue',
+  },
 }
 
 export const timelineLegendStatuses: TimelineLegendStatus[] = [
@@ -39,10 +46,27 @@ export function normalizeBookingStatus(status: string): TimelineLegendStatus {
   return 'RESERVED'
 }
 
+export function computeBookingDisplayStatus(
+  status: string,
+  checkOutDate: string | Date,
+): DerivedBookingStatus {
+  if (status === 'CHECKED_IN') {
+    const checkout = new Date(checkOutDate)
+    checkout.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (today > checkout) return 'OVERDUE'
+  }
+  return normalizeBookingStatus(status)
+}
+
 export function getBookingStatusPresentation(
   status: string,
 ): BookingStatusPresentation {
-  return presentationByLegend[normalizeBookingStatus(status)]
+  if (status in presentationByStatus) {
+    return presentationByStatus[status as DerivedBookingStatus]
+  }
+  return presentationByStatus[normalizeBookingStatus(status)]
 }
 
 export function formatPaymentStatus(paymentStatus: string): string {
