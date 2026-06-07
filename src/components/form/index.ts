@@ -4,6 +4,7 @@ export {
   CheckboxField,
   DateRangeField,
   NumberField,
+  PasswordField,
   RadioChoiceCardField,
   RadioGroupField,
   SelectField,

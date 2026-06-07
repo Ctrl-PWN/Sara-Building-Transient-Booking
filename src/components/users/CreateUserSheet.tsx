@@ -88,9 +88,8 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
 
             <form.AppField name="password">
               {(field) => (
-                <field.TextField
+                <field.PasswordField
                   label="Password"
-                  type="password"
                   placeholder="Minimum 8 characters"
                 />
               )}

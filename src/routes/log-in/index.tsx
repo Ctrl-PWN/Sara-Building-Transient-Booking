@@ -89,9 +89,8 @@ function LogInPage() {
 
             <form.AppField name="password">
               {(field) => (
-                <field.TextField
+                <field.PasswordField
                   label="Password"
-                  type="password"
                   autoComplete="current-password"
                 />
               )}

@@ -1,8 +1,15 @@
 import type { Icon } from '@phosphor-icons/react'
+import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import { useStore } from '@tanstack/react-form'
 import type * as React from 'react'
 import { useId, useState } from 'react'
 import { Calendar } from '@/components/ui/calendar'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Field,
@@ -81,6 +88,65 @@ function TextField({
         aria-invalid={isInvalid || undefined}
         aria-describedby={description ? `${field.name}-description` : undefined}
       />
+      {description ? (
+        <p
+          id={`${field.name}-description`}
+          className="text-sm text-muted-foreground"
+        >
+          {description}
+        </p>
+      ) : null}
+      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+    </Field>
+  )
+}
+
+type PasswordFieldProps = {
+  label: string
+  description?: string
+  placeholder?: string
+  autoComplete?: string
+}
+
+function PasswordField({
+  label,
+  description,
+  placeholder,
+  autoComplete,
+}: PasswordFieldProps) {
+  const { field, isInvalid } = useFieldInvalidState()
+  const value = field.state.value as string
+  const [showPassword, setShowPassword] = useState(false)
+
+  return (
+    <Field data-invalid={isInvalid || undefined}>
+      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <InputGroup>
+        <InputGroupInput
+          id={field.name}
+          name={field.name}
+          type={showPassword ? 'text' : 'password'}
+          value={value}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          onBlur={field.handleBlur}
+          onChange={(event) => field.handleChange(event.target.value)}
+          aria-invalid={isInvalid || undefined}
+          aria-describedby={
+            description ? `${field.name}-description` : undefined
+          }
+        />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            size="icon-xs"
+            tabIndex={-1}
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
       {description ? (
         <p
           id={`${field.name}-description`}
@@ -577,6 +643,7 @@ export {
   CheckboxField,
   DateRangeField,
   NumberField,
+  PasswordField,
   RadioChoiceCardField,
   RadioGroupField,
   SelectField,
