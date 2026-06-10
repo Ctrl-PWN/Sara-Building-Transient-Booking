@@ -59,6 +59,12 @@ export function CreateBookingStayFields({
 				)}
 			</form.AppField>
 
+			<form.AppField name="address">
+				{(field) => (
+					<field.TextField label="Address" placeholder="Guest address" />
+				)}
+			</form.AppField>
+
 			<form.AppField name="occupantsCount">
 				{(field) => <field.NumberField label="Occupants" />}
 			</form.AppField>

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { computeBookingDisplayStatus } from "@/lib/bookings/status";
 
 const statusColorMap: Record<
 	string,
@@ -13,6 +14,7 @@ const statusColorMap: Record<
 	CHECKED_OUT: "outline",
 	CANCELLED: "destructive",
 	EVICTED: "destructive",
+	OVERDUE: "destructive",
 };
 
 const isNonRefundable = (depositPctSnapshot: string) =>
@@ -42,6 +44,11 @@ export function BookingDetailHeader({
 	onCheckIn,
 	onCheckOut,
 }: BookingDetailHeaderProps) {
+	const displayStatus = computeBookingDisplayStatus(
+		booking.status,
+		booking.checkOutDate,
+	);
+
 	return (
 		<div>
 			<Link
@@ -57,8 +64,8 @@ export function BookingDetailHeader({
 						<h2 className="text-3xl font-serif tracking-tight text-foreground">
 							{booking.bookingRef}
 						</h2>
-						<Badge variant={statusColorMap[booking.status]}>
-							{booking.status.replace("_", " ")}
+						<Badge variant={statusColorMap[displayStatus]}>
+							{displayStatus.replace("_", " ")}
 						</Badge>
 						{booking.paymentStatus === "OVERDUE" && (
 							<Badge variant="destructive">OVERDUE</Badge>

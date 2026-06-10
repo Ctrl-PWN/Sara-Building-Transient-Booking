@@ -54,6 +54,10 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 						<p className="text-sm text-muted-foreground">Contact</p>
 						<p className="font-medium mt-1">{booking.contactNumber || "N/A"}</p>
 					</div>
+					<div>
+						<p className="text-sm text-muted-foreground">Address</p>
+						<p className="font-medium mt-1">{booking.address}</p>
+					</div>
 				</CardContent>
 			</Card>
 		</div>
