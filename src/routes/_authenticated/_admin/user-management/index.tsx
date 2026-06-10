@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { PlusIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
+import Fuse from 'fuse.js'
 
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
@@ -35,16 +36,34 @@ function UsersPage() {
     name: string
   } | null>(null)
 
-  const { data: users, isLoading } = useQuery(
-    userQueries.list(
-      search
-        ? {
-            searchValue: search,
-            searchOperator: 'contains',
+  const { data: users, isLoading } = useQuery(userQueries.list())
+
+  const itemList = users ?? []
+  const filtered = !search
+    ? itemList
+    : search.length < 2
+      ? itemList.filter((u) => {
+          const user = u as {
+            firstName?: string
+            lastName?: string
+            email: string
           }
-        : undefined,
-    ),
-  )
+          return (
+            (user.firstName ?? '')
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            (user.lastName ?? '')
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase())
+          )
+        })
+      : new Fuse(itemList, {
+          keys: ['firstName', 'lastName', 'email'],
+          threshold: 0.2,
+        })
+          .search(search)
+          .map((r) => r.item)
 
   return (
     <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
@@ -76,7 +95,7 @@ function UsersPage() {
           </div>
         ) : (
           <UserTable
-            users={users ?? []}
+            users={filtered}
             onEdit={(user) => setEditUser(user)}
             onDelete={(user) => setDeleteUser(user)}
           />
