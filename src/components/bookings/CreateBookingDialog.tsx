@@ -1,1 +1,1 @@
-export { CreateBookingDialog } from './create-booking/CreateBookingDialog'
+export { CreateBookingDialog } from "./create-booking/CreateBookingDialog";
