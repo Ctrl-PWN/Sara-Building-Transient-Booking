@@ -1,10 +1,8 @@
 import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { PlusIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import Fuse from 'fuse.js'
-
+import { useState } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
