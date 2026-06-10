@@ -28,7 +28,7 @@ function mapBookingRow(row: {
 	firstName: string;
 	lastName: string;
 	contactNumber: string | null;
-	address: string;
+	address: string | null;
 	roomId: number;
 	roomNumber: string;
 	roomType: string;
@@ -52,7 +52,7 @@ function mapBookingRow(row: {
 		firstName: row.firstName,
 		lastName: row.lastName,
 		contactNumber: row.contactNumber,
-		address: row.address,
+		address: row.address ?? "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
 		roomType: row.roomType,
