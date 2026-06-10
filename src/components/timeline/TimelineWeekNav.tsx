@@ -1,9 +1,9 @@
-import { useNavigate } from '@tanstack/react-router'
 import {
+  CalendarBlankIcon,
   CaretLeftIcon,
   CaretRightIcon,
-  CalendarBlankIcon,
 } from '@phosphor-icons/react'
+import { useNavigate } from '@tanstack/react-router'
 
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'

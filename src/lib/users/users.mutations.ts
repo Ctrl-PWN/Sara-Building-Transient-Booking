@@ -1,17 +1,13 @@
-import { mutationOptions } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
-
-import { userKeys } from './users.queries'
-
-import { createUser, deleteUser, updateUser } from './users.functions'
-
+import { mutationOptions } from '@tanstack/react-query'
+import type { z } from 'zod'
 import type {
   createUserSchema,
   deleteUserSchema,
   updateUserSchema,
 } from './schemas'
-
-import type { z } from 'zod'
+import { createUser, deleteUser, updateUser } from './users.functions'
+import { userKeys } from './users.queries'
 
 export const userMutations = {
   create: (queryClient: QueryClient) =>

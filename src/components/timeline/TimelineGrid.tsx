@@ -1,9 +1,8 @@
-import { cn } from '@/lib/utils'
+import { TimelineRoomRow } from '@/components/timeline/TimelineRoomRow'
 import type { BookingWithRoom } from '@/lib/bookings/types'
 import type { TimelineRoom } from '@/lib/timeline/types'
 import { formatDayHeader, isToday } from '@/lib/timeline/week'
-
-import { TimelineRoomRow } from '@/components/timeline/TimelineRoomRow'
+import { cn } from '@/lib/utils'
 
 type TimelineGridProps = {
   days: string[]

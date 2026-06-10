@@ -1,7 +1,13 @@
-import { useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
-
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import {
   Sheet,
   SheetContent,
@@ -9,16 +15,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Input } from '@/components/ui/input'
-import {
-  Field,
-  FieldLabel,
-  FieldDescription,
-  FieldError,
-} from '@/components/ui/field'
 import { useAppForm } from '@/integrations/tanstack-form'
-import { userMutations } from '@/lib/users/users.mutations'
 import { updateUserSchema } from '@/lib/users/schemas'
+import { userMutations } from '@/lib/users/users.mutations'
 
 type UserRow = {
   id: string
@@ -74,7 +73,7 @@ export function EditUserSheet({
       form.setFieldValue('data.firstName', defaultFirstName)
       form.setFieldValue('data.lastName', defaultLastName)
     }
-  }, [user, open])
+  }, [user, open, form.setFieldValue, form.reset])
 
   if (!user) return null
 

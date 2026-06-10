@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
 import { PlusIcon } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
 
 type BookingsPageHeaderProps = {
   onNewReservation: () => void

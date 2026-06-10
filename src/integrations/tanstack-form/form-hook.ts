@@ -4,6 +4,7 @@ import {
   CheckboxField,
   DateRangeField,
   NumberField,
+  PasswordField,
   RadioChoiceCardField,
   RadioGroupField,
   SelectField,
@@ -27,6 +28,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     RadioChoiceCardField,
     DateRangeField,
     ToggleField,
+    PasswordField,
   },
   formComponents: {
     SubmitButton,

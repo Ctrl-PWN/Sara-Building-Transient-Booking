@@ -79,7 +79,6 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                 <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
-                    size="icon-xs"
                     onClick={() => onEdit(user)}
                     aria-label={`Edit ${user.firstName} ${user.lastName}`}
                   >
@@ -87,7 +86,6 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                   </Button>
                   <Button
                     variant="ghost"
-                    size="icon-xs"
                     onClick={() => onDelete(user)}
                     aria-label={`Delete ${user.firstName} ${user.lastName}`}
                   >

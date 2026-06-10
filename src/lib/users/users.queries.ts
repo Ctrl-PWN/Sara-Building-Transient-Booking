@@ -1,9 +1,8 @@
 import { queryOptions } from '@tanstack/react-query'
 
 import type { z } from 'zod'
-
-import { listUsers } from './users.functions'
 import type { listUsersSchema } from './schemas'
+import { listUsers } from './users.functions'
 
 export const userKeys = {
   all: ['users'] as const,

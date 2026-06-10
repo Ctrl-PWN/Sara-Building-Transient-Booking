@@ -1,24 +1,22 @@
-import { createServerFn, createServerOnlyFn } from '@tanstack/react-start'
-
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeaders } from '@tanstack/react-start/server'
+import { auth } from '../auth'
+import { authMiddleware } from '../require-admin'
 import {
   createUserSchema,
   deleteUserSchema,
   listUsersSchema,
   updateUserSchema,
 } from './schemas'
-import { authMiddleware } from '../require-admin'
 
-const getAuthRequestContext = createServerOnlyFn(async () => {
-  const [{ auth: authServer }, { getRequestHeaders }] = await Promise.all([
-    import('@/lib/auth'),
-    import('@tanstack/react-start/server'),
-  ])
-
-  return {
-    auth: authServer,
-    headers: getRequestHeaders(),
-  }
-})
+function normalizeUserNames<
+  T extends { name: string; firstName?: string; lastName?: string },
+>(user: T) {
+  const parts = user.name.trim().split(/\s+/).filter(Boolean)
+  const firstName = user.firstName?.trim() || parts[0] || ''
+  const lastName = user.lastName?.trim() || parts.slice(1).join(' ') || ''
+  return { ...user, firstName, lastName }
+}
 
 export const listUsers = createServerFn({
   method: 'GET',
@@ -26,7 +24,7 @@ export const listUsers = createServerFn({
   .middleware([authMiddleware()])
   .inputValidator(listUsersSchema.optional())
   .handler(async ({ data }) => {
-    const { auth, headers } = await getAuthRequestContext()
+    const headers = getRequestHeaders()
     const result = await auth.api.listUsers({
       query: data ?? {},
       headers,
@@ -41,7 +39,6 @@ export const createUser = createServerFn({
   .middleware([authMiddleware()])
   .inputValidator(createUserSchema)
   .handler(async ({ data }) => {
-    const { auth, headers } = await getAuthRequestContext()
     const name = `${data.firstName} ${data.lastName}`.trim()
 
     const body = {
@@ -54,6 +51,7 @@ export const createUser = createServerFn({
       },
     }
 
+    const headers = getRequestHeaders()
     return auth.api.createUser({
       body,
       headers,
@@ -66,8 +64,6 @@ export const updateUser = createServerFn({
   .middleware([authMiddleware()])
   .inputValidator(updateUserSchema)
   .handler(async ({ data }) => {
-    const { auth, headers } = await getAuthRequestContext()
-
     if (
       typeof data.data.firstName === 'string' &&
       data.data.firstName.trim() === ''
@@ -81,8 +77,27 @@ export const updateUser = createServerFn({
       throw new Error('Last name cannot be blank')
     }
 
+    const updateData = { ...data.data }
+    if (
+      typeof updateData.firstName === 'string' ||
+      typeof updateData.lastName === 'string'
+    ) {
+      const firstName =
+        typeof updateData.firstName === 'string'
+          ? updateData.firstName.trim()
+          : undefined
+      const lastName =
+        typeof updateData.lastName === 'string'
+          ? updateData.lastName.trim()
+          : undefined
+      if (firstName !== undefined || lastName !== undefined) {
+        updateData.name = `${firstName ?? ''} ${lastName ?? ''}`.trim()
+      }
+    }
+
+    const headers = getRequestHeaders()
     return auth.api.adminUpdateUser({
-      body: data,
+      body: { userId: data.userId, data: updateData },
       headers,
     })
   })
@@ -93,7 +108,7 @@ export const deleteUser = createServerFn({
   .middleware([authMiddleware()])
   .inputValidator(deleteUserSchema)
   .handler(async ({ data }) => {
-    const { auth, headers } = await getAuthRequestContext()
+    const headers = getRequestHeaders()
     return auth.api.removeUser({
       body: {
         userId: data.userId,

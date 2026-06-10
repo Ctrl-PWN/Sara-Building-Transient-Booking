@@ -1,12 +1,12 @@
-import { Suspense, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { bookingQueries } from '@/lib/bookings/bookings.queries'
-import { roomQueries } from '@/lib/rooms/rooms.queries'
-import { FeedbackDialog } from '@/components/ui/feedback-dialog'
+import { createFileRoute } from '@tanstack/react-router'
+import { Suspense, useState } from 'react'
 import { BookingsPageHeader } from '@/components/bookings/BookingsPageHeader'
 import { BookingsTable } from '@/components/bookings/BookingsTable'
 import { CreateBookingDialog } from '@/components/bookings/CreateBookingDialog'
+import { FeedbackDialog } from '@/components/ui/feedback-dialog'
+import { bookingQueries } from '@/lib/bookings/bookings.queries'
+import { roomQueries } from '@/lib/rooms/rooms.queries'
 
 export const Route = createFileRoute('/_authenticated/bookings/')({
   loader: async ({ context }) => {

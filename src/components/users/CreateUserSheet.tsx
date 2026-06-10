@@ -8,8 +8,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useAppForm } from '@/integrations/tanstack-form'
-import { userMutations } from '@/lib/users/users.mutations'
 import { createUserSchema } from '@/lib/users/schemas'
+import { userMutations } from '@/lib/users/users.mutations'
 
 type CreateUserSheetProps = {
   open: boolean
@@ -88,9 +88,8 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
 
             <form.AppField name="password">
               {(field) => (
-                <field.TextField
+                <field.PasswordField
                   label="Password"
-                  type="password"
                   placeholder="Minimum 8 characters"
                 />
               )}

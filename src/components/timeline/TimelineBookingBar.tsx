@@ -6,8 +6,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { getBookingStatusPresentation } from '@/lib/bookings/status'
-import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { formatGuestName } from '@/lib/bookings/types'
 import type { TimelineBarPosition } from '@/lib/timeline/types'
 import { cn } from '@/lib/utils'
 
