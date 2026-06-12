@@ -1,7 +1,7 @@
-import type { useCreateBookingForm } from "./useCreateBookingForm";
+import type { useCreateBookingForm } from './useCreateBookingForm'
 
-export type CreateBookingForm = ReturnType<typeof useCreateBookingForm>;
+export type CreateBookingForm = ReturnType<typeof useCreateBookingForm>
 
 export type CreateBookingFormSectionProps = {
-	form: CreateBookingForm;
-};
+  form: CreateBookingForm
+}
