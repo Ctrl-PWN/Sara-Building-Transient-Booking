@@ -1,3 +1,5 @@
+import { parseISO, startOfDay } from 'date-fns'
+
 import type { TimelineLegendStatus } from './types'
 
 export type BookingStatusPresentation = {
@@ -51,19 +53,22 @@ export function computeBookingDisplayStatus(
   checkOutDate: string | Date,
 ): DerivedBookingStatus {
   if (status === 'CHECKED_IN') {
-    const checkout = new Date(checkOutDate)
-    checkout.setHours(0, 0, 0, 0)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const checkout = startOfDay(
+      typeof checkOutDate === 'string' ? parseISO(checkOutDate) : checkOutDate,
+    )
+    const today = startOfDay(new Date())
     if (today > checkout) return 'OVERDUE'
   }
-  return normalizeBookingStatus(status)
+  if (status === 'CHECKED_IN' || status === 'CHECKED_OUT' || status === 'RESERVED') {
+    return status
+  }
+  return status as DerivedBookingStatus
 }
 
 export function getBookingStatusPresentation(
   status: string,
 ): BookingStatusPresentation {
-  if (status in presentationByStatus) {
+  if (Object.hasOwn(presentationByStatus, status)) {
     return presentationByStatus[status as DerivedBookingStatus]
   }
   return presentationByStatus[normalizeBookingStatus(status)]

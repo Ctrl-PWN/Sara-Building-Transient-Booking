@@ -27,7 +27,7 @@ function buildBookedDaysByRoom(bookings: BookingWithRoom[]) {
     if (bStart.getTime() === bEnd.getTime()) {
       set.add(bStart.getTime())
     } else {
-      for (let t = bStart.getTime(); t <= bEnd.getTime(); t += 86_400_000) {
+      for (let t = bStart.getTime(); t < bEnd.getTime(); t += 86_400_000) {
         set.add(t)
       }
     }
