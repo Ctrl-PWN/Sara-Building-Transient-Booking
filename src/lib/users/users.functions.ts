@@ -78,7 +78,7 @@ export const updateUser = createServerFn({
       updateData.lastName !== undefined
     ) {
       updateData.name =
-        `${(updateData.firstName as string) ?? ''} ${(updateData.lastName as string) ?? ''}`.trim()
+        `${updateData.firstName ?? ''} ${updateData.lastName ?? ''}`.trim()
     }
 
     const headers = getRequestHeaders()
