@@ -157,7 +157,6 @@ export function EditUserSheet({
             </form.AppField>
 
             <div className="flex justify-end gap-2 pt-2">
-              <form.ResetButton label="Cancel" />
               <form.SubmitButton label="Save changes" />
             </div>
           </form.AppForm>

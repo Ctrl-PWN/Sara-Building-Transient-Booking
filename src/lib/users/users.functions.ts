@@ -30,31 +30,7 @@ export const listUsers = createServerFn({
       headers,
     })
 
-    let users = result.users
-      .filter((user) => user.role !== 'admin')
-      .map(normalizeUserNames)
-
-    if (data?.searchValue) {
-      const value = data.searchValue.toLowerCase()
-      users = users.filter((user) => {
-        const firstName =
-          typeof user.firstName === 'string' ? user.firstName.toLowerCase() : ''
-        const lastName =
-          typeof user.lastName === 'string' ? user.lastName.toLowerCase() : ''
-        const name =
-          typeof user.name === 'string' ? user.name.toLowerCase() : ''
-        const email =
-          typeof user.email === 'string' ? user.email.toLowerCase() : ''
-        return (
-          firstName.includes(value) ||
-          lastName.includes(value) ||
-          name.includes(value) ||
-          email.includes(value)
-        )
-      })
-    }
-
-    return users
+    return result.users.filter((user) => user.role !== 'admin')
   })
 
 export const createUser = createServerFn({

@@ -35,7 +35,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex flex-col gap-0.5 px-2 py-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
-          <span className="font-body text-xs font-bold uppercase tracking-[0.05em] text-muted-foreground group-data-[collapsible=icon]:sr-only">
+          <span className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground group-data-[collapsible=icon]:sr-only">
             Sara Building
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:sr-only">
