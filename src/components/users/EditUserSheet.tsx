@@ -108,7 +108,7 @@ export function EditUserSheet({
                     <Input
                       id={field.name}
                       name={field.name}
-                      value={field.state.value}
+                      value={field.state.value as string}
                       placeholder="Jane"
                       maxLength={15}
                       onBlur={field.handleBlur}
@@ -138,7 +138,7 @@ export function EditUserSheet({
                     <Input
                       id={field.name}
                       name={field.name}
-                      value={field.state.value}
+                      value={field.state.value as string}
                       placeholder="Doe"
                       maxLength={15}
                       onBlur={field.handleBlur}
