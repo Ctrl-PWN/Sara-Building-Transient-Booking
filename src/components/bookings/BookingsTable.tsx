@@ -24,6 +24,7 @@ const statusColorMap: Record<
   CHECKED_IN: 'success',
   CHECKED_OUT: 'outline',
   CANCELLED: 'destructive',
+  EVICTED: 'destructive',
   OVERDUE: 'destructive',
 }
 
@@ -31,12 +32,14 @@ type BookingsTableProps = {
   bookings: BookingWithRoom[]
   searchQuery: string
   onSearchChange: (query: string) => void
+  emptyMessage?: string
 }
 
 export function BookingsTable({
   bookings,
   searchQuery,
   onSearchChange,
+  emptyMessage = 'No bookings found.',
 }: BookingsTableProps) {
   return (
     <Card>
@@ -69,6 +72,16 @@ export function BookingsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
+            {bookings.length === 0 && (
+              <TableRow>
+                <TableCell
+                  className="text-center text-muted-foreground py-8"
+                  colSpan={6}
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            )}
             {bookings.map((booking) => {
               const displayStatus =
                 booking.status === 'CHECKED_IN'

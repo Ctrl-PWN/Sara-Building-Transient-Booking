@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db/index'
 import { bookings, ledgerTransactions, rooms } from '@/db/schema'
@@ -122,6 +122,30 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
 export const getBookings = createServerFn({ method: 'GET' }).handler(
   async () => {
     return getBookingsFromDb()
+  },
+)
+
+async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
+  const rows = await db
+    .select(bookingSelect)
+    .from(bookings)
+    .innerJoin(rooms, eq(bookings.roomId, rooms.id))
+    .where(
+      and(
+        isNull(bookings.deletedAt),
+        inArray(bookings.status, ['CHECKED_OUT', 'CANCELLED', 'EVICTED']),
+      ),
+    )
+    .orderBy(
+      desc(sql`COALESCE(${bookings.cancelledAt}, ${bookings.checkOutDate})`),
+    )
+
+  return rows.map(mapBookingRow)
+}
+
+export const getBookingHistory = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    return getBookingHistoryFromDb()
   },
 )
 
