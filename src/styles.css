@@ -51,6 +51,7 @@
 	--status-maintenance: #c47d3a;
 	--status-occupied: #181816;
 	--status-checked-out: #8a857c;
+	--status-overdue: #a84432;
 
 	--foreground: var(--on-surface);
 	--card: var(--surface-container);
@@ -130,6 +131,7 @@
 	--status-maintenance: #e8a05a;
 	--status-occupied: #e6e2de;
 	--status-checked-out: #9a958c;
+	--status-overdue: #e87060;
 
 	--foreground: var(--on-surface);
 	--card: var(--surface-container);
@@ -195,6 +197,7 @@
 	--color-status-maintenance: var(--status-maintenance);
 	--color-status-occupied: var(--status-occupied);
 	--color-status-checked-out: var(--status-checked-out);
+	--color-status-overdue: var(--status-overdue);
 
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
