@@ -9,15 +9,6 @@ import {
   updateUserSchema,
 } from './schemas'
 
-function normalizeUserNames<
-  T extends { name: string; firstName?: string; lastName?: string },
->(user: T) {
-  const parts = user.name.trim().split(/\s+/).filter(Boolean)
-  const firstName = user.firstName?.trim() || parts[0] || ''
-  const lastName = user.lastName?.trim() || parts.slice(1).join(' ') || ''
-  return { ...user, firstName, lastName }
-}
-
 export const listUsers = createServerFn({
   method: 'GET',
 })

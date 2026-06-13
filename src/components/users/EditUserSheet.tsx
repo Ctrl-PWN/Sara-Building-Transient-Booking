@@ -45,7 +45,7 @@ export function EditUserSheet({
   const form = useAppForm({
     defaultValues: {
       userId: '',
-      data: {} as { firstName?: string; lastName?: string },
+      data: {},
     },
     validators: { onSubmit: updateUserSchema },
     onSubmit: async ({ value }) => {
@@ -108,7 +108,7 @@ export function EditUserSheet({
                     <Input
                       id={field.name}
                       name={field.name}
-                      value={field.state.value as string}
+                      value={field.state.value}
                       placeholder="Jane"
                       maxLength={15}
                       onBlur={field.handleBlur}
@@ -138,7 +138,7 @@ export function EditUserSheet({
                     <Input
                       id={field.name}
                       name={field.name}
-                      value={field.state.value as string}
+                      value={field.state.value}
                       placeholder="Doe"
                       maxLength={15}
                       onBlur={field.handleBlur}
