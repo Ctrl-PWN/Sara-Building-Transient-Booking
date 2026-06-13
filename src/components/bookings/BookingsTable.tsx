@@ -72,7 +72,10 @@ export function BookingsTable({
             {bookings.map((booking) => {
               const displayStatus =
                 booking.status === 'CHECKED_IN'
-                  ? computeBookingDisplayStatus(booking.status, booking.checkOutDate)
+                  ? computeBookingDisplayStatus(
+                      booking.status,
+                      booking.checkOutDate,
+                    )
                   : booking.status
               return (
                 <TableRow key={booking.id}>

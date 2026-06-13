@@ -59,7 +59,11 @@ export function computeBookingDisplayStatus(
     const today = startOfDay(new Date())
     if (today > checkout) return 'OVERDUE'
   }
-  if (status === 'CHECKED_IN' || status === 'CHECKED_OUT' || status === 'RESERVED') {
+  if (
+    status === 'CHECKED_IN' ||
+    status === 'CHECKED_OUT' ||
+    status === 'RESERVED'
+  ) {
     return status
   }
   return status as DerivedBookingStatus
