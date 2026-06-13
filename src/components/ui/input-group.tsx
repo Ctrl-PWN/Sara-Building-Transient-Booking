@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
 
@@ -60,6 +60,11 @@ function InputGroupAddon({
           return
         }
         e.currentTarget.parentElement?.querySelector('input')?.focus()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.currentTarget.click()
+        }
       }}
       {...props}
     />
