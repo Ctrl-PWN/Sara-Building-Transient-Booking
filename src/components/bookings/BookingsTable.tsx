@@ -70,10 +70,10 @@ export function BookingsTable({
           </TableHeader>
           <TableBody>
             {bookings.map((booking) => {
-              const displayStatus = computeBookingDisplayStatus(
-                booking.status,
-                booking.checkOutDate,
-              )
+              const displayStatus =
+                booking.status === 'CHECKED_IN'
+                  ? computeBookingDisplayStatus(booking.status, booking.checkOutDate)
+                  : booking.status
               return (
                 <TableRow key={booking.id}>
                   <TableCell className="font-mono text-xs text-muted-foreground">
