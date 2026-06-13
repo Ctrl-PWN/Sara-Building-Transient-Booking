@@ -3,9 +3,12 @@ import { format, parseISO } from 'date-fns'
 import type { ReactNode } from 'react'
 
 import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
-import { formatPaymentStatus } from '@/lib/bookings/status'
-import type { BookingWithRoom } from '@/lib/bookings/types'
+import {
+  computeBookingDisplayStatus,
+  formatPaymentStatus,
+} from '@/lib/bookings/status'
 import { formatGuestName } from '@/lib/bookings/types'
+import type { BookingWithRoom } from '@/lib/bookings/types'
 
 type BookingFieldGridProps = {
   booking: BookingWithRoom
@@ -38,7 +41,14 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
       <Field label="Occupants" value={booking.occupantsCount} />
       <Field
         label="Status"
-        value={<BookingStatusBadge status={booking.status} />}
+        value={
+          <BookingStatusBadge
+            status={computeBookingDisplayStatus(
+              booking.status,
+              booking.checkOutDate,
+            )}
+          />
+        }
       />
       <Field
         label="Payment"

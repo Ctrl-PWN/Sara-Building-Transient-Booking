@@ -45,7 +45,7 @@ export function EditUserSheet({
   const form = useAppForm({
     defaultValues: {
       userId: '',
-      data: {} as Record<string, any>,
+      data: {},
     },
     validators: { onSubmit: updateUserSchema },
     onSubmit: async ({ value }) => {

@@ -59,6 +59,7 @@ type TextFieldProps = {
   autoComplete?: string
   type?: React.ComponentProps<'input'>['type']
   maxLength?: number
+  disabled?: boolean
 }
 
 function TextField({
@@ -68,6 +69,7 @@ function TextField({
   autoComplete,
   type = 'text',
   maxLength,
+  disabled,
 }: TextFieldProps) {
   const { field, isInvalid } = useFieldInvalidState()
   const value = field.state.value as string
@@ -83,6 +85,7 @@ function TextField({
         placeholder={placeholder}
         autoComplete={autoComplete}
         maxLength={maxLength}
+        disabled={disabled}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
         aria-invalid={isInvalid || undefined}

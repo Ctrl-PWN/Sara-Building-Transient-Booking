@@ -14,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { computeBookingDisplayStatus } from '@/lib/bookings/status'
 
 const statusColorMap: Record<
   string,
@@ -23,6 +24,7 @@ const statusColorMap: Record<
   CHECKED_IN: 'success',
   CHECKED_OUT: 'outline',
   CANCELLED: 'destructive',
+  OVERDUE: 'destructive',
 }
 
 type BookingsTableProps = {
@@ -67,63 +69,72 @@ export function BookingsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bookings.map((booking) => (
-              <TableRow key={booking.id}>
-                <TableCell className="font-mono text-xs text-muted-foreground">
-                  {booking.bookingRef}
-                </TableCell>
-                <TableCell>
-                  <p className="font-medium">
-                    {booking.firstName} {booking.lastName}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {booking.contactNumber}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <p className="text-sm">
-                    {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')}{' '}
-                    &rarr;
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-mono">
-                    {booking.roomNumber}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    {booking.roomType}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusColorMap[booking.status]}>
-                    {booking.status.replace('_', ' ')}
-                  </Badge>
-                  {booking.paymentStatus === 'OVERDUE' && (
-                    <Badge variant="destructive" className="ml-2">
-                      OVERDUE
+            {bookings.map((booking) => {
+              const displayStatus =
+                booking.status === 'CHECKED_IN'
+                  ? computeBookingDisplayStatus(
+                      booking.status,
+                      booking.checkOutDate,
+                    )
+                  : booking.status
+              return (
+                <TableRow key={booking.id}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {booking.bookingRef}
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-medium">
+                      {booking.firstName} {booking.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {booking.contactNumber}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm">
+                      {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')}{' '}
+                      &rarr;
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-mono">
+                      {booking.roomNumber}
                     </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    nativeButton={false}
-                    render={
-                      <Link
-                        to="/bookings/$bookingId"
-                        params={{ bookingId: String(booking.id) }}
-                      />
-                    }
-                  >
-                    Manage
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {booking.roomType}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusColorMap[displayStatus]}>
+                      {displayStatus.replace('_', ' ')}
+                    </Badge>
+                    {booking.paymentStatus === 'OVERDUE' && (
+                      <Badge variant="destructive" className="ml-2">
+                        OVERDUE
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      nativeButton={false}
+                      render={
+                        <Link
+                          to="/bookings/$bookingId"
+                          params={{ bookingId: String(booking.id) }}
+                        />
+                      }
+                    >
+                      Manage
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </CardContent>

@@ -38,77 +38,49 @@ function buildBookedDaysByRoom(bookings: BookingWithRoom[]) {
 export function useCreateBookingAvailability({
   rooms,
   bookings,
-  checkInDate,
-  checkOutDate,
+  walkIn,
 }: {
   rooms: Room[]
   bookings: BookingWithRoom[]
-  checkInDate: string
-  checkOutDate: string
+  walkIn: boolean
 }) {
   const bookedDaysByRoom = buildBookedDaysByRoom(bookings)
 
-  const conflictedRoomIds = new Set<number>()
-  if (checkInDate && checkOutDate) {
-    const start = new Date(checkInDate).getTime()
-    const end = new Date(checkOutDate).getTime()
-    if (end >= start) {
-      for (const booking of bookings) {
-        if (booking.status !== 'RESERVED' && booking.status !== 'CHECKED_IN') {
-          continue
-        }
-        const bStart = new Date(booking.checkInDate).getTime()
-        const bEnd = new Date(booking.checkOutDate).getTime()
-        if (bStart <= end && bEnd >= start) {
-          conflictedRoomIds.add(booking.roomId)
-        }
-      }
+  const activeBookingRoomIds = new Set<number>()
+  for (const booking of bookings) {
+    if (booking.status === 'RESERVED' || booking.status === 'CHECKED_IN') {
+      activeBookingRoomIds.add(booking.roomId)
     }
-  }
-
-  const fullyBookedDays = new Set<number>()
-  for (const set of bookedDaysByRoom.values()) {
-    for (const day of set) {
-      const allUnavailable = rooms.every(
-        (r) =>
-          r.status !== 'AVAILABLE' ||
-          (bookedDaysByRoom.get(r.id)?.has(day) ?? false),
-      )
-      if (allUnavailable) fullyBookedDays.add(day)
-    }
-  }
-
-  const isDateFullyBooked = (date: Date) => {
-    const t = new Date(date)
-    t.setHours(0, 0, 0, 0)
-    return fullyBookedDays.has(t.getTime())
   }
 
   const allRooms = rooms.slice().sort((a, b) => {
-    const aBlocked = a.status !== 'AVAILABLE' || conflictedRoomIds.has(a.id)
-    const bBlocked = b.status !== 'AVAILABLE' || conflictedRoomIds.has(b.id)
+    const aBlocked = a.status !== 'AVAILABLE'
+    const bBlocked = b.status !== 'AVAILABLE'
     if (!aBlocked && bBlocked) return -1
     if (aBlocked && !bBlocked) return 1
     return a.roomNumber.localeCompare(b.roomNumber)
   })
 
   const roomOptions: RoomOption[] = allRooms.map((room) => {
-    const isConflicted = conflictedRoomIds.has(room.id)
-    const statusTag =
-      isConflicted && room.status === 'AVAILABLE'
-        ? '[OCCUPIED]'
-        : room.status !== 'AVAILABLE'
-          ? `[${room.status}]`
-          : ''
+    const hasActiveBooking = activeBookingRoomIds.has(room.id)
+    const statusTag = hasActiveBooking
+      ? ' [OCCUPIED]'
+      : room.status !== 'AVAILABLE'
+        ? ` [${room.status}]`
+        : ''
 
     return {
       value: room.id.toString(),
-      label: `${room.roomNumber} - ${room.type} (₱${room.basePrice})${
-        statusTag ? ` ${statusTag}` : ''
-      }`,
-      disabled: ['MAINTENANCE', 'OUT_OF_ORDER'].includes(room.status),
+      label: `${room.roomNumber} - ${room.type} (₱${room.basePrice})${statusTag}`,
+      disabled:
+        ['MAINTENANCE', 'OUT_OF_ORDER'].includes(room.status) ||
+        (walkIn && hasActiveBooking),
     }
   })
 
-  return { roomOptions, isDateFullyBooked }
+  const getBookedDatesForRoom = (roomId: number): Set<number> => {
+    return bookedDaysByRoom.get(roomId) ?? new Set()
+  }
+
+  return { roomOptions, getBookedDatesForRoom }
 }

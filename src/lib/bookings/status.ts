@@ -1,3 +1,5 @@
+import { parseISO, startOfDay } from 'date-fns'
+
 import type { TimelineLegendStatus } from './types'
 
 export type BookingStatusPresentation = {
@@ -6,8 +8,10 @@ export type BookingStatusPresentation = {
   colorVar: string
 }
 
-const presentationByLegend: Record<
-  TimelineLegendStatus,
+export type DerivedBookingStatus = TimelineLegendStatus | 'OVERDUE'
+
+const presentationByStatus: Record<
+  DerivedBookingStatus,
   BookingStatusPresentation
 > = {
   RESERVED: {
@@ -25,6 +29,11 @@ const presentationByLegend: Record<
     legendLabel: 'Checked-Out',
     colorVar: '--status-checked-out',
   },
+  OVERDUE: {
+    label: 'Overdue',
+    legendLabel: 'Overdue',
+    colorVar: '--status-overdue',
+  },
 }
 
 export const timelineLegendStatuses: TimelineLegendStatus[] = [
@@ -39,10 +48,34 @@ export function normalizeBookingStatus(status: string): TimelineLegendStatus {
   return 'RESERVED'
 }
 
+export function computeBookingDisplayStatus(
+  status: string,
+  checkOutDate: string | Date,
+): DerivedBookingStatus {
+  if (status === 'CHECKED_IN') {
+    const checkout = startOfDay(
+      typeof checkOutDate === 'string' ? parseISO(checkOutDate) : checkOutDate,
+    )
+    const today = startOfDay(new Date())
+    if (today > checkout) return 'OVERDUE'
+  }
+  if (
+    status === 'CHECKED_IN' ||
+    status === 'CHECKED_OUT' ||
+    status === 'RESERVED'
+  ) {
+    return status
+  }
+  return status as DerivedBookingStatus
+}
+
 export function getBookingStatusPresentation(
   status: string,
 ): BookingStatusPresentation {
-  return presentationByLegend[normalizeBookingStatus(status)]
+  if (Object.hasOwn(presentationByStatus, status)) {
+    return presentationByStatus[status as DerivedBookingStatus]
+  }
+  return presentationByStatus[normalizeBookingStatus(status)]
 }
 
 export function formatPaymentStatus(paymentStatus: string): string {
