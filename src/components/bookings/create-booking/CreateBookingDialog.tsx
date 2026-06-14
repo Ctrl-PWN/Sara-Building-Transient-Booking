@@ -108,6 +108,8 @@ export function CreateBookingDialog({
         contactNumber: value.contactNumber.trim() || undefined,
         checkInDate: value.checkInDate,
         checkOutDate: value.checkOutDate,
+        checkInTime: value.checkInTime,
+        checkOutTime: value.checkOutTime,
         occupantsCount: value.occupantsCount,
         walkIn: value.walkIn,
         paymentMethod: value.paymentMethod,

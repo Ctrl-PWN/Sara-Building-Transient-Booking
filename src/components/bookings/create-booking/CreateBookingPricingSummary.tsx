@@ -26,6 +26,8 @@ export function CreateBookingPricingSummary({
         roomId: state.values.roomId,
         checkInDate: state.values.checkInDate,
         checkOutDate: state.values.checkOutDate,
+        checkInTime: state.values.checkInTime,
+        checkOutTime: state.values.checkOutTime,
         reservationFeeType:
           'reservationFeeType' in state.values
             ? state.values.reservationFeeType
@@ -40,6 +42,8 @@ export function CreateBookingPricingSummary({
         roomId,
         checkInDate: start,
         checkOutDate: end,
+        checkInTime,
+        checkOutTime,
         reservationFeeType,
         reservationFeeValue,
       }) => {
@@ -50,6 +54,8 @@ export function CreateBookingPricingSummary({
           basePrice: selectedRoom.basePrice,
           checkInDate: start,
           checkOutDate: end,
+          checkInTime,
+          checkOutTime,
         })
 
         if (walkIn) {

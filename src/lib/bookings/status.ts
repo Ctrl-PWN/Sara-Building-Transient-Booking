@@ -1,5 +1,3 @@
-import { parseISO, startOfDay } from 'date-fns'
-
 import type { TimelineLegendStatus } from './types'
 
 export type BookingStatusPresentation = {
@@ -51,13 +49,16 @@ export function normalizeBookingStatus(status: string): TimelineLegendStatus {
 export function computeBookingDisplayStatus(
   status: string,
   checkOutDate: string | Date,
+  checkOutTime?: string,
 ): DerivedBookingStatus {
   if (status === 'CHECKED_IN') {
-    const checkout = startOfDay(
-      typeof checkOutDate === 'string' ? parseISO(checkOutDate) : checkOutDate,
-    )
-    const today = startOfDay(new Date())
-    if (today > checkout) return 'OVERDUE'
+    const dateStr =
+      typeof checkOutDate === 'string'
+        ? checkOutDate
+        : checkOutDate.toISOString().slice(0, 10)
+    const checkout = new Date(`${dateStr}T${checkOutTime ?? '11:00'}`)
+    const now = new Date()
+    if (now > checkout) return 'OVERDUE'
   }
   if (
     status === 'CHECKED_IN' ||

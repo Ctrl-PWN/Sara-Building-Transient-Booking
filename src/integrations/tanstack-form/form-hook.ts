@@ -10,6 +10,7 @@ import {
   SelectField,
   TextareaField,
   TextField,
+  TimeField,
   ToggleField,
 } from '@/components/form/form-fields'
 
@@ -29,6 +30,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
     DateRangeField,
     ToggleField,
     PasswordField,
+    TimeField,
   },
   formComponents: {
     SubmitButton,

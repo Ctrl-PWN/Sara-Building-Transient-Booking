@@ -25,11 +25,20 @@ export const timelineSearchSchema = z.object({
 })
 
 const dateRangeRefine = {
-  check: (data: { checkInDate: string; checkOutDate: string }) =>
+  check: (data: {
+    checkInDate: string
+    checkOutDate: string
+    checkInTime?: string
+    checkOutTime?: string
+  }) =>
     !data.checkInDate ||
     !data.checkOutDate ||
-    new Date(data.checkOutDate) >= new Date(data.checkInDate),
-  message: 'Check-out cannot be before check-in date' as const,
+    new Date(data.checkOutDate) > new Date(data.checkInDate) ||
+    (data.checkInDate === data.checkOutDate &&
+      (!data.checkInTime ||
+        !data.checkOutTime ||
+        data.checkOutTime >= data.checkInTime)),
+  message: 'Check-out cannot be before check-in' as const,
   path: ['checkOutDate'] as const,
 }
 
@@ -40,6 +49,8 @@ export const createBookingStayFieldsShape = {
   contactNumber: z.string(),
   checkInDate: z.string().min(1, 'Check-in date is required'),
   checkOutDate: z.string().min(1, 'Check-out date is required'),
+  checkInTime: z.string().min(1, 'Check-in time is required'),
+  checkOutTime: z.string().min(1, 'Check-out time is required'),
   occupantsCount: z.number().int().min(1, 'At least 1 occupant required'),
 } as const
 
@@ -115,6 +126,13 @@ export function todayIsoDate() {
   return formatIsoDate(new Date())
 }
 
+function currentTimeHHMM() {
+  const now = new Date()
+  const h = String(now.getHours()).padStart(2, '0')
+  const m = String(now.getMinutes()).padStart(2, '0')
+  return `${h}:${m}`
+}
+
 const createBookingStayDefaultValues = () => {
   return {
     roomId: '',
@@ -123,6 +141,8 @@ const createBookingStayDefaultValues = () => {
     contactNumber: '',
     checkInDate: '',
     checkOutDate: '',
+    checkInTime: currentTimeHHMM(),
+    checkOutTime: '11:00',
     occupantsCount: 2,
     paymentMethod: 'CASH' as const,
     referenceNumber: '',
@@ -158,6 +178,8 @@ export const createBookingServerSchema = z
     contactNumber: z.string().optional(),
     checkInDate: z.string().min(1, 'Check-in date is required'),
     checkOutDate: z.string().min(1, 'Check-out date is required'),
+    checkInTime: z.string().min(1, 'Check-in time is required'),
+    checkOutTime: z.string().min(1, 'Check-out time is required'),
     occupantsCount: z.number().int().positive('At least 1 occupant required'),
     walkIn: z.boolean(),
     paymentMethod: paymentMethodSchema,
@@ -166,10 +188,13 @@ export const createBookingServerSchema = z
     reservationFeeValue: z.number().min(0).optional(),
     depositPercentage: z.number().min(0).max(100),
   })
-  .refine((data) => new Date(data.checkOutDate) >= new Date(data.checkInDate), {
-    message: 'Check-out cannot be before check-in date',
-    path: ['checkOutDate'],
-  })
+  .refine(
+    (data) =>
+      new Date(data.checkOutDate) > new Date(data.checkInDate) ||
+      (data.checkInDate === data.checkOutDate &&
+        data.checkOutTime >= data.checkInTime),
+    { message: 'Check-out cannot be before check-in', path: ['checkOutDate'] },
+  )
   .superRefine((data, ctx) => {
     if (
       (data.paymentMethod === 'GCASH' ||

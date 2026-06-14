@@ -10,19 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
-import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from './routes/_authenticated/_admin/user-management/index'
-import { Route as AuthenticatedBookingsBookingIdIndexRouteImport } from './routes/_authenticated/bookings/$bookingId/index'
-import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from './routes/_authenticated/bookings/$bookingId/invoice'
-import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
-import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
-import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
-import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
-import { Route as AuthenticatedTimelineIndexRouteImport } from './routes/_authenticated/timeline/index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as LogInIndexRouteImport } from './routes/log-in/index'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
+import { Route as AuthenticatedTimelineIndexRouteImport } from './routes/_authenticated/timeline/index'
+import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedBookingsIndexRouteImport } from './routes/_authenticated/bookings/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
+import { Route as AuthenticatedBookingsBookingIdIndexRouteImport } from './routes/_authenticated/bookings/$bookingId/index'
+import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from './routes/_authenticated/_admin/user-management/index'
+import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
+import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from './routes/_authenticated/bookings/$bookingId/invoice'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -355,9 +355,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
 import type { getRouter } from './router.tsx'
-
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

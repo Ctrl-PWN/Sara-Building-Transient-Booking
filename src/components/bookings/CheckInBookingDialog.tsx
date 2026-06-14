@@ -105,8 +105,10 @@ export function CheckInBookingDialog({
               </p>
               <p>
                 <span className="text-muted-foreground">Stay:</span>{' '}
-                {format(new Date(booking.checkInDate), 'MMM d, yyyy')} –{' '}
-                {format(new Date(booking.checkOutDate), 'MMM d, yyyy')}
+                {format(new Date(booking.checkInDate), 'MMM d, yyyy')} at{' '}
+                {booking.checkInTime} –{' '}
+                {format(new Date(booking.checkOutDate), 'MMM d, yyyy')} at{' '}
+                {booking.checkOutTime}
               </p>
               <p className="font-medium pt-1">
                 Room balance due: {formatPeso(balanceAmount)}

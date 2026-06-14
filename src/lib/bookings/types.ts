@@ -15,6 +15,8 @@ export type BookingWithRoom = {
   roomBasePrice: string | null
   checkInDate: string
   checkOutDate: string
+  checkInTime: string
+  checkOutTime: string
   occupantsCount: number
   status: BookingStatus
   paymentStatus: BookingPaymentStatus

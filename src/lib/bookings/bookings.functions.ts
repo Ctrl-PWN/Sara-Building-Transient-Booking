@@ -34,6 +34,8 @@ function mapBookingRow(row: {
   roomBasePrice: string | null
   checkInDate: string
   checkOutDate: string
+  checkInTime: string
+  checkOutTime: string
   occupantsCount: number
   status: string
   paymentStatus: string
@@ -57,6 +59,8 @@ function mapBookingRow(row: {
     roomBasePrice: row.roomBasePrice,
     checkInDate: row.checkInDate,
     checkOutDate: row.checkOutDate,
+    checkInTime: row.checkInTime,
+    checkOutTime: row.checkOutTime,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
     paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -82,6 +86,8 @@ const bookingSelect = {
   roomBasePrice: rooms.basePrice,
   checkInDate: bookings.checkInDate,
   checkOutDate: bookings.checkOutDate,
+  checkInTime: bookings.checkInTime,
+  checkOutTime: bookings.checkOutTime,
   occupantsCount: bookings.occupantsCount,
   status: bookings.status,
   paymentStatus: bookings.paymentStatus,
@@ -234,6 +240,8 @@ export const createBooking = createServerFn({ method: 'POST' })
       basePrice: room.basePrice,
       checkInDate: data.checkInDate,
       checkOutDate: data.checkOutDate,
+      checkInTime: data.checkInTime,
+      checkOutTime: data.checkOutTime,
     })
 
     const ledgerLines = buildCreateBookingLedgerLines(
@@ -247,8 +255,8 @@ export const createBooking = createServerFn({ method: 'POST' })
       stayTotal,
     )
 
-    const checkIn = new Date(data.checkInDate)
-    const checkOut = new Date(data.checkOutDate)
+    const checkIn = new Date(`${data.checkInDate}T${data.checkInTime}`)
+    const checkOut = new Date(`${data.checkOutDate}T${data.checkOutTime}`)
     const depositHours = 24
     const depositDeadline = new Date(
       checkIn.getTime() - depositHours * 60 * 60 * 1000,
@@ -270,6 +278,8 @@ export const createBooking = createServerFn({ method: 'POST' })
           contactNumber: data.contactNumber,
           checkInDate: data.checkInDate,
           checkOutDate: data.checkOutDate,
+          checkInTime: data.checkInTime,
+          checkOutTime: data.checkOutTime,
           occupantsCount: data.occupantsCount,
           status,
           paymentStatus,

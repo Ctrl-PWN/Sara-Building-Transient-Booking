@@ -47,6 +47,7 @@ export function BookingDetailHeader({
   const displayStatus = computeBookingDisplayStatus(
     booking.status,
     booking.checkOutDate,
+    booking.checkOutTime,
   )
 
   return (

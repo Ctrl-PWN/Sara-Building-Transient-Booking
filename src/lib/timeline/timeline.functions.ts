@@ -27,6 +27,8 @@ function mapBookingRow(row: {
   roomNumber: string
   checkInDate: string
   checkOutDate: string
+  checkInTime: string
+  checkOutTime: string
   occupantsCount: number
   status: string
   paymentStatus: string
@@ -41,6 +43,8 @@ function mapBookingRow(row: {
     roomNumber: row.roomNumber,
     checkInDate: row.checkInDate,
     checkOutDate: row.checkOutDate,
+    checkInTime: row.checkInTime,
+    checkOutTime: row.checkOutTime,
     occupantsCount: row.occupantsCount,
     status: bookingStatusSchema.parse(row.status),
     paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -81,6 +85,8 @@ async function getTimelineWeekFromDb(
         roomNumber: rooms.roomNumber,
         checkInDate: bookings.checkInDate,
         checkOutDate: bookings.checkOutDate,
+        checkInTime: bookings.checkInTime,
+        checkOutTime: bookings.checkOutTime,
         occupantsCount: bookings.occupantsCount,
         status: bookings.status,
         paymentStatus: bookings.paymentStatus,

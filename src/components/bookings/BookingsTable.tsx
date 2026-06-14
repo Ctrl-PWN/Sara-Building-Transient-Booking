@@ -88,6 +88,7 @@ export function BookingsTable({
                   ? computeBookingDisplayStatus(
                       booking.status,
                       booking.checkOutDate,
+                      booking.checkOutTime,
                     )
                   : booking.status
               return (
@@ -105,11 +106,13 @@ export function BookingsTable({
                   </TableCell>
                   <TableCell>
                     <p className="text-sm">
-                      {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')}{' '}
+                      {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')} at{' '}
+                      {booking.checkInTime}
                       &rarr;
                     </p>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}
+                      {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')}{' '}
+                      at {booking.checkOutTime}
                     </p>
                   </TableCell>
                   <TableCell>
