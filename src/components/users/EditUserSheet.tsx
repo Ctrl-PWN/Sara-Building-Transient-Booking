@@ -1,13 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import type z from 'zod'
 import {
   Sheet,
   SheetContent,
@@ -42,11 +36,14 @@ export function EditUserSheet({
   const queryClient = useQueryClient()
   const updateUser = useMutation(userMutations.update(queryClient))
 
+  const defaultValues: z.input<typeof updateUserSchema> = {
+    userId: '',
+    firstName: '',
+    lastName: '',
+  }
+
   const form = useAppForm({
-    defaultValues: {
-      userId: '',
-      data: {},
-    },
+    defaultValues,
     validators: { onSubmit: updateUserSchema },
     onSubmit: async ({ value }) => {
       try {
@@ -70,8 +67,8 @@ export function EditUserSheet({
 
       form.reset()
       form.setFieldValue('userId', user.id)
-      form.setFieldValue('data.firstName', defaultFirstName)
-      form.setFieldValue('data.lastName', defaultLastName)
+      form.setFieldValue('firstName', defaultFirstName)
+      form.setFieldValue('lastName', defaultLastName)
     }
   }, [user, open, form.setFieldValue, form.reset])
 
@@ -96,64 +93,26 @@ export function EditUserSheet({
           }}
         >
           <form.AppForm>
-            <form.AppField name="data.firstName">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0
-
-                return (
-                  <Field data-invalid={isInvalid || undefined}>
-                    <FieldLabel htmlFor={field.name}>First name</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value as string}
-                      placeholder="Jane"
-                      maxLength={15}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid || undefined}
-                    />
-                    <FieldDescription>
-                      Letters and spaces only, max 15 characters
-                    </FieldDescription>
-                    {isInvalid ? (
-                      <FieldError errors={field.state.meta.errors} />
-                    ) : null}
-                  </Field>
-                )
-              }}
+            <form.AppField name="firstName">
+              {(field) => (
+                <field.TextField
+                  label="First name"
+                  placeholder="Jane"
+                  description="Letters and spaces only, max 15 characters"
+                  maxLength={15}
+                />
+              )}
             </form.AppField>
 
-            <form.AppField name="data.lastName">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0
-
-                return (
-                  <Field data-invalid={isInvalid || undefined}>
-                    <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value as string}
-                      placeholder="Doe"
-                      maxLength={15}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid || undefined}
-                    />
-                    <FieldDescription>
-                      Letters and spaces only, max 15 characters
-                    </FieldDescription>
-                    {isInvalid ? (
-                      <FieldError errors={field.state.meta.errors} />
-                    ) : null}
-                  </Field>
-                )
-              }}
+            <form.AppField name="lastName">
+              {(field) => (
+                <field.TextField
+                  label="Last name"
+                  placeholder="Doe"
+                  description="Letters and spaces only, max 15 characters"
+                  maxLength={15}
+                />
+              )}
             </form.AppField>
 
             <div className="flex justify-end gap-2 pt-2">

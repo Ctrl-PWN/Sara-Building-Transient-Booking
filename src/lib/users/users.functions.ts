@@ -55,35 +55,30 @@ export const updateUser = createServerFn({
   .middleware([authMiddleware()])
   .inputValidator(updateUserSchema)
   .handler(async ({ data }) => {
-    if (
-      typeof data.data.firstName === 'string' &&
-      data.data.firstName.trim() === ''
-    ) {
-      throw new Error('First name cannot be blank')
-    }
-    if (
-      typeof data.data.lastName === 'string' &&
-      data.data.lastName.trim() === ''
-    ) {
-      throw new Error('Last name cannot be blank')
+    const updateData: Record<string, unknown> = {}
+
+    if (data.firstName !== undefined) {
+      const firstName = data.firstName.trim()
+      if (firstName === '') {
+        throw new Error('First name cannot be blank')
+      }
+      updateData.firstName = firstName
     }
 
-    const updateData = { ...data.data }
-    if (
-      typeof updateData.firstName === 'string' ||
-      typeof updateData.lastName === 'string'
-    ) {
-      const firstName =
-        typeof updateData.firstName === 'string'
-          ? updateData.firstName.trim()
-          : undefined
-      const lastName =
-        typeof updateData.lastName === 'string'
-          ? updateData.lastName.trim()
-          : undefined
-      if (firstName !== undefined || lastName !== undefined) {
-        updateData.name = `${firstName ?? ''} ${lastName ?? ''}`.trim()
+    if (data.lastName !== undefined) {
+      const lastName = data.lastName.trim()
+      if (lastName === '') {
+        throw new Error('Last name cannot be blank')
       }
+      updateData.lastName = lastName
+    }
+
+    if (
+      updateData.firstName !== undefined ||
+      updateData.lastName !== undefined
+    ) {
+      updateData.name =
+        `${updateData.firstName ?? ''} ${updateData.lastName ?? ''}`.trim()
     }
 
     const headers = getRequestHeaders()

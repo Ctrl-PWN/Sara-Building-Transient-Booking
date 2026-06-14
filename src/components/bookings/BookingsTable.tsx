@@ -13,8 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { BookingWithRoom } from '@/lib/bookings/types'
 import { computeBookingDisplayStatus } from '@/lib/bookings/status'
+import type { BookingWithRoom } from '@/lib/bookings/types'
 
 const statusColorMap: Record<
   string,

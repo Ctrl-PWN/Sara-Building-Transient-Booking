@@ -7,8 +7,8 @@ import {
   computeBookingDisplayStatus,
   formatPaymentStatus,
 } from '@/lib/bookings/status'
-import { formatGuestName } from '@/lib/bookings/types'
 import type { BookingWithRoom } from '@/lib/bookings/types'
+import { formatGuestName } from '@/lib/bookings/types'
 
 type BookingFieldGridProps = {
   booking: BookingWithRoom

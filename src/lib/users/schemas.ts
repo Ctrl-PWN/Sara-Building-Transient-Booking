@@ -23,54 +23,27 @@ export const listUsersSchema = z.object({
     .optional(),
 })
 
-export const updateUserSchema = z.object({
-  userId: z.string().min(1),
-  data: z
-    .record(z.string(), z.any())
-    .refine(
-      (value) => Object.keys(value).length > 0,
-      'At least one field must be provided',
-    )
-    .superRefine((data, ctx) => {
-      if (
-        typeof data.firstName === 'string' &&
-        !/^[A-Za-zÀ-ÿ ]+$/.test(data.firstName)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'First name can only contain letters',
-          path: ['firstName'],
-        })
-      }
-      if (typeof data.firstName === 'string' && data.firstName.length > 15) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'First name must be at most 15 characters',
-          path: ['firstName'],
-        })
-      }
-      if (
-        typeof data.lastName === 'string' &&
-        !/^[A-Za-zÀ-ÿ ]+$/.test(data.lastName)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Last name can only contain letters',
-          path: ['lastName'],
-        })
-      }
-      if (typeof data.lastName === 'string' && data.lastName.length > 15) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Last name must be at most 15 characters',
-          path: ['lastName'],
-        })
-      }
-    }),
-})
+export const updateUserSchema = z
+  .object({
+    userId: z.string().min(1),
+    firstName: z
+      .string()
+      .max(15, 'First name must be at most 15 characters')
+      .regex(/^[A-Za-zÀ-ÿ ]+$/, 'First name can only contain letters')
+      .optional(),
+    lastName: z
+      .string()
+      .max(15, 'Last name must be at most 15 characters')
+      .regex(/^[A-Za-zÀ-ÿ ]+$/, 'Last name can only contain letters')
+      .optional(),
+  })
+  .refine(
+    (value) => value.firstName !== undefined || value.lastName !== undefined,
+    'At least one field must be provided',
+  )
 
 export const createUserSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   firstName: z
     .string()
     .min(1, 'First name is required')

@@ -62,7 +62,7 @@ function UsersPage() {
           threshold: 0.2,
         })
           .search(search)
-          .map((r: { item: (typeof itemList)[number] }) => r.item)
+          .map((r) => r.item)
 
   return (
     <main className="page-wrap flex flex-col gap-8 px-4 py-6 pb-8">
