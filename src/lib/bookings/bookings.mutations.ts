@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type z from "zod";
+import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { ledgerKeys } from "@/lib/ledger/ledger.queries";
 import { roomKeys } from "@/lib/rooms/rooms.queries";
 import {
@@ -25,6 +26,7 @@ export const bookingMutations = {
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 
@@ -39,6 +41,7 @@ export const bookingMutations = {
 			onSuccess: (result) => {
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 				void queryClient.invalidateQueries({
 					queryKey: ledgerKeys.byBooking(result.bookingId),
 				});
@@ -56,6 +59,7 @@ export const bookingMutations = {
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 				void queryClient.invalidateQueries({
 					queryKey: ledgerKeys.byBooking(bookingId),
 				});
@@ -69,6 +73,7 @@ export const bookingMutations = {
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 				void queryClient.invalidateQueries({
 					queryKey: ledgerKeys.byBooking(bookingId),
 				});
