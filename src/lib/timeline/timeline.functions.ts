@@ -108,7 +108,7 @@ async function getTimelineWeekFromDb(
 }
 
 export const getTimelineWeek = createServerFn({ method: "GET" })
-	.inputValidator(timelineWeekSchema)
+	.validator(timelineWeekSchema)
 	.handler(async ({ data }) => {
 		const weekEnd = getWeekEnd(data.weekStart);
 		return getTimelineWeekFromDb(data.weekStart, weekEnd);

@@ -150,7 +150,7 @@ export const getBookingHistory = createServerFn({ method: "GET" }).handler(
 );
 
 export const getBookingById = createServerFn({ method: "GET" })
-	.inputValidator(bookingByIdSchema)
+	.validator(bookingByIdSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select(bookingSelect)
@@ -171,7 +171,7 @@ const bookingRefSchema = z.object({
 });
 
 export const getBookingByRef = createServerFn({ method: "GET" })
-	.inputValidator(bookingRefSchema)
+	.validator(bookingRefSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select(bookingSelect)
@@ -189,7 +189,7 @@ export const getBookingByRef = createServerFn({ method: "GET" })
 	});
 
 export const createBooking = createServerFn({ method: "POST" })
-	.inputValidator(createBookingServerSchema)
+	.validator(createBookingServerSchema)
 	.handler(async ({ data }) => {
 		const conflicts = await db
 			.select({ id: bookings.id })
@@ -309,7 +309,7 @@ export const createBooking = createServerFn({ method: "POST" })
 	});
 
 export const updateBookingStatus = createServerFn({ method: "POST" })
-	.inputValidator(updateStatusSchema)
+	.validator(updateStatusSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({ id: bookings.id, roomId: bookings.roomId })
@@ -363,7 +363,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 	});
 
 export const checkInBooking = createServerFn({ method: "POST" })
-	.inputValidator(checkInBookingSchema)
+	.validator(checkInBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({
@@ -442,7 +442,7 @@ export const checkInBooking = createServerFn({ method: "POST" })
 	});
 
 export const checkOutBooking = createServerFn({ method: "POST" })
-	.inputValidator(checkOutBookingSchema)
+	.validator(checkOutBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({

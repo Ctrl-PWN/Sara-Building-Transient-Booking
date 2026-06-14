@@ -13,7 +13,7 @@ export const listUsers = createServerFn({
 	method: "GET",
 })
 	.middleware([authMiddleware()])
-	.inputValidator(listUsersSchema.optional())
+	.validator(listUsersSchema.optional())
 	.handler(async ({ data }) => {
 		const headers = getRequestHeaders();
 		const result = await auth.api.listUsers({
@@ -28,7 +28,7 @@ export const createUser = createServerFn({
 	method: "POST",
 })
 	.middleware([authMiddleware()])
-	.inputValidator(createUserSchema)
+	.validator(createUserSchema)
 	.handler(async ({ data }) => {
 		const name = `${data.firstName} ${data.lastName}`.trim();
 
@@ -53,7 +53,7 @@ export const updateUser = createServerFn({
 	method: "POST",
 })
 	.middleware([authMiddleware()])
-	.inputValidator(updateUserSchema)
+	.validator(updateUserSchema)
 	.handler(async ({ data }) => {
 		const updateData: Record<string, unknown> = {};
 
@@ -92,7 +92,7 @@ export const deleteUser = createServerFn({
 	method: "POST",
 })
 	.middleware([authMiddleware()])
-	.inputValidator(deleteUserSchema)
+	.validator(deleteUserSchema)
 	.handler(async ({ data }) => {
 		const headers = getRequestHeaders();
 		return auth.api.removeUser({

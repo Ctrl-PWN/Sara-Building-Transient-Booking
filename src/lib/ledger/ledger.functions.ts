@@ -22,7 +22,7 @@ import {
 import type { LedgerDetails } from "./types";
 
 export const createExpense = createServerFn({ method: "POST" })
-	.inputValidator(createExpenseSchema)
+	.validator(createExpenseSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
 		if (booking.status !== "CHECKED_IN") {
@@ -57,7 +57,7 @@ export const createExpense = createServerFn({ method: "POST" })
 	});
 
 export const payExpense = createServerFn({ method: "POST" })
-	.inputValidator(payExpenseSchema)
+	.validator(payExpenseSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
 			await getLedgerTransactionWithBooking(data.id, db);
@@ -90,7 +90,7 @@ export const payExpense = createServerFn({ method: "POST" })
 	});
 
 export const payExpensesBulk = createServerFn({ method: "POST" })
-	.inputValidator(payExpensesBulkSchema)
+	.validator(payExpensesBulkSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
 		if (booking.status !== "CHECKED_IN") {
@@ -138,7 +138,7 @@ export const payExpensesBulk = createServerFn({ method: "POST" })
 	});
 
 export const payExpenses = createServerFn({ method: "POST" })
-	.inputValidator(payExpensesSchema)
+	.validator(payExpensesSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
 		if (booking.status !== "CHECKED_IN") {
@@ -196,7 +196,7 @@ export const payExpenses = createServerFn({ method: "POST" })
 	});
 
 export const getLedgerDetails = createServerFn({ method: "GET" })
-	.inputValidator(getLedgerDetailsSchema)
+	.validator(getLedgerDetailsSchema)
 	.handler(async ({ data }): Promise<LedgerDetails> => {
 		const rows = await db
 			.select({
@@ -224,7 +224,7 @@ export const getLedgerDetails = createServerFn({ method: "GET" })
 	});
 
 export const getLedgerTransactions = createServerFn({ method: "GET" })
-	.inputValidator(getLedgerTransactionsSchema)
+	.validator(getLedgerTransactionsSchema)
 	.handler(async ({ data }) => {
 		const transactions = await db
 			.select()
@@ -234,7 +234,7 @@ export const getLedgerTransactions = createServerFn({ method: "GET" })
 	});
 
 export const deleteLedgerTransaction = createServerFn({ method: "POST" })
-	.inputValidator(deleteLedgerTransactionSchema)
+	.validator(deleteLedgerTransactionSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
 			await getLedgerTransactionWithBooking(data.id, db);
