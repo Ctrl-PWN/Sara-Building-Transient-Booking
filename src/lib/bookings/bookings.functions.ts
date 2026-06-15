@@ -17,10 +17,20 @@ import {
 	checkInBookingSchema,
 	checkOutBookingSchema,
 	createBookingServerSchema,
+	transferBookingSchema,
 	updateStatusSchema,
 } from "./schemas";
 import { calculateStayPricing } from "./stay-pricing";
 import type { BookingPaymentStatus, BookingWithRoom } from "./types";
+
+function toISOString(value: string | Date | null): string {
+	if (value == null) return "";
+	if (typeof value === "string") {
+		const parsed = new Date(value);
+		return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+	}
+	return value.toISOString();
+}
 
 function mapBookingRow(row: {
 	id: number;
@@ -28,12 +38,13 @@ function mapBookingRow(row: {
 	firstName: string;
 	lastName: string;
 	contactNumber: string | null;
+	address: string | null;
 	roomId: number;
 	roomNumber: string;
 	roomType: string;
 	roomBasePrice: string | null;
-	checkInDate: string;
-	checkOutDate: string;
+	checkIn: string | Date | null;
+	checkOut: string | Date | null;
 	occupantsCount: number;
 	status: string;
 	paymentStatus: string;
@@ -51,12 +62,13 @@ function mapBookingRow(row: {
 		firstName: row.firstName,
 		lastName: row.lastName,
 		contactNumber: row.contactNumber,
+		address: row.address ?? "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
 		roomType: row.roomType,
 		roomBasePrice: row.roomBasePrice,
-		checkInDate: row.checkInDate,
-		checkOutDate: row.checkOutDate,
+		checkIn: toISOString(row.checkIn),
+		checkOut: toISOString(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -76,12 +88,13 @@ const bookingSelect = {
 	firstName: bookings.firstName,
 	lastName: bookings.lastName,
 	contactNumber: bookings.contactNumber,
+	address: bookings.address,
 	roomId: bookings.roomId,
 	roomNumber: rooms.roomNumber,
 	roomType: rooms.type,
 	roomBasePrice: rooms.basePrice,
-	checkInDate: bookings.checkInDate,
-	checkOutDate: bookings.checkOutDate,
+	checkIn: bookings.checkIn,
+	checkOut: bookings.checkOut,
 	occupantsCount: bookings.occupantsCount,
 	status: bookings.status,
 	paymentStatus: bookings.paymentStatus,
@@ -133,11 +146,16 @@ async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
 		.where(
 			and(
 				isNull(bookings.deletedAt),
-				inArray(bookings.status, ["CHECKED_OUT", "CANCELLED", "EVICTED"]),
+				inArray(bookings.status, [
+					"CHECKED_OUT",
+					"CANCELLED",
+					"EVICTED",
+					"TRANSFERRED",
+				]),
 			),
 		)
 		.orderBy(
-			desc(sql`COALESCE(${bookings.cancelledAt}, ${bookings.checkOutDate})`),
+			desc(sql`COALESCE(${bookings.cancelledAt}, ${bookings.checkOut})`),
 		);
 
 	return rows.map(mapBookingRow);
@@ -203,15 +221,17 @@ export const createBooking = createServerFn({ method: "POST" })
 						eq(bookings.status, "CHECKED_IN"),
 					),
 					and(
-						lte(bookings.checkInDate, data.checkOutDate),
-						gte(bookings.checkOutDate, data.checkInDate),
+						lte(bookings.checkIn, new Date(data.checkOut)),
+						gte(bookings.checkOut, new Date(data.checkIn)),
 					),
 				),
 			)
 			.limit(1);
 
 		if (conflicts.length > 0) {
-			throw new Error("Room is already booked for the selected dates");
+			throw new Error(
+				"Room is not available for the selected date and time. Please choose a different time slot.",
+			);
 		}
 
 		const roomRows = await db
@@ -234,8 +254,8 @@ export const createBooking = createServerFn({ method: "POST" })
 
 		const { subtotal: stayTotal } = calculateStayPricing({
 			basePrice: room.basePrice,
-			checkInDate: data.checkInDate,
-			checkOutDate: data.checkOutDate,
+			checkIn: data.checkIn,
+			checkOut: data.checkOut,
 		});
 
 		const ledgerLines = buildCreateBookingLedgerLines(
@@ -249,8 +269,8 @@ export const createBooking = createServerFn({ method: "POST" })
 			stayTotal,
 		);
 
-		const checkIn = new Date(data.checkInDate);
-		const checkOut = new Date(data.checkOutDate);
+		const checkIn = new Date(data.checkIn);
+		const checkOut = new Date(data.checkOut);
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
@@ -270,8 +290,9 @@ export const createBooking = createServerFn({ method: "POST" })
 					firstName: data.firstName,
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
-					checkInDate: data.checkInDate,
-					checkOutDate: data.checkOutDate,
+					address: data.address,
+					checkIn: new Date(data.checkIn),
+					checkOut: new Date(data.checkOut),
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
@@ -489,4 +510,135 @@ export const checkOutBooking = createServerFn({ method: "POST" })
 		});
 
 		return { success: true };
+	});
+
+export const transferBooking = createServerFn({ method: "POST" })
+	.validator(transferBookingSchema)
+	.handler(async ({ data }) => {
+		const rows = await db
+			.select(bookingSelect)
+			.from(bookings)
+			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
+			.where(
+				and(
+					eq(bookings.bookingRef, data.bookingRef),
+					isNull(bookings.deletedAt),
+				),
+			)
+			.limit(1);
+
+		if (!rows[0]) {
+			throw new Error("Booking not found");
+		}
+
+		const booking = rows[0];
+
+		if (booking.status !== "CHECKED_IN") {
+			throw new Error("Only checked-in bookings can be transferred");
+		}
+
+		if (booking.roomId === data.targetRoomId) {
+			throw new Error("Target room must be different from current room");
+		}
+
+		const targetRoomRows = await db
+			.select({
+				id: rooms.id,
+				status: rooms.status,
+				capacity: rooms.capacity,
+				basePrice: rooms.basePrice,
+			})
+			.from(rooms)
+			.where(and(eq(rooms.id, data.targetRoomId), isNull(rooms.deletedAt)))
+			.limit(1);
+
+		if (!targetRoomRows[0]) {
+			throw new Error("Target room not found");
+		}
+
+		const targetRoom = targetRoomRows[0];
+
+		if (targetRoom.status !== "AVAILABLE") {
+			throw new Error("Target room is not available");
+		}
+
+		if (booking.occupantsCount > targetRoom.capacity) {
+			throw new Error(
+				`Target room capacity exceeded (max ${targetRoom.capacity} occupants)`,
+			);
+		}
+
+		const { subtotal: stayTotal } = calculateStayPricing({
+			basePrice: targetRoom.basePrice,
+			checkIn: String(booking.checkIn),
+			checkOut: String(booking.checkOut),
+		});
+
+		const newBookingRef = generateBookingRef();
+
+		const ledgerLines = buildCreateBookingLedgerLines(
+			{
+				walkIn: true,
+				paymentMethod: "CASH",
+				referenceNumber: undefined,
+			},
+			stayTotal,
+		);
+
+		await db.transaction(async (tx) => {
+			await tx
+				.update(bookings)
+				.set({
+					status: "TRANSFERRED",
+					cancelledAt: sql`now()`,
+					cancellationReason: data.reason,
+				})
+				.where(eq(bookings.id, booking.id));
+
+			await tx
+				.update(rooms)
+				.set({ status: "AVAILABLE" })
+				.where(eq(rooms.id, booking.roomId));
+
+			const [newBooking] = await tx
+				.insert(bookings)
+				.values({
+					bookingRef: newBookingRef,
+					roomId: data.targetRoomId,
+					firstName: booking.firstName,
+					lastName: booking.lastName,
+					contactNumber: booking.contactNumber,
+					address: booking.address ?? "",
+					checkIn: new Date(booking.checkIn ?? ""),
+					checkOut: new Date(booking.checkOut ?? ""),
+					occupantsCount: booking.occupantsCount,
+					status: "CHECKED_IN",
+					paymentStatus: "PAID_IN_FULL",
+					depositDeadline: booking.depositDeadline,
+					finalDueDate: booking.finalDueDate,
+					depositPctSnapshot: booking.depositPctSnapshot,
+				})
+				.returning();
+
+			await tx.insert(ledgerTransactions).values(
+				ledgerLines.map((line) => ({
+					bookingId: newBooking.id,
+					category: line.category,
+					amount: line.amount,
+					isPaid: line.isPaid,
+					description: line.description ?? null,
+					paymentMethod: line.isPaid ? (line.paymentMethod ?? null) : null,
+					referenceNumber: line.isPaid
+						? line.referenceNumber?.trim() || null
+						: null,
+				})),
+			);
+
+			await tx
+				.update(rooms)
+				.set({ status: "OCCUPIED" })
+				.where(eq(rooms.id, data.targetRoomId));
+		});
+
+		return { success: true, bookingRef: newBookingRef };
 	});

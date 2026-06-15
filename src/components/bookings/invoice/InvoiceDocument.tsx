@@ -250,8 +250,8 @@ export function InvoiceDocument({
 						<Text style={styles.sectionValue}>{booking.bookingRef}</Text>
 						<Text style={styles.sectionSub}>
 							Room {booking.roomNumber} ·{" "}
-							{format(new Date(booking.checkInDate), "MMM d, yyyy")} —{" "}
-							{format(new Date(booking.checkOutDate), "MMM d, yyyy")}
+							{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")} —{" "}
+							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
 						</Text>
 					</View>
 				</View>

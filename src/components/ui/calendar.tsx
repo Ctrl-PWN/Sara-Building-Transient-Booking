@@ -78,6 +78,17 @@ export function Calendar({
 
 	const buildDate = (day: number) => new Date(currentYear, currentMonth, day);
 
+	const hasDisabledDateBetween = (start: Date, end: Date): boolean => {
+		const e = startOfDay(end).getTime();
+		const cursor = new Date(start);
+		while (startOfDay(cursor).getTime() < e) {
+			cursor.setDate(cursor.getDate() + 1);
+			if (startOfDay(cursor).getTime() === e) break;
+			if (disabledDates?.(new Date(cursor))) return true;
+		}
+		return false;
+	};
+
 	const handleDateClick = (day: number) => {
 		const date = buildDate(day);
 		if (onRangeChange) {
@@ -87,6 +98,9 @@ export function Calendar({
 			}
 			if (date.getTime() < startOfDay(rangeStart).getTime()) {
 				onRangeChange(date, null);
+				return;
+			}
+			if (hasDisabledDateBetween(rangeStart, date)) {
 				return;
 			}
 			onRangeChange(rangeStart, date);

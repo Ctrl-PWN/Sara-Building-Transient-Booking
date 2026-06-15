@@ -7,6 +7,7 @@ import {
 	checkInBooking,
 	checkOutBooking,
 	createBooking,
+	transferBooking,
 	updateBookingStatus,
 } from "./bookings.functions";
 import { bookingKeys } from "./bookings.queries";
@@ -14,6 +15,7 @@ import type {
 	checkInBookingSchema,
 	checkOutBookingSchema,
 	createBookingServerSchema,
+	transferBookingSchema,
 	updateStatusSchema,
 } from "./schemas";
 
@@ -66,6 +68,19 @@ export const bookingMutations = {
 		mutationOptions({
 			mutationFn: (input: z.infer<typeof checkOutBookingSchema>) =>
 				checkOutBooking({ data: input }),
+			onSuccess: () => {
+				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({
+					queryKey: ledgerKeys.byBooking(bookingId),
+				});
+			},
+		}),
+
+	transfer: (queryClient: QueryClient, bookingId: number) =>
+		mutationOptions({
+			mutationFn: (input: z.infer<typeof transferBookingSchema>) =>
+				transferBooking({ data: input }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
