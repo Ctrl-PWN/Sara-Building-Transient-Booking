@@ -18,14 +18,14 @@ import { authClient } from "@/lib/auth-client";
 import { isNavItemActive, mainNavItems } from "@/lib/nav";
 
 export function AppSidebar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const navigate = useNavigate()
-  const { data: session } = authClient.useSession()
-  const isAdmin = session?.user.role === 'admin'
-  const adminOnlyPaths = ['/user-management', '/room-management']
-  const visibleNavItems = isAdmin
-    ? mainNavItems
-    : mainNavItems.filter((item) => !adminOnlyPaths.includes(item.to))
+	const pathname = useRouterState({ select: (s) => s.location.pathname });
+	const navigate = useNavigate();
+	const { data: session } = authClient.useSession();
+	const isAdmin = session?.user.role === "admin";
+	const adminOnlyPaths = ["/user-management", "/room-management"];
+	const visibleNavItems = isAdmin
+		? mainNavItems
+		: mainNavItems.filter((item) => !adminOnlyPaths.includes(item.to));
 
 	async function handleLogout() {
 		await authClient.signOut();

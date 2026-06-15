@@ -1,4 +1,4 @@
-import type { rooms } from '@/db/schema'
+import type { rooms } from "@/db/schema";
 
-export type Room = typeof rooms.$inferSelect
-export type NewRoom = typeof rooms.$inferInsert
+export type Room = typeof rooms.$inferSelect;
+export type NewRoom = typeof rooms.$inferInsert;
