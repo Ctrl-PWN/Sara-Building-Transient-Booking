@@ -26,42 +26,42 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function formatDate(date: string, time?: string) {
-  const formatted = format(parseISO(date), 'EEE d MMM yyyy')
-  return time ? `${formatted} at ${time}` : formatted
+	const formatted = format(parseISO(date), "EEE d MMM yyyy");
+	return time ? `${formatted} at ${time}` : formatted;
 }
 
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Guest" value={formatGuestName(booking)} />
-      <Field label="Reference" value={booking.bookingRef} />
-      <Field label="Contact" value={booking.contactNumber ?? 'Not provided'} />
-      <Field label="Room" value={booking.roomNumber} />
-      <Field
-        label="Check-in"
-        value={formatDate(booking.checkInDate, booking.checkInTime)}
-      />
-      <Field
-        label="Check-out"
-        value={formatDate(booking.checkOutDate, booking.checkOutTime)}
-      />
-      <Field label="Occupants" value={booking.occupantsCount} />
-      <Field
-        label="Status"
-        value={
-          <BookingStatusBadge
-            status={computeBookingDisplayStatus(
-              booking.status,
-              booking.checkOutDate,
-              booking.checkOutTime,
-            )}
-          />
-        }
-      />
-      <Field
-        label="Payment"
-        value={formatPaymentStatus(booking.paymentStatus)}
-      />
-    </div>
-  )
+	return (
+		<div className="grid gap-4 sm:grid-cols-2">
+			<Field label="Guest" value={formatGuestName(booking)} />
+			<Field label="Reference" value={booking.bookingRef} />
+			<Field label="Contact" value={booking.contactNumber ?? "Not provided"} />
+			<Field label="Room" value={booking.roomNumber} />
+			<Field
+				label="Check-in"
+				value={formatDate(booking.checkInDate, booking.checkInTime)}
+			/>
+			<Field
+				label="Check-out"
+				value={formatDate(booking.checkOutDate, booking.checkOutTime)}
+			/>
+			<Field label="Occupants" value={booking.occupantsCount} />
+			<Field
+				label="Status"
+				value={
+					<BookingStatusBadge
+						status={computeBookingDisplayStatus(
+							booking.status,
+							booking.checkOutDate,
+							booking.checkOutTime,
+						)}
+					/>
+				}
+			/>
+			<Field
+				label="Payment"
+				value={formatPaymentStatus(booking.paymentStatus)}
+			/>
+		</div>
+	);
 }

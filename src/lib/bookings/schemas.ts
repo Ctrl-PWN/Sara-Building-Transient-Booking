@@ -25,34 +25,34 @@ export const timelineSearchSchema = z.object({
 });
 
 const dateRangeRefine = {
-  check: (data: {
-    checkInDate: string
-    checkOutDate: string
-    checkInTime?: string
-    checkOutTime?: string
-  }) =>
-    !data.checkInDate ||
-    !data.checkOutDate ||
-    new Date(data.checkOutDate) > new Date(data.checkInDate) ||
-    (data.checkInDate === data.checkOutDate &&
-      (!data.checkInTime ||
-        !data.checkOutTime ||
-        data.checkOutTime >= data.checkInTime)),
-  message: 'Check-out cannot be before check-in' as const,
-  path: ['checkOutDate'] as const,
-}
+	check: (data: {
+		checkInDate: string;
+		checkOutDate: string;
+		checkInTime?: string;
+		checkOutTime?: string;
+	}) =>
+		!data.checkInDate ||
+		!data.checkOutDate ||
+		new Date(data.checkOutDate) > new Date(data.checkInDate) ||
+		(data.checkInDate === data.checkOutDate &&
+			(!data.checkInTime ||
+				!data.checkOutTime ||
+				data.checkOutTime >= data.checkInTime)),
+	message: "Check-out cannot be before check-in" as const,
+	path: ["checkOutDate"] as const,
+};
 
 export const createBookingStayFieldsShape = {
-  roomId: z.string().min(1, 'Room is required'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  contactNumber: z.string(),
-  checkInDate: z.string().min(1, 'Check-in date is required'),
-  checkOutDate: z.string().min(1, 'Check-out date is required'),
-  checkInTime: z.string().min(1, 'Check-in time is required'),
-  checkOutTime: z.string().min(1, 'Check-out time is required'),
-  occupantsCount: z.number().int().min(1, 'At least 1 occupant required'),
-} as const
+	roomId: z.string().min(1, "Room is required"),
+	firstName: z.string().min(1, "First name is required"),
+	lastName: z.string().min(1, "Last name is required"),
+	contactNumber: z.string(),
+	checkInDate: z.string().min(1, "Check-in date is required"),
+	checkOutDate: z.string().min(1, "Check-out date is required"),
+	checkInTime: z.string().min(1, "Check-in time is required"),
+	checkOutTime: z.string().min(1, "Check-out time is required"),
+	occupantsCount: z.number().int().min(1, "At least 1 occupant required"),
+} as const;
 
 const reservationFeeRefine = (
 	data: {
@@ -123,31 +123,31 @@ export function formatIsoDate(date: Date) {
 }
 
 export function todayIsoDate() {
-  return formatIsoDate(new Date())
+	return formatIsoDate(new Date());
 }
 
 function currentTimeHHMM() {
-  const now = new Date()
-  const h = String(now.getHours()).padStart(2, '0')
-  const m = String(now.getMinutes()).padStart(2, '0')
-  return `${h}:${m}`
+	const now = new Date();
+	const h = String(now.getHours()).padStart(2, "0");
+	const m = String(now.getMinutes()).padStart(2, "0");
+	return `${h}:${m}`;
 }
 
 const createBookingStayDefaultValues = () => {
-  return {
-    roomId: '',
-    firstName: '',
-    lastName: '',
-    contactNumber: '',
-    checkInDate: '',
-    checkOutDate: '',
-    checkInTime: currentTimeHHMM(),
-    checkOutTime: '11:00',
-    occupantsCount: 2,
-    paymentMethod: 'CASH' as const,
-    referenceNumber: '',
-  }
-}
+	return {
+		roomId: "",
+		firstName: "",
+		lastName: "",
+		contactNumber: "",
+		checkInDate: "",
+		checkOutDate: "",
+		checkInTime: currentTimeHHMM(),
+		checkOutTime: "11:00",
+		occupantsCount: 2,
+		paymentMethod: "CASH" as const,
+		referenceNumber: "",
+	};
+};
 
 export function createBookingFormDefaultValues(
 	walkIn: boolean,
@@ -171,59 +171,59 @@ export function createBookingFormDefaultValues(
 
 // Realigned with createBookingFormSchema in a follow-up server-fn step.
 export const createBookingServerSchema = z
-  .object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
-    roomId: z.number().int().positive('Room is required'),
-    contactNumber: z.string().optional(),
-    checkInDate: z.string().min(1, 'Check-in date is required'),
-    checkOutDate: z.string().min(1, 'Check-out date is required'),
-    checkInTime: z.string().min(1, 'Check-in time is required'),
-    checkOutTime: z.string().min(1, 'Check-out time is required'),
-    occupantsCount: z.number().int().positive('At least 1 occupant required'),
-    walkIn: z.boolean(),
-    paymentMethod: paymentMethodSchema,
-    referenceNumber: z.string().optional(),
-    reservationFeeType: reservationFeeTypeSchema.optional(),
-    reservationFeeValue: z.number().min(0).optional(),
-    depositPercentage: z.number().min(0).max(100),
-  })
-  .refine(
-    (data) =>
-      new Date(data.checkOutDate) > new Date(data.checkInDate) ||
-      (data.checkInDate === data.checkOutDate &&
-        data.checkOutTime >= data.checkInTime),
-    { message: 'Check-out cannot be before check-in', path: ['checkOutDate'] },
-  )
-  .superRefine((data, ctx) => {
-    if (
-      (data.paymentMethod === 'GCASH' ||
-        data.paymentMethod === 'BANK_TRANSFER') &&
-      !data.referenceNumber?.trim()
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Reference number is required for this payment method',
-        path: ['referenceNumber'],
-      })
-    }
-    if (!data.walkIn) {
-      if (!data.reservationFeeType) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Reservation fee type is required',
-          path: ['reservationFeeType'],
-        })
-      }
-      if (data.reservationFeeValue == null) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Reservation fee value is required',
-          path: ['reservationFeeValue'],
-        })
-      }
-    }
-  })
+	.object({
+		firstName: z.string().min(1, "First name is required"),
+		lastName: z.string().min(1, "Last name is required"),
+		roomId: z.number().int().positive("Room is required"),
+		contactNumber: z.string().optional(),
+		checkInDate: z.string().min(1, "Check-in date is required"),
+		checkOutDate: z.string().min(1, "Check-out date is required"),
+		checkInTime: z.string().min(1, "Check-in time is required"),
+		checkOutTime: z.string().min(1, "Check-out time is required"),
+		occupantsCount: z.number().int().positive("At least 1 occupant required"),
+		walkIn: z.boolean(),
+		paymentMethod: paymentMethodSchema,
+		referenceNumber: z.string().optional(),
+		reservationFeeType: reservationFeeTypeSchema.optional(),
+		reservationFeeValue: z.number().min(0).optional(),
+		depositPercentage: z.number().min(0).max(100),
+	})
+	.refine(
+		(data) =>
+			new Date(data.checkOutDate) > new Date(data.checkInDate) ||
+			(data.checkInDate === data.checkOutDate &&
+				data.checkOutTime >= data.checkInTime),
+		{ message: "Check-out cannot be before check-in", path: ["checkOutDate"] },
+	)
+	.superRefine((data, ctx) => {
+		if (
+			(data.paymentMethod === "GCASH" ||
+				data.paymentMethod === "BANK_TRANSFER") &&
+			!data.referenceNumber?.trim()
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Reference number is required for this payment method",
+				path: ["referenceNumber"],
+			});
+		}
+		if (!data.walkIn) {
+			if (!data.reservationFeeType) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Reservation fee type is required",
+					path: ["reservationFeeType"],
+				});
+			}
+			if (data.reservationFeeValue == null) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Reservation fee value is required",
+					path: ["reservationFeeValue"],
+				});
+			}
+		}
+	});
 
 export const updateStatusSchema = z.object({
 	bookingRef: z.string().min(1),
@@ -241,4 +241,10 @@ export const checkInBookingSchema = z
 
 export const checkOutBookingSchema = z.object({
 	bookingRef: z.string().min(1, "Booking reference is required"),
+});
+
+export const transferBookingSchema = z.object({
+	bookingRef: z.string().min(1, "Booking reference is required"),
+	targetRoomId: z.number().int().positive("Target room is required"),
+	reason: z.string().min(1, "Transfer reason is required"),
 });

@@ -237,26 +237,26 @@ export function InvoiceDocument({
 					</View>
 				</View>
 
-        <View style={styles.grid}>
-          <View style={styles.gridCol}>
-            <Text style={styles.sectionLabel}>Guest</Text>
-            <Text style={styles.sectionValue}>{formatGuestName(booking)}</Text>
-            {booking.contactNumber ? (
-              <Text style={styles.sectionSub}>{booking.contactNumber}</Text>
-            ) : null}
-          </View>
-          <View style={styles.gridColRight}>
-            <Text style={styles.sectionLabel}>Booking</Text>
-            <Text style={styles.sectionValue}>{booking.bookingRef}</Text>
-            <Text style={styles.sectionSub}>
-              Room {booking.roomNumber} ·{' '}
-              {format(new Date(booking.checkInDate), 'MMM d, yyyy')} at{' '}
-              {booking.checkInTime} —{' '}
-              {format(new Date(booking.checkOutDate), 'MMM d, yyyy')} at{' '}
-              {booking.checkOutTime}
-            </Text>
-          </View>
-        </View>
+				<View style={styles.grid}>
+					<View style={styles.gridCol}>
+						<Text style={styles.sectionLabel}>Guest</Text>
+						<Text style={styles.sectionValue}>{formatGuestName(booking)}</Text>
+						{booking.contactNumber ? (
+							<Text style={styles.sectionSub}>{booking.contactNumber}</Text>
+						) : null}
+					</View>
+					<View style={styles.gridColRight}>
+						<Text style={styles.sectionLabel}>Booking</Text>
+						<Text style={styles.sectionValue}>{booking.bookingRef}</Text>
+						<Text style={styles.sectionSub}>
+							Room {booking.roomNumber} ·{" "}
+							{format(new Date(booking.checkInDate), "MMM d, yyyy")} at{" "}
+							{booking.checkInTime} —{" "}
+							{format(new Date(booking.checkOutDate), "MMM d, yyyy")} at{" "}
+							{booking.checkOutTime}
+						</Text>
+					</View>
+				</View>
 
 				<View style={styles.tableSection}>
 					<View style={styles.tableHeader}>

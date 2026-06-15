@@ -15,6 +15,7 @@ const statusColorMap: Record<
 	CANCELLED: "destructive",
 	EVICTED: "destructive",
 	OVERDUE: "destructive",
+	TRANSFERRED: "secondary",
 };
 
 const isNonRefundable = (depositPctSnapshot: string) =>
@@ -29,12 +30,15 @@ const canCheckOut = (status: string) => ["CHECKED_IN"].includes(status);
 const canEvict = (status: string, paymentStatus: string) =>
 	status === "CHECKED_IN" && paymentStatus === "PAID_IN_FULL";
 
+const canTransfer = (status: string) => status === "CHECKED_IN";
+
 type BookingDetailHeaderProps = {
 	booking: BookingWithRoom;
 	onCancelClick: () => void;
 	onEvictClick: () => void;
 	onCheckIn: () => void;
 	onCheckOut: () => void;
+	onTransferClick: () => void;
 };
 
 export function BookingDetailHeader({
@@ -43,12 +47,13 @@ export function BookingDetailHeader({
 	onEvictClick,
 	onCheckIn,
 	onCheckOut,
+	onTransferClick,
 }: BookingDetailHeaderProps) {
-  const displayStatus = computeBookingDisplayStatus(
-    booking.status,
-    booking.checkOutDate,
-    booking.checkOutTime,
-  )
+	const displayStatus = computeBookingDisplayStatus(
+		booking.status,
+		booking.checkOutDate,
+		booking.checkOutTime,
+	);
 
 	return (
 		<div>
@@ -94,6 +99,11 @@ export function BookingDetailHeader({
 					{canEvict(booking.status, booking.paymentStatus) && (
 						<Button variant="destructive" onClick={onEvictClick}>
 							Evict
+						</Button>
+					)}
+					{canTransfer(booking.status) && (
+						<Button variant="outline" onClick={onTransferClick}>
+							Transfer
 						</Button>
 					)}
 				</div>

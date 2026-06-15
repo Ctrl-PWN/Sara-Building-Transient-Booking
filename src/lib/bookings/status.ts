@@ -1,4 +1,4 @@
-import type { TimelineLegendStatus } from './types'
+import type { TimelineLegendStatus } from "./types";
 
 export type BookingStatusPresentation = {
 	label: string;
@@ -6,7 +6,10 @@ export type BookingStatusPresentation = {
 	colorVar: string;
 };
 
-export type DerivedBookingStatus = TimelineLegendStatus | "OVERDUE";
+export type DerivedBookingStatus =
+	| TimelineLegendStatus
+	| "OVERDUE"
+	| "TRANSFERRED";
 
 const presentationByStatus: Record<
 	DerivedBookingStatus,
@@ -32,6 +35,11 @@ const presentationByStatus: Record<
 		legendLabel: "Overdue",
 		colorVar: "--status-overdue",
 	},
+	TRANSFERRED: {
+		label: "Transferred",
+		legendLabel: "Transferred",
+		colorVar: "--status-checked-out",
+	},
 };
 
 export const timelineLegendStatuses: TimelineLegendStatus[] = [
@@ -42,32 +50,34 @@ export const timelineLegendStatuses: TimelineLegendStatus[] = [
 
 export function normalizeBookingStatus(status: string): TimelineLegendStatus {
 	if (status === "CHECKED_IN") return "CHECKED_IN";
-	if (status === "CHECKED_OUT") return "CHECKED_OUT";
+	if (status === "CHECKED_OUT" || status === "TRANSFERRED")
+		return "CHECKED_OUT";
 	return "RESERVED";
 }
 
 export function computeBookingDisplayStatus(
-  status: string,
-  checkOutDate: string | Date,
-  checkOutTime?: string,
+	status: string,
+	checkOutDate: string | Date,
+	checkOutTime?: string,
 ): DerivedBookingStatus {
-  if (status === 'CHECKED_IN') {
-    const dateStr =
-      typeof checkOutDate === 'string'
-        ? checkOutDate
-        : checkOutDate.toISOString().slice(0, 10)
-    const checkout = new Date(`${dateStr}T${checkOutTime ?? '11:00'}`)
-    const now = new Date()
-    if (now > checkout) return 'OVERDUE'
-  }
-  if (
-    status === 'CHECKED_IN' ||
-    status === 'CHECKED_OUT' ||
-    status === 'RESERVED'
-  ) {
-    return status
-  }
-  return status as DerivedBookingStatus
+	if (status === "CHECKED_IN") {
+		const dateStr =
+			typeof checkOutDate === "string"
+				? checkOutDate
+				: checkOutDate.toISOString().slice(0, 10);
+		const checkout = new Date(`${dateStr}T${checkOutTime ?? "11:00"}`);
+		const now = new Date();
+		if (now > checkout) return "OVERDUE";
+	}
+	if (
+		status === "CHECKED_IN" ||
+		status === "CHECKED_OUT" ||
+		status === "RESERVED" ||
+		status === "TRANSFERRED"
+	) {
+		return status;
+	}
+	return status as DerivedBookingStatus;
 }
 
 export function getBookingStatusPresentation(

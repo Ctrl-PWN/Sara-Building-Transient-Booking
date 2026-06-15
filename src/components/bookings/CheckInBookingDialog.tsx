@@ -82,40 +82,40 @@ export function CheckInBookingDialog({
 
 	const balanceAmount = roomBalance ? Number(roomBalance.amount) : 0;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Check in guest</DialogTitle>
-        </DialogHeader>
-        <form
-          className="space-y-4 py-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void form.handleSubmit()
-          }}
-        >
-          <form.AppForm>
-            <div className="rounded-lg border p-4 space-y-2 text-sm">
-              <p>
-                <span className="text-muted-foreground">Guest:</span>{' '}
-                {booking.firstName} {booking.lastName}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Room:</span>{' '}
-                {booking.roomNumber}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Stay:</span>{' '}
-                {format(new Date(booking.checkInDate), 'MMM d, yyyy')} at{' '}
-                {booking.checkInTime} –{' '}
-                {format(new Date(booking.checkOutDate), 'MMM d, yyyy')} at{' '}
-                {booking.checkOutTime}
-              </p>
-              <p className="font-medium pt-1">
-                Room balance due: {formatPeso(balanceAmount)}
-              </p>
-            </div>
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-lg">
+				<DialogHeader>
+					<DialogTitle>Check in guest</DialogTitle>
+				</DialogHeader>
+				<form
+					className="space-y-4 py-2"
+					onSubmit={(event) => {
+						event.preventDefault();
+						void form.handleSubmit();
+					}}
+				>
+					<form.AppForm>
+						<div className="rounded-lg border p-4 space-y-2 text-sm">
+							<p>
+								<span className="text-muted-foreground">Guest:</span>{" "}
+								{booking.firstName} {booking.lastName}
+							</p>
+							<p>
+								<span className="text-muted-foreground">Room:</span>{" "}
+								{booking.roomNumber}
+							</p>
+							<p>
+								<span className="text-muted-foreground">Stay:</span>{" "}
+								{format(new Date(booking.checkInDate), "MMM d, yyyy")} at{" "}
+								{booking.checkInTime} –{" "}
+								{format(new Date(booking.checkOutDate), "MMM d, yyyy")} at{" "}
+								{booking.checkOutTime}
+							</p>
+							<p className="font-medium pt-1">
+								Room balance due: {formatPeso(balanceAmount)}
+							</p>
+						</div>
 
 						<p className="text-sm text-muted-foreground">
 							Collect the full room balance before checking the guest in.

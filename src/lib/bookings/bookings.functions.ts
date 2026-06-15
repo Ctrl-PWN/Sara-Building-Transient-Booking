@@ -17,88 +17,89 @@ import {
 	checkInBookingSchema,
 	checkOutBookingSchema,
 	createBookingServerSchema,
+	transferBookingSchema,
 	updateStatusSchema,
 } from "./schemas";
 import { calculateStayPricing } from "./stay-pricing";
 import type { BookingPaymentStatus, BookingWithRoom } from "./types";
 
 function mapBookingRow(row: {
-  id: number
-  bookingRef: string
-  firstName: string
-  lastName: string
-  contactNumber: string | null
-  roomId: number
-  roomNumber: string
-  roomType: string
-  roomBasePrice: string | null
-  checkInDate: string
-  checkOutDate: string
-  checkInTime: string
-  checkOutTime: string
-  occupantsCount: number
-  status: string
-  paymentStatus: string
-  depositDeadline: Date | string | null
-  finalDueDate: Date | string | null
-  depositPctSnapshot: string | null
-  cancellationReason: string | null
-  cancelledAt: Date | string | null
-  createdAt: Date | string | null
-  deletedAt: Date | string | null
+	id: number;
+	bookingRef: string;
+	firstName: string;
+	lastName: string;
+	contactNumber: string | null;
+	roomId: number;
+	roomNumber: string;
+	roomType: string;
+	roomBasePrice: string | null;
+	checkInDate: string;
+	checkOutDate: string;
+	checkInTime: string;
+	checkOutTime: string;
+	occupantsCount: number;
+	status: string;
+	paymentStatus: string;
+	depositDeadline: Date | string | null;
+	finalDueDate: Date | string | null;
+	depositPctSnapshot: string | null;
+	cancellationReason: string | null;
+	cancelledAt: Date | string | null;
+	createdAt: Date | string | null;
+	deletedAt: Date | string | null;
 }): BookingWithRoom {
-  return {
-    id: row.id,
-    bookingRef: row.bookingRef,
-    firstName: row.firstName,
-    lastName: row.lastName,
-    contactNumber: row.contactNumber,
-    roomId: row.roomId,
-    roomNumber: row.roomNumber,
-    roomType: row.roomType,
-    roomBasePrice: row.roomBasePrice,
-    checkInDate: row.checkInDate,
-    checkOutDate: row.checkOutDate,
-    checkInTime: row.checkInTime,
-    checkOutTime: row.checkOutTime,
-    occupantsCount: row.occupantsCount,
-    status: bookingStatusSchema.parse(row.status),
-    paymentStatus: row.paymentStatus as BookingPaymentStatus,
-    depositDeadline: row.depositDeadline,
-    finalDueDate: row.finalDueDate,
-    depositPctSnapshot: row.depositPctSnapshot ?? '',
-    cancellationReason: row.cancellationReason,
-    cancelledAt: row.cancelledAt,
-    createdAt: row.createdAt,
-    deletedAt: row.deletedAt,
-  }
+	return {
+		id: row.id,
+		bookingRef: row.bookingRef,
+		firstName: row.firstName,
+		lastName: row.lastName,
+		contactNumber: row.contactNumber,
+		roomId: row.roomId,
+		roomNumber: row.roomNumber,
+		roomType: row.roomType,
+		roomBasePrice: row.roomBasePrice,
+		checkInDate: row.checkInDate,
+		checkOutDate: row.checkOutDate,
+		checkInTime: row.checkInTime,
+		checkOutTime: row.checkOutTime,
+		occupantsCount: row.occupantsCount,
+		status: bookingStatusSchema.parse(row.status),
+		paymentStatus: row.paymentStatus as BookingPaymentStatus,
+		depositDeadline: row.depositDeadline,
+		finalDueDate: row.finalDueDate,
+		depositPctSnapshot: row.depositPctSnapshot ?? "",
+		cancellationReason: row.cancellationReason,
+		cancelledAt: row.cancelledAt,
+		createdAt: row.createdAt,
+		deletedAt: row.deletedAt,
+	};
 }
 
 const bookingSelect = {
-  id: bookings.id,
-  bookingRef: bookings.bookingRef,
-  firstName: bookings.firstName,
-  lastName: bookings.lastName,
-  contactNumber: bookings.contactNumber,
-  roomId: bookings.roomId,
-  roomNumber: rooms.roomNumber,
-  roomType: rooms.type,
-  roomBasePrice: rooms.basePrice,
-  checkInDate: bookings.checkInDate,
-  checkOutDate: bookings.checkOutDate,
-  checkInTime: bookings.checkInTime,
-  checkOutTime: bookings.checkOutTime,
-  occupantsCount: bookings.occupantsCount,
-  status: bookings.status,
-  paymentStatus: bookings.paymentStatus,
-  depositDeadline: bookings.depositDeadline,
-  finalDueDate: bookings.finalDueDate,
-  depositPctSnapshot: bookings.depositPctSnapshot,
-  cancellationReason: bookings.cancellationReason,
-  cancelledAt: bookings.cancelledAt,
-  createdAt: bookings.createdAt,
-  deletedAt: bookings.deletedAt,
-}
+	id: bookings.id,
+	bookingRef: bookings.bookingRef,
+	firstName: bookings.firstName,
+	lastName: bookings.lastName,
+	contactNumber: bookings.contactNumber,
+	roomId: bookings.roomId,
+	roomNumber: rooms.roomNumber,
+	roomType: rooms.type,
+	roomBasePrice: rooms.basePrice,
+	checkInDate: bookings.checkInDate,
+	checkOutDate: bookings.checkOutDate,
+	checkInTime: bookings.checkInTime,
+	checkOutTime: bookings.checkOutTime,
+	occupantsCount: bookings.occupantsCount,
+	status: bookings.status,
+	paymentStatus: bookings.paymentStatus,
+	depositDeadline: bookings.depositDeadline,
+	finalDueDate: bookings.finalDueDate,
+	depositPctSnapshot: bookings.depositPctSnapshot,
+	cancellationReason: bookings.cancellationReason,
+	cancelledAt: bookings.cancelledAt,
+	createdAt: bookings.createdAt,
+	deletedAt: bookings.deletedAt,
+};
 
 export function generateBookingRef(): string {
 	const now = new Date();
@@ -139,7 +140,12 @@ async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
 		.where(
 			and(
 				isNull(bookings.deletedAt),
-				inArray(bookings.status, ["CHECKED_OUT", "CANCELLED", "EVICTED"]),
+				inArray(bookings.status, [
+					"CHECKED_OUT",
+					"CANCELLED",
+					"EVICTED",
+					"TRANSFERRED",
+				]),
 			),
 		)
 		.orderBy(
@@ -156,7 +162,7 @@ export const getBookingHistory = createServerFn({ method: "GET" }).handler(
 );
 
 export const getBookingById = createServerFn({ method: "GET" })
-	.inputValidator(bookingByIdSchema)
+	.validator(bookingByIdSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select(bookingSelect)
@@ -177,7 +183,7 @@ const bookingRefSchema = z.object({
 });
 
 export const getBookingByRef = createServerFn({ method: "GET" })
-	.inputValidator(bookingRefSchema)
+	.validator(bookingRefSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select(bookingSelect)
@@ -195,7 +201,7 @@ export const getBookingByRef = createServerFn({ method: "GET" })
 	});
 
 export const createBooking = createServerFn({ method: "POST" })
-	.inputValidator(createBookingServerSchema)
+	.validator(createBookingServerSchema)
 	.handler(async ({ data }) => {
 		const conflicts = await db
 			.select({ id: bookings.id })
@@ -238,58 +244,58 @@ export const createBooking = createServerFn({ method: "POST" })
 			);
 		}
 
-    const { subtotal: stayTotal } = calculateStayPricing({
-      basePrice: room.basePrice,
-      checkInDate: data.checkInDate,
-      checkOutDate: data.checkOutDate,
-      checkInTime: data.checkInTime,
-      checkOutTime: data.checkOutTime,
-    })
+		const { subtotal: stayTotal } = calculateStayPricing({
+			basePrice: room.basePrice,
+			checkInDate: data.checkInDate,
+			checkOutDate: data.checkOutDate,
+			checkInTime: data.checkInTime,
+			checkOutTime: data.checkOutTime,
+		});
 
-    const ledgerLines = buildCreateBookingLedgerLines(
-      {
-        walkIn: data.walkIn,
-        paymentMethod: data.paymentMethod,
-        referenceNumber: data.referenceNumber,
-        reservationFeeType: data.reservationFeeType,
-        reservationFeeValue: data.reservationFeeValue,
-      },
-      stayTotal,
-    )
+		const ledgerLines = buildCreateBookingLedgerLines(
+			{
+				walkIn: data.walkIn,
+				paymentMethod: data.paymentMethod,
+				referenceNumber: data.referenceNumber,
+				reservationFeeType: data.reservationFeeType,
+				reservationFeeValue: data.reservationFeeValue,
+			},
+			stayTotal,
+		);
 
-    const checkIn = new Date(`${data.checkInDate}T${data.checkInTime}`)
-    const checkOut = new Date(`${data.checkOutDate}T${data.checkOutTime}`)
-    const depositHours = 24
-    const depositDeadline = new Date(
-      checkIn.getTime() - depositHours * 60 * 60 * 1000,
-    )
-    const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000)
+		const checkIn = new Date(`${data.checkInDate}T${data.checkInTime}`);
+		const checkOut = new Date(`${data.checkOutDate}T${data.checkOutTime}`);
+		const depositHours = 24;
+		const depositDeadline = new Date(
+			checkIn.getTime() - depositHours * 60 * 60 * 1000,
+		);
+		const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const bookingRef = generateBookingRef()
-    const status = data.walkIn ? 'CHECKED_IN' : 'RESERVED'
-    const paymentStatus = data.walkIn ? 'PAID_IN_FULL' : 'CURRENT'
+		const bookingRef = generateBookingRef();
+		const status = data.walkIn ? "CHECKED_IN" : "RESERVED";
+		const paymentStatus = data.walkIn ? "PAID_IN_FULL" : "CURRENT";
 
-    const { bookingId } = await db.transaction(async (tx) => {
-      const [row] = await tx
-        .insert(bookings)
-        .values({
-          bookingRef,
-          roomId: data.roomId,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          contactNumber: data.contactNumber,
-          checkInDate: data.checkInDate,
-          checkOutDate: data.checkOutDate,
-          checkInTime: data.checkInTime,
-          checkOutTime: data.checkOutTime,
-          occupantsCount: data.occupantsCount,
-          status,
-          paymentStatus,
-          depositDeadline,
-          finalDueDate,
-          depositPctSnapshot: data.depositPercentage.toFixed(2),
-        })
-        .returning()
+		const { bookingId } = await db.transaction(async (tx) => {
+			const [row] = await tx
+				.insert(bookings)
+				.values({
+					bookingRef,
+					roomId: data.roomId,
+					firstName: data.firstName,
+					lastName: data.lastName,
+					contactNumber: data.contactNumber,
+					checkInDate: data.checkInDate,
+					checkOutDate: data.checkOutDate,
+					checkInTime: data.checkInTime,
+					checkOutTime: data.checkOutTime,
+					occupantsCount: data.occupantsCount,
+					status,
+					paymentStatus,
+					depositDeadline,
+					finalDueDate,
+					depositPctSnapshot: data.depositPercentage.toFixed(2),
+				})
+				.returning();
 
 			await tx.insert(ledgerTransactions).values(
 				ledgerLines.map((line) => ({
@@ -319,7 +325,7 @@ export const createBooking = createServerFn({ method: "POST" })
 	});
 
 export const updateBookingStatus = createServerFn({ method: "POST" })
-	.inputValidator(updateStatusSchema)
+	.validator(updateStatusSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({ id: bookings.id, roomId: bookings.roomId })
@@ -373,7 +379,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 	});
 
 export const checkInBooking = createServerFn({ method: "POST" })
-	.inputValidator(checkInBookingSchema)
+	.validator(checkInBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({
@@ -452,7 +458,7 @@ export const checkInBooking = createServerFn({ method: "POST" })
 	});
 
 export const checkOutBooking = createServerFn({ method: "POST" })
-	.inputValidator(checkOutBookingSchema)
+	.validator(checkOutBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
 			.select({
@@ -499,4 +505,138 @@ export const checkOutBooking = createServerFn({ method: "POST" })
 		});
 
 		return { success: true };
+	});
+
+export const transferBooking = createServerFn({ method: "POST" })
+	.validator(transferBookingSchema)
+	.handler(async ({ data }) => {
+		const rows = await db
+			.select(bookingSelect)
+			.from(bookings)
+			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
+			.where(
+				and(
+					eq(bookings.bookingRef, data.bookingRef),
+					isNull(bookings.deletedAt),
+				),
+			)
+			.limit(1);
+
+		if (!rows[0]) {
+			throw new Error("Booking not found");
+		}
+
+		const booking = rows[0];
+
+		if (booking.status !== "CHECKED_IN") {
+			throw new Error("Only checked-in bookings can be transferred");
+		}
+
+		if (booking.roomId === data.targetRoomId) {
+			throw new Error("Target room must be different from current room");
+		}
+
+		const targetRoomRows = await db
+			.select({
+				id: rooms.id,
+				status: rooms.status,
+				capacity: rooms.capacity,
+				basePrice: rooms.basePrice,
+			})
+			.from(rooms)
+			.where(and(eq(rooms.id, data.targetRoomId), isNull(rooms.deletedAt)))
+			.limit(1);
+
+		if (!targetRoomRows[0]) {
+			throw new Error("Target room not found");
+		}
+
+		const targetRoom = targetRoomRows[0];
+
+		if (targetRoom.status !== "AVAILABLE") {
+			throw new Error("Target room is not available");
+		}
+
+		if (booking.occupantsCount > targetRoom.capacity) {
+			throw new Error(
+				`Target room capacity exceeded (max ${targetRoom.capacity} occupants)`,
+			);
+		}
+
+		const { subtotal: stayTotal } = calculateStayPricing({
+			basePrice: targetRoom.basePrice,
+			checkInDate: booking.checkInDate,
+			checkOutDate: booking.checkOutDate,
+			checkInTime: booking.checkInTime,
+			checkOutTime: booking.checkOutTime,
+		});
+
+		const newBookingRef = generateBookingRef();
+
+		const ledgerLines = buildCreateBookingLedgerLines(
+			{
+				walkIn: true,
+				paymentMethod: "CASH",
+				referenceNumber: undefined,
+			},
+			stayTotal,
+		);
+
+		await db.transaction(async (tx) => {
+			await tx
+				.update(bookings)
+				.set({
+					status: "TRANSFERRED",
+					cancelledAt: sql`now()`,
+					cancellationReason: data.reason,
+				})
+				.where(eq(bookings.id, booking.id));
+
+			await tx
+				.update(rooms)
+				.set({ status: "AVAILABLE" })
+				.where(eq(rooms.id, booking.roomId));
+
+			const [newBooking] = await tx
+				.insert(bookings)
+				.values({
+					bookingRef: newBookingRef,
+					roomId: data.targetRoomId,
+					firstName: booking.firstName,
+					lastName: booking.lastName,
+					contactNumber: booking.contactNumber,
+					checkInDate: booking.checkInDate,
+					checkOutDate: booking.checkOutDate,
+					checkInTime: booking.checkInTime,
+					checkOutTime: booking.checkOutTime,
+					occupantsCount: booking.occupantsCount,
+					status: "CHECKED_IN",
+					paymentStatus: "PAID_IN_FULL",
+					depositDeadline: booking.depositDeadline,
+					finalDueDate: booking.finalDueDate,
+					depositPctSnapshot: booking.depositPctSnapshot,
+				})
+				.returning();
+
+			await tx.insert(ledgerTransactions).values(
+				ledgerLines.map((line) => ({
+					bookingId: newBooking.id,
+					category: line.category,
+					amount: line.amount,
+					isPaid: line.isPaid,
+					description: line.description ?? null,
+					paymentMethod: line.isPaid ? (line.paymentMethod ?? null) : null,
+					referenceNumber: line.isPaid
+						? line.referenceNumber?.trim() || null
+						: null,
+				})),
+			);
+
+			await tx
+				.update(rooms)
+				.set({ status: "OCCUPIED" })
+				.where(eq(rooms.id, data.targetRoomId));
+		});
+
+		return { success: true, bookingRef: newBookingRef };
 	});

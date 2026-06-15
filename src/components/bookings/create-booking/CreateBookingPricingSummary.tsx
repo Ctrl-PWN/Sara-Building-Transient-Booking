@@ -20,43 +20,45 @@ export function CreateBookingPricingSummary({
 	rooms,
 	walkIn,
 }: CreateBookingPricingSummaryProps) {
-  return (
-    <form.Subscribe
-      selector={(state) => ({
-        roomId: state.values.roomId,
-        checkInDate: state.values.checkInDate,
-        checkOutDate: state.values.checkOutDate,
-        checkInTime: state.values.checkInTime,
-        checkOutTime: state.values.checkOutTime,
-        reservationFeeType:
-          'reservationFeeType' in state.values
-            ? state.values.reservationFeeType
-            : 'PERCENT',
-        reservationFeeValue:
-          'reservationFeeValue' in state.values
-            ? state.values.reservationFeeValue
-            : 0,
-      })}
-    >
-      {({
-        roomId,
-        checkInDate: start,
-        checkOutDate: end,
-        checkInTime,
-        checkOutTime,
-        reservationFeeType,
-        reservationFeeValue,
-      }) => {
-        const selectedRoom = rooms.find((room) => room.id.toString() === roomId)
-        if (!selectedRoom || !start || !end) return null
+	return (
+		<form.Subscribe
+			selector={(state) => ({
+				roomId: state.values.roomId,
+				checkInDate: state.values.checkInDate,
+				checkOutDate: state.values.checkOutDate,
+				checkInTime: state.values.checkInTime,
+				checkOutTime: state.values.checkOutTime,
+				reservationFeeType:
+					"reservationFeeType" in state.values
+						? state.values.reservationFeeType
+						: "PERCENT",
+				reservationFeeValue:
+					"reservationFeeValue" in state.values
+						? state.values.reservationFeeValue
+						: 0,
+			})}
+		>
+			{({
+				roomId,
+				checkInDate: start,
+				checkOutDate: end,
+				checkInTime,
+				checkOutTime,
+				reservationFeeType,
+				reservationFeeValue,
+			}) => {
+				const selectedRoom = rooms.find(
+					(room) => room.id.toString() === roomId,
+				);
+				if (!selectedRoom || !start || !end) return null;
 
-        const { nights, subtotal } = calculateStayPricing({
-          basePrice: selectedRoom.basePrice,
-          checkInDate: start,
-          checkOutDate: end,
-          checkInTime,
-          checkOutTime,
-        })
+				const { nights, subtotal } = calculateStayPricing({
+					basePrice: selectedRoom.basePrice,
+					checkInDate: start,
+					checkOutDate: end,
+					checkInTime,
+					checkOutTime,
+				});
 
 				if (walkIn) {
 					return (

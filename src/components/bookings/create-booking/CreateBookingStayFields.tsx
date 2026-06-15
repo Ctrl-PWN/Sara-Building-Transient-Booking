@@ -31,44 +31,46 @@ export function CreateBookingStayFields({
 				</form.AppField>
 			)}
 
-      {step === 2 && (
-        <>
-          <form.AppField name="checkInDate">
-            {(field) => (
-              <field.DateRangeField
-                endFieldName="checkOutDate"
-                label="Stay Dates"
-                startLabel="Check-in"
-                endLabel="Check-out"
-                minDate={new Date()}
-                disabledDates={isDateDisabled}
-              />
-            )}
-          </form.AppField>
+			{step === 2 && (
+				<>
+					<form.AppField name="checkInDate">
+						{(field) => (
+							<field.DateRangeField
+								endFieldName="checkOutDate"
+								label="Stay Dates"
+								startLabel="Check-in"
+								endLabel="Check-out"
+								minDate={new Date()}
+								disabledDates={isDateDisabled}
+							/>
+						)}
+					</form.AppField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <form.AppField name="checkInTime">
-              {(field) => <field.TextField label="Check-in Time" type="time" />}
-            </form.AppField>
-            <form.AppField name="checkOutTime">
-              {(field) => (
-                <field.TextField label="Check-out Time" type="time" />
-              )}
-            </form.AppField>
-          </div>
-        </>
-      )}
+					<div className="grid grid-cols-2 gap-4">
+						<form.AppField name="checkInTime">
+							{(field) => <field.TimeField label="Check-in Time" />}
+						</form.AppField>
+						<form.AppField name="checkOutTime">
+							{(field) => <field.TimeField label="Check-out Time" />}
+						</form.AppField>
+					</div>
+				</>
+			)}
 
-      {step === 3 && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <form.AppField name="checkInTime">
-              {(field) => <field.TimeField label="Check-in Time" />}
-            </form.AppField>
-            <form.AppField name="checkOutTime">
-              {(field) => <field.TimeField label="Check-out Time" />}
-            </form.AppField>
-          </div>
+			{step === 3 && (
+				<>
+					<div className="grid grid-cols-2 gap-4">
+						<form.AppField name="firstName">
+							{(field) => (
+								<field.TextField label="First Name" placeholder="First name" />
+							)}
+						</form.AppField>
+						<form.AppField name="lastName">
+							{(field) => (
+								<field.TextField label="Last Name" placeholder="Last name" />
+							)}
+						</form.AppField>
+					</div>
 
 					<form.AppField name="contactNumber">
 						{(field) => (

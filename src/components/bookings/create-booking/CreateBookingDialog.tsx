@@ -98,37 +98,37 @@ export function CreateBookingDialog({
 		bookingMutations.createBooking(queryClient, onSuccess, onError),
 	);
 
-  const form = useCreateBookingForm({
-    walkIn,
-    onSubmit: async (value) => {
-      await mutation.mutateAsync({
-        roomId: Number(value.roomId),
-        firstName: value.firstName.trim(),
-        lastName: value.lastName.trim(),
-        contactNumber: value.contactNumber.trim() || undefined,
-        checkInDate: value.checkInDate,
-        checkOutDate: value.checkOutDate,
-        checkInTime: value.checkInTime,
-        checkOutTime: value.checkOutTime,
-        occupantsCount: value.occupantsCount,
-        walkIn: value.walkIn,
-        paymentMethod: value.paymentMethod,
-        referenceNumber:
-          value.paymentMethod === 'CASH'
-            ? undefined
-            : value.referenceNumber.trim() || undefined,
-        reservationFeeType: value.walkIn ? undefined : value.reservationFeeType,
-        reservationFeeValue: value.walkIn
-          ? undefined
-          : value.reservationFeeValue,
-        depositPercentage: value.walkIn
-          ? 100
-          : value.reservationFeeType === 'PERCENT'
-            ? value.reservationFeeValue
-            : 0,
-      })
-    },
-  })
+	const form = useCreateBookingForm({
+		walkIn,
+		onSubmit: async (value) => {
+			await mutation.mutateAsync({
+				roomId: Number(value.roomId),
+				firstName: value.firstName.trim(),
+				lastName: value.lastName.trim(),
+				contactNumber: value.contactNumber.trim() || undefined,
+				checkInDate: value.checkInDate,
+				checkOutDate: value.checkOutDate,
+				checkInTime: value.checkInTime,
+				checkOutTime: value.checkOutTime,
+				occupantsCount: value.occupantsCount,
+				walkIn: value.walkIn,
+				paymentMethod: value.paymentMethod,
+				referenceNumber:
+					value.paymentMethod === "CASH"
+						? undefined
+						: value.referenceNumber.trim() || undefined,
+				reservationFeeType: value.walkIn ? undefined : value.reservationFeeType,
+				reservationFeeValue: value.walkIn
+					? undefined
+					: value.reservationFeeValue,
+				depositPercentage: value.walkIn
+					? 100
+					: value.reservationFeeType === "PERCENT"
+						? value.reservationFeeValue
+						: 0,
+			});
+		},
+	});
 
 	const resetForm = useCallback(() => {
 		form.reset(createBookingFormDefaultValues(walkIn));

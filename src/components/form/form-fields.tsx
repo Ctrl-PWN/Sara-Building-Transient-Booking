@@ -105,48 +105,48 @@ function TextField({
 }
 
 type TimeFieldProps = {
-  label: string
-  description?: string
-  disabled?: boolean
-  step?: number
-}
+	label: string;
+	description?: string;
+	disabled?: boolean;
+	step?: number;
+};
 
 export function TimeField({
-  label,
-  description,
-  disabled,
-  step = 60,
+	label,
+	description,
+	disabled,
+	step = 60,
 }: TimeFieldProps) {
-  const { field, isInvalid } = useFieldInvalidState()
-  const value = field.state.value as string
+	const { field, isInvalid } = useFieldInvalidState();
+	const value = field.state.value as string;
 
-  return (
-    <Field data-invalid={isInvalid || undefined}>
-      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <Input
-        id={field.name}
-        name={field.name}
-        type="time"
-        step={step}
-        value={value}
-        disabled={disabled}
-        onBlur={field.handleBlur}
-        onChange={(event) => field.handleChange(event.target.value)}
-        aria-invalid={isInvalid || undefined}
-        aria-describedby={description ? `${field.name}-description` : undefined}
-        className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-      />
-      {description ? (
-        <p
-          id={`${field.name}-description`}
-          className="text-sm text-muted-foreground"
-        >
-          {description}
-        </p>
-      ) : null}
-      {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
-    </Field>
-  )
+	return (
+		<Field data-invalid={isInvalid || undefined}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+			<Input
+				id={field.name}
+				name={field.name}
+				type="time"
+				step={step}
+				value={value}
+				disabled={disabled}
+				onBlur={field.handleBlur}
+				onChange={(event) => field.handleChange(event.target.value)}
+				aria-invalid={isInvalid || undefined}
+				aria-describedby={description ? `${field.name}-description` : undefined}
+				className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+			/>
+			{description ? (
+				<p
+					id={`${field.name}-description`}
+					className="text-sm text-muted-foreground"
+				>
+					{description}
+				</p>
+			) : null}
+			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+		</Field>
+	);
 }
 
 type PasswordFieldProps = {
