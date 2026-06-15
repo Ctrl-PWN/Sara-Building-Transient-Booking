@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "@tanstack/react-store";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -215,13 +216,51 @@ export function CreateBookingDialog({
 			}}
 		>
 			<DialogOutsideScroll className="sm:max-w-2xl">
-				<form
-					onSubmit={(event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						void form.handleSubmit();
-					}}
-				>
+			<form
+				onSubmit={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
+
+					const missing: string[] = [];
+					const missingFields: string[] = [];
+					if (!form.getFieldValue("firstName").trim()) {
+						missing.push("First name");
+						missingFields.push("firstName");
+					}
+					if (!form.getFieldValue("lastName").trim()) {
+						missing.push("Last name");
+						missingFields.push("lastName");
+					}
+					if (!form.getFieldValue("contactNumber").trim()) {
+						missing.push("Phone number");
+						missingFields.push("contactNumber");
+					}
+					if (!(form.getFieldValue("address") || "").trim()) {
+						missing.push("Address");
+						missingFields.push("address");
+					}
+
+					if (missing.length > 0) {
+						for (const f of missingFields) {
+							form.setFieldMeta(f as "firstName" | "lastName" | "contactNumber" | "address", (prev) => ({
+								...prev,
+								isTouched: true,
+								isDirty: true,
+								errorMap: {
+									...prev.errorMap,
+									onSubmit: "This field is required",
+								},
+							}));
+						}
+						toast.error("Please fill in the required fields", {
+							description: missing.join(", "),
+						});
+						return;
+					}
+
+					void form.handleSubmit();
+				}}
+			>
 					<form.AppForm>
 						<DialogHeader>
 							<div className="flex items-center justify-between">
