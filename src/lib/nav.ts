@@ -21,6 +21,7 @@ export const mainNavItems: NavItem[] = [
   { label: 'Rooms', to: '/rooms', icon: DoorIcon },
   { label: 'Ledger', to: '/ledger', icon: CurrencyDollarIcon },
   { label: 'Users', to: '/user-management', icon: UsersIcon },
+  { label: 'Room Management', to: '/room-management', icon: DoorIcon },
 ]
 
 export function isNavItemActive(pathname: string, to: string): boolean {

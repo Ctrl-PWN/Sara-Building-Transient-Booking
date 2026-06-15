@@ -21,6 +21,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from './routes/_authenticated/rooms/$roomId/index'
 import { Route as AuthenticatedBookingsBookingIdIndexRouteImport } from './routes/_authenticated/bookings/$bookingId/index'
 import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from './routes/_authenticated/_admin/user-management/index'
+import { Route as AuthenticatedAdminRoomManagementIndexRouteImport } from './routes/_authenticated/_admin/room-management/index'
 import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from './routes/_authenticated/rooms/$roomId/history'
 import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from './routes/_authenticated/bookings/$bookingId/invoice'
 
@@ -88,6 +89,12 @@ const AuthenticatedAdminUserManagementIndexRoute =
     path: '/user-management/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminRoomManagementIndexRoute =
+  AuthenticatedAdminRoomManagementIndexRouteImport.update({
+    id: '/room-management/',
+    path: '/room-management/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedRoomsRoomIdHistoryRoute =
   AuthenticatedRoomsRoomIdHistoryRouteImport.update({
     id: '/rooms/$roomId/history',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/room-management/': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/bookings/$bookingId/': typeof AuthenticatedBookingsBookingIdIndexRoute
   '/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/timeline': typeof AuthenticatedTimelineIndexRoute
   '/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/room-management': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/user-management': typeof AuthenticatedAdminUserManagementIndexRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdIndexRoute
   '/rooms/$roomId': typeof AuthenticatedRoomsRoomIdIndexRoute
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/_authenticated/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/_authenticated/rooms/$roomId/history': typeof AuthenticatedRoomsRoomIdHistoryRoute
+  '/_authenticated/_admin/room-management/': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/_authenticated/_admin/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/_authenticated/bookings/$bookingId/': typeof AuthenticatedBookingsBookingIdIndexRoute
   '/_authenticated/rooms/$roomId/': typeof AuthenticatedRoomsRoomIdIndexRoute
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/timeline/'
     | '/bookings/$bookingId/invoice'
     | '/rooms/$roomId/history'
+    | '/room-management/'
     | '/user-management/'
     | '/bookings/$bookingId/'
     | '/rooms/$roomId/'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/bookings/$bookingId/invoice'
     | '/rooms/$roomId/history'
+    | '/room-management'
     | '/user-management'
     | '/bookings/$bookingId'
     | '/rooms/$roomId'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timeline/'
     | '/_authenticated/bookings/$bookingId/invoice'
     | '/_authenticated/rooms/$roomId/history'
+    | '/_authenticated/_admin/room-management/'
     | '/_authenticated/_admin/user-management/'
     | '/_authenticated/bookings/$bookingId/'
     | '/_authenticated/rooms/$roomId/'
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUserManagementIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/_admin/room-management/': {
+      id: '/_authenticated/_admin/room-management/'
+      path: '/room-management'
+      fullPath: '/room-management/'
+      preLoaderRoute: typeof AuthenticatedAdminRoomManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/rooms/$roomId/history': {
       id: '/_authenticated/rooms/$roomId/history'
       path: '/rooms/$roomId/history'
@@ -303,10 +323,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminRoomManagementIndexRoute: typeof AuthenticatedAdminRoomManagementIndexRoute
   AuthenticatedAdminUserManagementIndexRoute: typeof AuthenticatedAdminUserManagementIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminRoomManagementIndexRoute:
+    AuthenticatedAdminRoomManagementIndexRoute,
   AuthenticatedAdminUserManagementIndexRoute:
     AuthenticatedAdminUserManagementIndexRoute,
 }
