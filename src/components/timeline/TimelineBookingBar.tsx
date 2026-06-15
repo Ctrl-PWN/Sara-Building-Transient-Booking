@@ -26,7 +26,7 @@ export function TimelineBookingBar({
 }: TimelineBookingBarProps) {
 	const guestName = formatGuestName(booking);
 	const presentation = getBookingStatusPresentation(booking.status);
-	const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkInDate), "d MMM")} – ${format(parseISO(booking.checkOutDate), "d MMM")}`;
+	const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkIn), "d MMM")} – ${format(parseISO(booking.checkOut), "d MMM")}`;
 	const isHatched = booking.status === "RESERVED";
 
 	return (

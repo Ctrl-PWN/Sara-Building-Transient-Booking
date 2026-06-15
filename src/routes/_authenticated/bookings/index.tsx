@@ -100,11 +100,7 @@ function BookingsListPage() {
 				result = result.filter((b) => {
 					if (b.status !== "CHECKED_IN") return false;
 					return (
-						computeBookingDisplayStatus(
-							b.status,
-							b.checkOutDate,
-							b.checkOutTime,
-						) === "OVERDUE"
+						computeBookingDisplayStatus(b.status, b.checkOut) === "OVERDUE"
 					);
 				});
 			} else {
@@ -129,10 +125,10 @@ function BookingsListPage() {
 				);
 				break;
 			case "checkIn-newest":
-				sorted.sort((a, b) => b.checkInDate.localeCompare(a.checkInDate));
+				sorted.sort((a, b) => b.checkIn.localeCompare(a.checkIn));
 				break;
 			case "checkIn-oldest":
-				sorted.sort((a, b) => a.checkInDate.localeCompare(b.checkInDate));
+				sorted.sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 				break;
 			case "room":
 				sorted.sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));

@@ -1,6 +1,6 @@
 import type { Icon } from "@phosphor-icons/react";
 import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import type * as React from "react";
 import { useId, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -104,6 +104,44 @@ function TextField({
 	);
 }
 
+const HOURS_12 = [
+	"01",
+	"02",
+	"03",
+	"04",
+	"05",
+	"06",
+	"07",
+	"08",
+	"09",
+	"10",
+	"11",
+	"12",
+];
+
+const MINUTES = ["00", "15", "30", "45"];
+
+const PERIODS = ["AM", "PM"] as const;
+
+function to12Hour(h24: string) {
+	const hour = Number.parseInt(h24, 10);
+	if (hour === 0) return { h12: "12", period: "AM" as const };
+	if (hour < 12)
+		return { h12: String(hour).padStart(2, "0"), period: "AM" as const };
+	if (hour === 12) return { h12: "12", period: "PM" as const };
+	return { h12: String(hour - 12).padStart(2, "0"), period: "PM" as const };
+}
+
+function to24Hour(h12: string, mm: string, period: "AM" | "PM") {
+	const hour = Number.parseInt(h12, 10);
+	if (period === "AM") {
+		return hour === 12 ? `00:${mm}` : `${String(hour).padStart(2, "0")}:${mm}`;
+	}
+	return hour === 12
+		? `12:${mm}`
+		: `${String(hour + 12).padStart(2, "0")}:${mm}`;
+}
+
 type TimeFieldProps = {
 	label: string;
 	description?: string;
@@ -111,31 +149,81 @@ type TimeFieldProps = {
 	step?: number;
 };
 
-export function TimeField({
-	label,
-	description,
-	disabled,
-	step = 60,
-}: TimeFieldProps) {
+export function TimeField({ label, description, disabled }: TimeFieldProps) {
 	const { field, isInvalid } = useFieldInvalidState();
 	const value = field.state.value as string;
+
+	const [h24, mm] = value.split(":");
+	const { h12, period } = to12Hour(h24 ?? "12");
+
+	const handleChange = (
+		nextH12: string,
+		nextMm: string,
+		nextPeriod: "AM" | "PM",
+	) => {
+		field.handleChange(to24Hour(nextH12, nextMm, nextPeriod));
+	};
 
 	return (
 		<Field data-invalid={isInvalid || undefined}>
 			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-			<Input
-				id={field.name}
-				name={field.name}
-				type="time"
-				step={step}
-				value={value}
-				disabled={disabled}
-				onBlur={field.handleBlur}
-				onChange={(event) => field.handleChange(event.target.value)}
-				aria-invalid={isInvalid || undefined}
-				aria-describedby={description ? `${field.name}-description` : undefined}
-				className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-			/>
+			<div className="flex gap-2">
+				<Select
+					value={h12}
+					disabled={disabled}
+					onValueChange={(v) => v && handleChange(v, mm ?? "00", period)}
+					items={HOURS_12.map((h) => ({ value: h, label: h }))}
+				>
+					<SelectTrigger aria-invalid={isInvalid || undefined}>
+						<SelectValue placeholder="HH" />
+					</SelectTrigger>
+					<SelectContent>
+						{HOURS_12.map((h) => (
+							<SelectItem key={h} value={h}>
+								{h}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select
+					value={mm}
+					disabled={disabled}
+					onValueChange={(v) => v && handleChange(h12, v, period)}
+					items={MINUTES.map((m) => ({ value: m, label: m }))}
+				>
+					<SelectTrigger aria-invalid={isInvalid || undefined}>
+						<SelectValue placeholder="mm" />
+					</SelectTrigger>
+					<SelectContent>
+						{MINUTES.map((m) => (
+							<SelectItem key={m} value={m}>
+								{m}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select
+					value={period}
+					disabled={disabled}
+					onValueChange={(v) =>
+						v && handleChange(h12, mm ?? "00", v as "AM" | "PM")
+					}
+					items={PERIODS.map((p) => ({ value: p, label: p }))}
+				>
+					<SelectTrigger aria-invalid={isInvalid || undefined}>
+						<SelectValue placeholder="AM/PM" />
+					</SelectTrigger>
+					<SelectContent>
+						{PERIODS.map((p) => (
+							<SelectItem key={p} value={p}>
+								{p}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
 			{description ? (
 				<p
 					id={`${field.name}-description`}
@@ -620,7 +708,7 @@ function DateRangeField({
 	const field = useFieldContext<string>();
 	const form = field.form;
 
-	const { submissionAttempts, endValue, endErrors } = useStore(
+	const { submissionAttempts, endValue, endErrors } = useSelector(
 		form.store,
 		(state) => ({
 			submissionAttempts: state.submissionAttempts,

@@ -17,15 +17,13 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 					<div>
 						<p className="text-sm text-muted-foreground">Check-in</p>
 						<p className="font-medium mt-1">
-							{format(parseISO(booking.checkInDate), "MMMM d, yyyy")} at{" "}
-							{booking.checkInTime}
+							{format(parseISO(booking.checkIn), "MMMM d, yyyy 'at' HH:mm")}
 						</p>
 					</div>
 					<div>
 						<p className="text-sm text-muted-foreground">Check-out</p>
 						<p className="font-medium mt-1">
-							{format(parseISO(booking.checkOutDate), "MMMM d, yyyy")} at{" "}
-							{booking.checkOutTime}
+							{format(parseISO(booking.checkOut), "MMMM d, yyyy 'at' HH:mm")}
 						</p>
 					</div>
 					<div>
@@ -55,6 +53,11 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 					<div>
 						<p className="text-sm text-muted-foreground">Contact</p>
 						<p className="font-medium mt-1">{booking.contactNumber || "N/A"}</p>
+					</div>
+
+					<div>
+						<p className="text-sm text-muted-foreground">Address</p>
+						<p className="font-medium mt-1">{booking.address}</p>
 					</div>
 				</CardContent>
 			</Card>

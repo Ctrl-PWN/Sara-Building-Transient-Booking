@@ -1,11 +1,9 @@
 import {
-	date,
 	decimal,
 	integer,
 	pgTable,
 	serial,
 	text,
-	time,
 	timestamp,
 	varchar,
 } from "drizzle-orm/pg-core";
@@ -22,10 +20,9 @@ export const bookings = pgTable("bookings", {
 	firstName: varchar("first_name").notNull(),
 	lastName: varchar("last_name").notNull(),
 	contactNumber: varchar("contact_number"),
-	checkInDate: date("check_in_date").notNull(),
-	checkOutDate: date("check_out_date").notNull(),
-	checkInTime: time("check_in_time").notNull().default("14:00"),
-	checkOutTime: time("check_out_time").notNull().default("11:00"),
+	checkIn: timestamp("check_in", { withTimezone: true }),
+	checkOut: timestamp("check_out", { withTimezone: true }),
+	address: text("address").default(""),
 	occupantsCount: integer("occupants_count").notNull(),
 	status: bookingStatusEnum("status").default("RESERVED").notNull(),
 	paymentStatus: bookingPaymentStatusEnum("payment_status")

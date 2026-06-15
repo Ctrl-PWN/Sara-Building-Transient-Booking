@@ -29,14 +29,13 @@ function mapBookingRow(row: {
 	firstName: string;
 	lastName: string;
 	contactNumber: string | null;
+	address: string | null;
 	roomId: number;
 	roomNumber: string;
 	roomType: string;
 	roomBasePrice: string | null;
-	checkInDate: string;
-	checkOutDate: string;
-	checkInTime: string;
-	checkOutTime: string;
+	checkIn: string | Date | null;
+	checkOut: string | Date | null;
 	occupantsCount: number;
 	status: string;
 	paymentStatus: string;
@@ -54,14 +53,19 @@ function mapBookingRow(row: {
 		firstName: row.firstName,
 		lastName: row.lastName,
 		contactNumber: row.contactNumber,
+		address: row.address ?? "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
 		roomType: row.roomType,
 		roomBasePrice: row.roomBasePrice,
-		checkInDate: row.checkInDate,
-		checkOutDate: row.checkOutDate,
-		checkInTime: row.checkInTime,
-		checkOutTime: row.checkOutTime,
+		checkIn:
+			row.checkIn instanceof Date
+				? row.checkIn.toISOString()
+				: String(row.checkIn),
+		checkOut:
+			row.checkOut instanceof Date
+				? row.checkOut.toISOString()
+				: String(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -81,14 +85,13 @@ const bookingSelect = {
 	firstName: bookings.firstName,
 	lastName: bookings.lastName,
 	contactNumber: bookings.contactNumber,
+	address: bookings.address,
 	roomId: bookings.roomId,
 	roomNumber: rooms.roomNumber,
 	roomType: rooms.type,
 	roomBasePrice: rooms.basePrice,
-	checkInDate: bookings.checkInDate,
-	checkOutDate: bookings.checkOutDate,
-	checkInTime: bookings.checkInTime,
-	checkOutTime: bookings.checkOutTime,
+	checkIn: bookings.checkIn,
+	checkOut: bookings.checkOut,
 	occupantsCount: bookings.occupantsCount,
 	status: bookings.status,
 	paymentStatus: bookings.paymentStatus,
@@ -149,7 +152,7 @@ async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
 			),
 		)
 		.orderBy(
-			desc(sql`COALESCE(${bookings.cancelledAt}, ${bookings.checkOutDate})`),
+			desc(sql`COALESCE(${bookings.cancelledAt}, ${bookings.checkOut})`),
 		);
 
 	return rows.map(mapBookingRow);
@@ -215,15 +218,17 @@ export const createBooking = createServerFn({ method: "POST" })
 						eq(bookings.status, "CHECKED_IN"),
 					),
 					and(
-						lte(bookings.checkInDate, data.checkOutDate),
-						gte(bookings.checkOutDate, data.checkInDate),
+						lte(bookings.checkIn, new Date(data.checkOut)),
+						gte(bookings.checkOut, new Date(data.checkIn)),
 					),
 				),
 			)
 			.limit(1);
 
 		if (conflicts.length > 0) {
-			throw new Error("Room is already booked for the selected dates");
+			throw new Error(
+				"Room is not available for the selected date and time. Please choose a different time slot.",
+			);
 		}
 
 		const roomRows = await db
@@ -246,10 +251,8 @@ export const createBooking = createServerFn({ method: "POST" })
 
 		const { subtotal: stayTotal } = calculateStayPricing({
 			basePrice: room.basePrice,
-			checkInDate: data.checkInDate,
-			checkOutDate: data.checkOutDate,
-			checkInTime: data.checkInTime,
-			checkOutTime: data.checkOutTime,
+			checkIn: data.checkIn,
+			checkOut: data.checkOut,
 		});
 
 		const ledgerLines = buildCreateBookingLedgerLines(
@@ -263,8 +266,8 @@ export const createBooking = createServerFn({ method: "POST" })
 			stayTotal,
 		);
 
-		const checkIn = new Date(`${data.checkInDate}T${data.checkInTime}`);
-		const checkOut = new Date(`${data.checkOutDate}T${data.checkOutTime}`);
+		const checkIn = new Date(data.checkIn);
+		const checkOut = new Date(data.checkOut);
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
@@ -284,10 +287,9 @@ export const createBooking = createServerFn({ method: "POST" })
 					firstName: data.firstName,
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
-					checkInDate: data.checkInDate,
-					checkOutDate: data.checkOutDate,
-					checkInTime: data.checkInTime,
-					checkOutTime: data.checkOutTime,
+					address: data.address,
+					checkIn: new Date(data.checkIn),
+					checkOut: new Date(data.checkOut),
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
@@ -565,10 +567,8 @@ export const transferBooking = createServerFn({ method: "POST" })
 
 		const { subtotal: stayTotal } = calculateStayPricing({
 			basePrice: targetRoom.basePrice,
-			checkInDate: booking.checkInDate,
-			checkOutDate: booking.checkOutDate,
-			checkInTime: booking.checkInTime,
-			checkOutTime: booking.checkOutTime,
+			checkIn: String(booking.checkIn),
+			checkOut: String(booking.checkOut),
 		});
 
 		const newBookingRef = generateBookingRef();
@@ -605,10 +605,9 @@ export const transferBooking = createServerFn({ method: "POST" })
 					firstName: booking.firstName,
 					lastName: booking.lastName,
 					contactNumber: booking.contactNumber,
-					checkInDate: booking.checkInDate,
-					checkOutDate: booking.checkOutDate,
-					checkInTime: booking.checkInTime,
-					checkOutTime: booking.checkOutTime,
+					address: booking.address ?? "",
+				checkIn: new Date(booking.checkIn ?? ""),
+				checkOut: new Date(booking.checkOut ?? ""),
 					occupantsCount: booking.occupantsCount,
 					status: "CHECKED_IN",
 					paymentStatus: "PAID_IN_FULL",

@@ -25,9 +25,8 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
-function formatDate(date: string, time?: string) {
-	const formatted = format(parseISO(date), "EEE d MMM yyyy");
-	return time ? `${formatted} at ${time}` : formatted;
+function formatDate(isoString: string) {
+	return format(parseISO(isoString), "EEE d MMM yyyy 'at' HH:mm");
 }
 
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
@@ -36,15 +35,10 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
 			<Field label="Guest" value={formatGuestName(booking)} />
 			<Field label="Reference" value={booking.bookingRef} />
 			<Field label="Contact" value={booking.contactNumber ?? "Not provided"} />
+			<Field label="Address" value={booking.address || "Not provided"} />
 			<Field label="Room" value={booking.roomNumber} />
-			<Field
-				label="Check-in"
-				value={formatDate(booking.checkInDate, booking.checkInTime)}
-			/>
-			<Field
-				label="Check-out"
-				value={formatDate(booking.checkOutDate, booking.checkOutTime)}
-			/>
+			<Field label="Check-in" value={formatDate(booking.checkIn)} />
+			<Field label="Check-out" value={formatDate(booking.checkOut)} />
 			<Field label="Occupants" value={booking.occupantsCount} />
 			<Field
 				label="Status"
@@ -52,8 +46,7 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
 					<BookingStatusBadge
 						status={computeBookingDisplayStatus(
 							booking.status,
-							booking.checkOutDate,
-							booking.checkOutTime,
+							booking.checkOut,
 						)}
 					/>
 				}

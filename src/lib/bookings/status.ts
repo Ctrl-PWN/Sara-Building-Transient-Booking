@@ -57,15 +57,10 @@ export function normalizeBookingStatus(status: string): TimelineLegendStatus {
 
 export function computeBookingDisplayStatus(
 	status: string,
-	checkOutDate: string | Date,
-	checkOutTime?: string,
+	checkOut: string | Date,
 ): DerivedBookingStatus {
 	if (status === "CHECKED_IN") {
-		const dateStr =
-			typeof checkOutDate === "string"
-				? checkOutDate
-				: checkOutDate.toISOString().slice(0, 10);
-		const checkout = new Date(`${dateStr}T${checkOutTime ?? "11:00"}`);
+		const checkout = new Date(checkOut);
 		const now = new Date();
 		if (now > checkout) return "OVERDUE";
 	}

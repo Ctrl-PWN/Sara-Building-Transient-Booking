@@ -9,14 +9,13 @@ export type BookingWithRoom = {
 	firstName: string;
 	lastName: string;
 	contactNumber: string | null;
+	address: string;
 	roomId: number;
 	roomNumber: string;
 	roomType: string;
 	roomBasePrice: string | null;
-	checkInDate: string;
-	checkOutDate: string;
-	checkInTime: string;
-	checkOutTime: string;
+	checkIn: string;
+	checkOut: string;
 	occupantsCount: number;
 	status: BookingStatus;
 	paymentStatus: BookingPaymentStatus;

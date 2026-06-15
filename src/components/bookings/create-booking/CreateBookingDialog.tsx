@@ -1,5 +1,5 @@
-import { useStore } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -106,10 +106,9 @@ export function CreateBookingDialog({
 				firstName: value.firstName.trim(),
 				lastName: value.lastName.trim(),
 				contactNumber: value.contactNumber.trim() || undefined,
-				checkInDate: value.checkInDate,
-				checkOutDate: value.checkOutDate,
-				checkInTime: value.checkInTime,
-				checkOutTime: value.checkOutTime,
+				checkIn: `${value.checkInDate}T${value.checkInTime}`,
+				checkOut: `${value.checkOutDate}T${value.checkOutTime}`,
+				address: value.address?.trim() || "",
 				occupantsCount: value.occupantsCount,
 				walkIn: value.walkIn,
 				paymentMethod: value.paymentMethod,
@@ -148,9 +147,12 @@ export function CreateBookingDialog({
 		walkIn,
 	});
 
-	const selectedRoomId = useStore(form.store, (s) => s.values.roomId);
-	const formCheckInDate = useStore(form.store, (s) => s.values.checkInDate);
-	const formCheckOutDate = useStore(form.store, (s) => s.values.checkOutDate);
+	const selectedRoomId = useSelector(form.store, (s) => s.values.roomId);
+	const formCheckInDate = useSelector(form.store, (s) => s.values.checkInDate);
+	const formCheckOutDate = useSelector(
+		form.store,
+		(s) => s.values.checkOutDate,
+	);
 
 	const prevRoomIdRef = useRef(selectedRoomId);
 
@@ -235,6 +237,7 @@ export function CreateBookingDialog({
 								step={step}
 								roomOptions={roomOptions}
 								isDateDisabled={isDateDisabled}
+								bookings={bookings}
 							/>
 
 							{step === 3 && !walkIn && (

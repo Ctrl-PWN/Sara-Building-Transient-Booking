@@ -25,10 +25,8 @@ function mapBookingRow(row: {
 	contactNumber: string | null;
 	roomId: number;
 	roomNumber: string;
-	checkInDate: string;
-	checkOutDate: string;
-	checkInTime: string;
-	checkOutTime: string;
+	checkIn: string | Date | null;
+	checkOut: string | Date | null;
 	occupantsCount: number;
 	status: string;
 	paymentStatus: string;
@@ -39,12 +37,17 @@ function mapBookingRow(row: {
 		firstName: row.firstName,
 		lastName: row.lastName,
 		contactNumber: row.contactNumber,
+		address: "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
-		checkInDate: row.checkInDate,
-		checkOutDate: row.checkOutDate,
-		checkInTime: row.checkInTime,
-		checkOutTime: row.checkOutTime,
+		checkIn:
+			row.checkIn instanceof Date
+				? row.checkIn.toISOString()
+				: String(row.checkIn),
+		checkOut:
+			row.checkOut instanceof Date
+				? row.checkOut.toISOString()
+				: String(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -83,10 +86,8 @@ async function getTimelineWeekFromDb(
 				contactNumber: bookings.contactNumber,
 				roomId: bookings.roomId,
 				roomNumber: rooms.roomNumber,
-				checkInDate: bookings.checkInDate,
-				checkOutDate: bookings.checkOutDate,
-				checkInTime: bookings.checkInTime,
-				checkOutTime: bookings.checkOutTime,
+				checkIn: bookings.checkIn,
+				checkOut: bookings.checkOut,
 				occupantsCount: bookings.occupantsCount,
 				status: bookings.status,
 				paymentStatus: bookings.paymentStatus,
@@ -95,14 +96,14 @@ async function getTimelineWeekFromDb(
 			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 			.where(
 				and(
-					lt(bookings.checkInDate, weekEnd),
-					gt(bookings.checkOutDate, weekStart),
+					lt(bookings.checkIn, new Date(weekEnd)),
+					gt(bookings.checkOut, new Date(weekStart)),
 					isNull(bookings.deletedAt),
 					ne(bookings.status, "CANCELLED"),
 					ne(bookings.status, "TRANSFERRED"),
 				),
 			)
-			.orderBy(asc(bookings.checkInDate)),
+			.orderBy(asc(bookings.checkIn)),
 	]);
 
 	return {

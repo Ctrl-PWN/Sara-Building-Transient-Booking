@@ -54,10 +54,8 @@ export function CreateBookingPricingSummary({
 
 				const { nights, subtotal } = calculateStayPricing({
 					basePrice: selectedRoom.basePrice,
-					checkInDate: start,
-					checkOutDate: end,
-					checkInTime,
-					checkOutTime,
+					checkIn: `${start}T${checkInTime}`,
+					checkOut: `${end}T${checkOutTime}`,
 				});
 
 				if (walkIn) {

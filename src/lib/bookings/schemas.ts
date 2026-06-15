@@ -37,7 +37,7 @@ const dateRangeRefine = {
 		(data.checkInDate === data.checkOutDate &&
 			(!data.checkInTime ||
 				!data.checkOutTime ||
-				data.checkOutTime >= data.checkInTime)),
+				data.checkOutTime > data.checkInTime)),
 	message: "Check-out cannot be before check-in" as const,
 	path: ["checkOutDate"] as const,
 };
@@ -47,6 +47,7 @@ export const createBookingStayFieldsShape = {
 	firstName: z.string().min(1, "First name is required"),
 	lastName: z.string().min(1, "Last name is required"),
 	contactNumber: z.string(),
+	address: z.string().optional(),
 	checkInDate: z.string().min(1, "Check-in date is required"),
 	checkOutDate: z.string().min(1, "Check-out date is required"),
 	checkInTime: z.string().min(1, "Check-in time is required"),
@@ -139,6 +140,7 @@ const createBookingStayDefaultValues = () => {
 		firstName: "",
 		lastName: "",
 		contactNumber: "",
+		address: "",
 		checkInDate: "",
 		checkOutDate: "",
 		checkInTime: currentTimeHHMM(),
@@ -176,10 +178,9 @@ export const createBookingServerSchema = z
 		lastName: z.string().min(1, "Last name is required"),
 		roomId: z.number().int().positive("Room is required"),
 		contactNumber: z.string().optional(),
-		checkInDate: z.string().min(1, "Check-in date is required"),
-		checkOutDate: z.string().min(1, "Check-out date is required"),
-		checkInTime: z.string().min(1, "Check-in time is required"),
-		checkOutTime: z.string().min(1, "Check-out time is required"),
+		address: z.string().optional(),
+		checkIn: z.string().min(1, "Check-in date is required"),
+		checkOut: z.string().min(1, "Check-out date is required"),
 		occupantsCount: z.number().int().positive("At least 1 occupant required"),
 		walkIn: z.boolean(),
 		paymentMethod: paymentMethodSchema,
@@ -188,13 +189,10 @@ export const createBookingServerSchema = z
 		reservationFeeValue: z.number().min(0).optional(),
 		depositPercentage: z.number().min(0).max(100),
 	})
-	.refine(
-		(data) =>
-			new Date(data.checkOutDate) > new Date(data.checkInDate) ||
-			(data.checkInDate === data.checkOutDate &&
-				data.checkOutTime >= data.checkInTime),
-		{ message: "Check-out cannot be before check-in", path: ["checkOutDate"] },
-	)
+	.refine((data) => new Date(data.checkOut) > new Date(data.checkIn), {
+		message: "Check-out cannot be before check-in",
+		path: ["checkOut"],
+	})
 	.superRefine((data, ctx) => {
 		if (
 			(data.paymentMethod === "GCASH" ||
