@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 
 import type { ReactNode } from "react";
 
@@ -26,7 +26,7 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function formatDate(isoString: string) {
-	return format(parseISO(isoString), "EEE d MMM yyyy 'at' HH:mm");
+	return format(new Date(isoString), "EEE d MMM yyyy 'at' HH:mm");
 }
 
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {

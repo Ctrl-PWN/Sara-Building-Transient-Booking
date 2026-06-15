@@ -23,6 +23,15 @@ import {
 import { calculateStayPricing } from "./stay-pricing";
 import type { BookingPaymentStatus, BookingWithRoom } from "./types";
 
+function toISOString(value: string | Date | null): string {
+	if (value == null) return "";
+	if (typeof value === "string") {
+		const parsed = new Date(value);
+		return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+	}
+	return value.toISOString();
+}
+
 function mapBookingRow(row: {
 	id: number;
 	bookingRef: string;
@@ -58,14 +67,8 @@ function mapBookingRow(row: {
 		roomNumber: row.roomNumber,
 		roomType: row.roomType,
 		roomBasePrice: row.roomBasePrice,
-		checkIn:
-			row.checkIn instanceof Date
-				? row.checkIn.toISOString()
-				: String(row.checkIn),
-		checkOut:
-			row.checkOut instanceof Date
-				? row.checkOut.toISOString()
-				: String(row.checkOut),
+		checkIn: toISOString(row.checkIn),
+		checkOut: toISOString(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,

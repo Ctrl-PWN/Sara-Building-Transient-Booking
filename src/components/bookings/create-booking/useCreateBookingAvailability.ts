@@ -221,10 +221,10 @@ export function useCreateBookingAvailability({
 
 		return {
 			value: room.id.toString(),
-			label: `${room.roomNumber} - ${room.type} (₱${room.basePrice})${statusTag}`,
+			label: `${room.roomNumber} - ${room.type} (₱${Number(room.basePrice).toFixed(2)})${statusTag}`,
 			disabled:
 				["MAINTENANCE", "OUT_OF_ORDER"].includes(room.status) ||
-				(walkIn ? isWalkInBlocked : hasActiveBooking),
+				(walkIn && isWalkInBlocked),
 		};
 	});
 

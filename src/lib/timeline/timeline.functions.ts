@@ -13,6 +13,15 @@ import type {
 import type { TimelineWeekData } from "./types";
 import { getWeekDays, getWeekEnd } from "./week";
 
+function toISOString(value: string | Date | null): string {
+	if (value == null) return "";
+	if (typeof value === "string") {
+		const parsed = new Date(value);
+		return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+	}
+	return value.toISOString();
+}
+
 const timelineWeekSchema = z.object({
 	weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
@@ -40,14 +49,8 @@ function mapBookingRow(row: {
 		address: "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
-		checkIn:
-			row.checkIn instanceof Date
-				? row.checkIn.toISOString()
-				: String(row.checkIn),
-		checkOut:
-			row.checkOut instanceof Date
-				? row.checkOut.toISOString()
-				: String(row.checkOut),
+		checkIn: toISOString(row.checkIn),
+		checkOut: toISOString(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,

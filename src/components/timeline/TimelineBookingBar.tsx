@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 
 import {
 	Tooltip,
@@ -26,7 +26,7 @@ export function TimelineBookingBar({
 }: TimelineBookingBarProps) {
 	const guestName = formatGuestName(booking);
 	const presentation = getBookingStatusPresentation(booking.status);
-	const tooltipLabel = `${guestName} · ${format(parseISO(booking.checkIn), "d MMM")} – ${format(parseISO(booking.checkOut), "d MMM")}`;
+	const tooltipLabel = `${guestName} · ${format(new Date(booking.checkIn), "d MMM")} – ${format(new Date(booking.checkOut), "d MMM")}`;
 	const isHatched = booking.status === "RESERVED";
 
 	return (

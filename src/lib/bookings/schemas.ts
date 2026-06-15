@@ -144,7 +144,7 @@ const createBookingStayDefaultValues = () => {
 		checkInDate: "",
 		checkOutDate: "",
 		checkInTime: currentTimeHHMM(),
-		checkOutTime: "11:00",
+		checkOutTime: "14:00",
 		occupantsCount: 2,
 		paymentMethod: "CASH" as const,
 		referenceNumber: "",

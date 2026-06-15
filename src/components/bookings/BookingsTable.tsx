@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -16,6 +16,16 @@ import {
 import { computeBookingDisplayStatus } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { BookingsFilterBar, type SortOption } from "./BookingsFilterBar";
+
+function safeFormatDate(value: string, fmt: string): string {
+	try {
+		const d = new Date(value);
+		if (Number.isNaN(d.getTime())) return value;
+		return format(d, fmt);
+	} catch {
+		return value;
+	}
+}
 
 const statusColorMap: Record<
 	string,
@@ -138,15 +148,15 @@ export function BookingsTable({
 									</TableCell>
 									<TableCell>
 										<p className="text-sm">
-											{format(
-												parseISO(booking.checkIn),
+											{safeFormatDate(
+												booking.checkIn,
 												"MMMM d, yyyy 'at' HH:mm",
 											)}
 											&rarr;
 										</p>
 										<p className="text-sm text-muted-foreground mt-0.5">
-											{format(
-												parseISO(booking.checkOut),
+											{safeFormatDate(
+												booking.checkOut,
 												"MMMM d, yyyy 'at' HH:mm",
 											)}
 										</p>
