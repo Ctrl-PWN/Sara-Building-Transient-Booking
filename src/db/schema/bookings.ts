@@ -10,8 +10,8 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
-import { bookingPaymentStatusEnum, bookingStatusEnum } from './enums'
-import { rooms } from './rooms'
+import { bookingPaymentStatusEnum, bookingStatusEnum } from "./enums";
+import { rooms } from "./rooms";
 
 export const bookings = pgTable('bookings', {
   id: serial('id').primaryKey(),

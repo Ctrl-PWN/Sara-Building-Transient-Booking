@@ -1,10 +1,10 @@
-import { format, parseISO } from 'date-fns'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { BookingWithRoom } from '@/lib/bookings/types'
+import { format, parseISO } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { BookingWithRoom } from "@/lib/bookings/types";
 
 type BookingInfoCardsProps = {
-  booking: BookingWithRoom
-}
+  booking: BookingWithRoom;
+};
 
 export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
   return (
@@ -17,14 +17,14 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Check-in</p>
             <p className="font-medium mt-1">
-              {format(parseISO(booking.checkInDate), 'MMMM d, yyyy')} at{' '}
+              {format(parseISO(booking.checkInDate), "MMMM d, yyyy")} at{" "}
               {booking.checkInTime}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Check-out</p>
             <p className="font-medium mt-1">
-              {format(parseISO(booking.checkOutDate), 'MMMM d, yyyy')} at{' '}
+              {format(parseISO(booking.checkOutDate), "MMMM d, yyyy")} at{" "}
               {booking.checkOutTime}
             </p>
           </div>
@@ -54,10 +54,10 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Contact</p>
-            <p className="font-medium mt-1">{booking.contactNumber || 'N/A'}</p>
+            <p className="font-medium mt-1">{booking.contactNumber || "N/A"}</p>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

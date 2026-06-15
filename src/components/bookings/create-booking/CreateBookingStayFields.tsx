@@ -1,35 +1,35 @@
-import type { CreateBookingForm } from './create-booking-form.types'
+import type { CreateBookingForm } from "./create-booking-form.types";
 
 type CreateBookingStayFieldsProps = {
-  form: CreateBookingForm
-  step: number
-  roomOptions: {
-    value: string
-    label: string
-    disabled: boolean
-  }[]
-  isDateDisabled: (date: Date) => boolean
-}
+	form: CreateBookingForm;
+	step: number;
+	roomOptions: {
+		value: string;
+		label: string;
+		disabled: boolean;
+	}[];
+	isDateDisabled: (date: Date) => boolean;
+};
 
 export function CreateBookingStayFields({
-  form,
-  step,
-  roomOptions,
-  isDateDisabled,
+	form,
+	step,
+	roomOptions,
+	isDateDisabled,
 }: CreateBookingStayFieldsProps) {
-  return (
-    <>
-      {step === 1 && (
-        <form.AppField name="roomId">
-          {(field) => (
-            <field.SelectField
-              label="Room"
-              placeholder="Select a room"
-              options={roomOptions}
-            />
-          )}
-        </form.AppField>
-      )}
+	return (
+		<>
+			{step === 1 && (
+				<form.AppField name="roomId">
+					{(field) => (
+						<field.SelectField
+							label="Room"
+							placeholder="Select a room"
+							options={roomOptions}
+						/>
+					)}
+				</form.AppField>
+			)}
 
       {step === 2 && (
         <>
@@ -70,17 +70,17 @@ export function CreateBookingStayFields({
             </form.AppField>
           </div>
 
-          <form.AppField name="contactNumber">
-            {(field) => (
-              <field.TextField label="Contact" placeholder="Phone number" />
-            )}
-          </form.AppField>
+					<form.AppField name="contactNumber">
+						{(field) => (
+							<field.TextField label="Contact" placeholder="Phone number" />
+						)}
+					</form.AppField>
 
-          <form.AppField name="occupantsCount">
-            {(field) => <field.NumberField label="Occupants" />}
-          </form.AppField>
-        </>
-      )}
-    </>
-  )
+					<form.AppField name="occupantsCount">
+						{(field) => <field.NumberField label="Occupants" />}
+					</form.AppField>
+				</>
+			)}
+		</>
+	);
 }

@@ -1,28 +1,28 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-import { bookingPaymentStatusEnum, bookingStatusEnum } from '@/db/schema/enums'
+import { bookingPaymentStatusEnum, bookingStatusEnum } from "@/db/schema/enums";
 import {
-  ledgerPaymentFieldsShape,
-  paymentMethodSchema,
-  paymentReferenceRefine,
-} from '@/lib/ledger/schemas'
+	ledgerPaymentFieldsShape,
+	paymentMethodSchema,
+	paymentReferenceRefine,
+} from "@/lib/ledger/schemas";
 
-export { paymentMethodSchema }
+export { paymentMethodSchema };
 
-export const bookingStatusSchema = z.enum(bookingStatusEnum.enumValues)
+export const bookingStatusSchema = z.enum(bookingStatusEnum.enumValues);
 export const bookingPaymentStatusSchema = z.enum(
-  bookingPaymentStatusEnum.enumValues,
-)
+	bookingPaymentStatusEnum.enumValues,
+);
 
-export const reservationFeeTypeSchema = z.enum(['PERCENT', 'FIXED'])
+export const reservationFeeTypeSchema = z.enum(["PERCENT", "FIXED"]);
 
 export const bookingByIdSchema = z.object({
-  id: z.number().int().positive(),
-})
+	id: z.number().int().positive(),
+});
 
 export const timelineSearchSchema = z.object({
-  week: z.string().optional(),
-})
+	week: z.string().optional(),
+});
 
 const dateRangeRefine = {
   check: (data: {
@@ -55,71 +55,71 @@ export const createBookingStayFieldsShape = {
 } as const
 
 const reservationFeeRefine = (
-  data: {
-    reservationFeeType: z.infer<typeof reservationFeeTypeSchema>
-    reservationFeeValue: number
-  },
-  ctx: z.RefinementCtx,
+	data: {
+		reservationFeeType: z.infer<typeof reservationFeeTypeSchema>;
+		reservationFeeValue: number;
+	},
+	ctx: z.RefinementCtx,
 ) => {
-  if (data.reservationFeeType === 'PERCENT') {
-    if (data.reservationFeeValue > 100) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Percentage fee cannot exceed 100%',
-        path: ['reservationFeeValue'],
-      })
-    }
-    return
-  }
+	if (data.reservationFeeType === "PERCENT") {
+		if (data.reservationFeeValue > 100) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Percentage fee cannot exceed 100%",
+				path: ["reservationFeeValue"],
+			});
+		}
+		return;
+	}
 
-  if (data.reservationFeeValue <= 0) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Fixed fee must be greater than 0',
-      path: ['reservationFeeValue'],
-    })
-  }
-}
+	if (data.reservationFeeValue <= 0) {
+		ctx.addIssue({
+			code: "custom",
+			message: "Fixed fee must be greater than 0",
+			path: ["reservationFeeValue"],
+		});
+	}
+};
 
 const walkInBookingFormSchema = z
-  .object({
-    ...createBookingStayFieldsShape,
-    walkIn: z.literal(true),
-    ...ledgerPaymentFieldsShape,
-  })
-  .refine(dateRangeRefine.check, {
-    message: dateRangeRefine.message,
-    path: [dateRangeRefine.path[0]],
-  })
-  .superRefine(paymentReferenceRefine)
+	.object({
+		...createBookingStayFieldsShape,
+		walkIn: z.literal(true),
+		...ledgerPaymentFieldsShape,
+	})
+	.refine(dateRangeRefine.check, {
+		message: dateRangeRefine.message,
+		path: [dateRangeRefine.path[0]],
+	})
+	.superRefine(paymentReferenceRefine);
 
 const reservationBookingFormSchema = z
-  .object({
-    ...createBookingStayFieldsShape,
-    walkIn: z.literal(false),
-    reservationFeeType: reservationFeeTypeSchema,
-    reservationFeeValue: z.number().min(0, 'Fee must be 0 or greater'),
-    ...ledgerPaymentFieldsShape,
-  })
-  .refine(dateRangeRefine.check, {
-    message: dateRangeRefine.message,
-    path: [dateRangeRefine.path[0]],
-  })
-  .superRefine(paymentReferenceRefine)
-  .superRefine(reservationFeeRefine)
+	.object({
+		...createBookingStayFieldsShape,
+		walkIn: z.literal(false),
+		reservationFeeType: reservationFeeTypeSchema,
+		reservationFeeValue: z.number().min(0, "Fee must be 0 or greater"),
+		...ledgerPaymentFieldsShape,
+	})
+	.refine(dateRangeRefine.check, {
+		message: dateRangeRefine.message,
+		path: [dateRangeRefine.path[0]],
+	})
+	.superRefine(paymentReferenceRefine)
+	.superRefine(reservationFeeRefine);
 
-export const createBookingFormSchema = z.discriminatedUnion('walkIn', [
-  walkInBookingFormSchema,
-  reservationBookingFormSchema,
-])
+export const createBookingFormSchema = z.discriminatedUnion("walkIn", [
+	walkInBookingFormSchema,
+	reservationBookingFormSchema,
+]);
 
-export type CreateBookingFormValues = z.infer<typeof createBookingFormSchema>
+export type CreateBookingFormValues = z.infer<typeof createBookingFormSchema>;
 
 export function formatIsoDate(date: Date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${y}-${m}-${day}`;
 }
 
 export function todayIsoDate() {
@@ -150,23 +150,23 @@ const createBookingStayDefaultValues = () => {
 }
 
 export function createBookingFormDefaultValues(
-  walkIn: boolean,
+	walkIn: boolean,
 ): CreateBookingFormValues {
-  const stay = createBookingStayDefaultValues()
+	const stay = createBookingStayDefaultValues();
 
-  if (walkIn) {
-    return {
-      ...stay,
-      walkIn: true,
-    }
-  }
+	if (walkIn) {
+		return {
+			...stay,
+			walkIn: true,
+		};
+	}
 
-  return {
-    ...stay,
-    walkIn: false,
-    reservationFeeType: 'PERCENT',
-    reservationFeeValue: 20,
-  }
+	return {
+		...stay,
+		walkIn: false,
+		reservationFeeType: "PERCENT",
+		reservationFeeValue: 20,
+	};
 }
 
 // Realigned with createBookingFormSchema in a follow-up server-fn step.
@@ -226,19 +226,19 @@ export const createBookingServerSchema = z
   })
 
 export const updateStatusSchema = z.object({
-  bookingRef: z.string().min(1),
-  status: bookingStatusSchema,
-  cancellationReason: z.string().optional(),
-  evictionReason: z.string().optional(),
-})
+	bookingRef: z.string().min(1),
+	status: bookingStatusSchema,
+	cancellationReason: z.string().optional(),
+	evictionReason: z.string().optional(),
+});
 
 export const checkInBookingSchema = z
-  .object({
-    bookingRef: z.string().min(1, 'Booking reference is required'),
-    ...ledgerPaymentFieldsShape,
-  })
-  .superRefine(paymentReferenceRefine)
+	.object({
+		bookingRef: z.string().min(1, "Booking reference is required"),
+		...ledgerPaymentFieldsShape,
+	})
+	.superRefine(paymentReferenceRefine);
 
 export const checkOutBookingSchema = z.object({
-  bookingRef: z.string().min(1, 'Booking reference is required'),
-})
+	bookingRef: z.string().min(1, "Booking reference is required"),
+});

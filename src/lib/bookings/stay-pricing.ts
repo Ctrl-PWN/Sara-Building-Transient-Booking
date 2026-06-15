@@ -1,4 +1,4 @@
-export type ReservationFeeType = 'PERCENT' | 'FIXED'
+export type ReservationFeeType = "PERCENT" | "FIXED";
 
 export type StayPricingInput = {
   basePrice: number | string
@@ -9,15 +9,15 @@ export type StayPricingInput = {
 }
 
 export type StayPricingResult = {
-  nights: number
-  subtotal: number
-}
+	nights: number;
+	subtotal: number;
+};
 
 export type ReservationFeeInput = {
-  total: number
-  feeType: ReservationFeeType
-  feeValue: number
-}
+	total: number;
+	feeType: ReservationFeeType;
+	feeValue: number;
+};
 
 export function countNights(
   checkInDate: string,
@@ -51,25 +51,25 @@ export function calculateStayPricing({
 }
 
 export function calculateReservationFee({
-  total,
-  feeType,
-  feeValue,
+	total,
+	feeType,
+	feeValue,
 }: ReservationFeeInput): number {
-  if (feeType === 'PERCENT') {
-    return (total * feeValue) / 100
-  }
-  return feeValue
+	if (feeType === "PERCENT") {
+		return (total * feeValue) / 100;
+	}
+	return feeValue;
 }
 
 export function formatPeso(amount: number): string {
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: 'PHP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
+	return new Intl.NumberFormat("en-PH", {
+		style: "currency",
+		currency: "PHP",
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	}).format(amount);
 }
 
 export function toDecimalString(amount: number): string {
-  return amount.toFixed(4)
+	return amount.toFixed(4);
 }

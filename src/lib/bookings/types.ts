@@ -1,7 +1,7 @@
-import type { bookings } from '@/db/schema'
-import type { BookingPaymentStatus, BookingStatus } from '@/db/schema/enums'
+import type { bookings } from "@/db/schema";
+import type { BookingPaymentStatus, BookingStatus } from "@/db/schema/enums";
 
-export type { BookingPaymentStatus, BookingStatus }
+export type { BookingPaymentStatus, BookingStatus };
 
 export type BookingWithRoom = {
   id: number
@@ -29,13 +29,13 @@ export type BookingWithRoom = {
   deletedAt: string | Date | null
 }
 
-export type TimelineLegendStatus = 'RESERVED' | 'CHECKED_IN' | 'CHECKED_OUT'
+export type TimelineLegendStatus = "RESERVED" | "CHECKED_IN" | "CHECKED_OUT";
 
-export type BookingRow = typeof bookings.$inferSelect
+export type BookingRow = typeof bookings.$inferSelect;
 
 export function formatGuestName(booking: {
-  firstName: string
-  lastName: string
+	firstName: string;
+	lastName: string;
 }): string {
-  return `${booking.firstName} ${booking.lastName}`.trim()
+	return `${booking.firstName} ${booking.lastName}`.trim();
 }

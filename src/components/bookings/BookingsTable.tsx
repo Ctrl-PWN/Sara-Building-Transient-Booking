@@ -1,45 +1,45 @@
-import { MagnifyingGlassIcon } from '@phosphor-icons/react'
-import { Link } from '@tanstack/react-router'
-import { format, parseISO } from 'date-fns'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { computeBookingDisplayStatus } from '@/lib/bookings/status'
-import type { BookingWithRoom } from '@/lib/bookings/types'
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { computeBookingDisplayStatus } from "@/lib/bookings/status";
+import type { BookingWithRoom } from "@/lib/bookings/types";
 
 const statusColorMap: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
+	string,
+	"default" | "secondary" | "destructive" | "outline" | "success" | "warning"
 > = {
-  RESERVED: 'warning',
-  CHECKED_IN: 'success',
-  CHECKED_OUT: 'outline',
-  CANCELLED: 'destructive',
-  EVICTED: 'destructive',
-  OVERDUE: 'destructive',
-}
+	RESERVED: "warning",
+	CHECKED_IN: "success",
+	CHECKED_OUT: "outline",
+	CANCELLED: "destructive",
+	EVICTED: "destructive",
+	OVERDUE: "destructive",
+};
 
 type BookingsTableProps = {
-  bookings: BookingWithRoom[]
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  emptyMessage?: string
-}
+	bookings: BookingWithRoom[];
+	searchQuery: string;
+	onSearchChange: (query: string) => void;
+	emptyMessage?: string;
+};
 
 export function BookingsTable({
-  bookings,
-  searchQuery,
-  onSearchChange,
-  emptyMessage = 'No bookings found.',
+	bookings,
+	searchQuery,
+	onSearchChange,
+	emptyMessage = "No bookings found.",
 }: BookingsTableProps) {
   return (
     <Card>

@@ -1,28 +1,28 @@
-import { format, parseISO } from 'date-fns'
+import { format, parseISO } from "date-fns";
 
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
-import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
+import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import {
-  computeBookingDisplayStatus,
-  formatPaymentStatus,
-} from '@/lib/bookings/status'
-import type { BookingWithRoom } from '@/lib/bookings/types'
-import { formatGuestName } from '@/lib/bookings/types'
+	computeBookingDisplayStatus,
+	formatPaymentStatus,
+} from "@/lib/bookings/status";
+import type { BookingWithRoom } from "@/lib/bookings/types";
+import { formatGuestName } from "@/lib/bookings/types";
 
 type BookingFieldGridProps = {
-  booking: BookingWithRoom
-}
+	booking: BookingWithRoom;
+};
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">
-        {label}
-      </p>
-      <div className="font-body text-sm text-foreground">{value}</div>
-    </div>
-  )
+	return (
+		<div className="flex flex-col gap-1">
+			<p className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">
+				{label}
+			</p>
+			<div className="font-body text-sm text-foreground">{value}</div>
+		</div>
+	);
 }
 
 function formatDate(date: string, time?: string) {
