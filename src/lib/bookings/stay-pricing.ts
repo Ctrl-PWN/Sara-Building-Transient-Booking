@@ -2,8 +2,8 @@ export type ReservationFeeType = "PERCENT" | "FIXED";
 
 export type StayPricingInput = {
 	basePrice: number | string;
-	checkInDate: string;
-	checkOutDate: string;
+	checkIn: string;
+	checkOut: string;
 };
 
 export type StayPricingResult = {
@@ -17,20 +17,20 @@ export type ReservationFeeInput = {
 	feeValue: number;
 };
 
-export function countNights(checkInDate: string, checkOutDate: string): number {
-	const checkIn = new Date(checkInDate);
-	const checkOut = new Date(checkOutDate);
-	if (checkIn.toDateString() === checkOut.toDateString()) return 1;
-	const diffMs = checkOut.getTime() - checkIn.getTime();
-	return Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+export function countNights(checkIn: string, checkOut: string): number {
+	const checkInDate = new Date(checkIn);
+	const checkOutDate = new Date(checkOut);
+	if (checkInDate >= checkOutDate) return 1;
+	const diffMs = checkOutDate.getTime() - checkInDate.getTime();
+	return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 }
 
 export function calculateStayPricing({
 	basePrice,
-	checkInDate,
-	checkOutDate,
+	checkIn,
+	checkOut,
 }: StayPricingInput): StayPricingResult {
-	const nights = countNights(checkInDate, checkOutDate);
+	const nights = countNights(checkIn, checkOut);
 	const rate = Number(basePrice) || 0;
 	const subtotal = nights * rate;
 	return { nights, subtotal };

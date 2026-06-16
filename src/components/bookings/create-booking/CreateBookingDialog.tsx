@@ -1,6 +1,7 @@
-import { useStore } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -106,8 +107,9 @@ export function CreateBookingDialog({
 				firstName: value.firstName.trim(),
 				lastName: value.lastName.trim(),
 				contactNumber: value.contactNumber.trim() || undefined,
-				checkInDate: value.checkInDate,
-				checkOutDate: value.checkOutDate,
+				checkIn: `${value.checkInDate}T${value.checkInTime}`,
+				checkOut: `${value.checkOutDate}T${value.checkOutTime}`,
+				address: value.address?.trim() || "",
 				occupantsCount: value.occupantsCount,
 				walkIn: value.walkIn,
 				paymentMethod: value.paymentMethod,
@@ -146,9 +148,12 @@ export function CreateBookingDialog({
 		walkIn,
 	});
 
-	const selectedRoomId = useStore(form.store, (s) => s.values.roomId);
-	const formCheckInDate = useStore(form.store, (s) => s.values.checkInDate);
-	const formCheckOutDate = useStore(form.store, (s) => s.values.checkOutDate);
+	const selectedRoomId = useSelector(form.store, (s) => s.values.roomId);
+	const formCheckInDate = useSelector(form.store, (s) => s.values.checkInDate);
+	const formCheckOutDate = useSelector(
+		form.store,
+		(s) => s.values.checkOutDate,
+	);
 
 	const prevRoomIdRef = useRef(selectedRoomId);
 
@@ -215,6 +220,47 @@ export function CreateBookingDialog({
 					onSubmit={(event) => {
 						event.preventDefault();
 						event.stopPropagation();
+
+						const missing: string[] = [];
+						const missingFields: string[] = [];
+						if (!form.getFieldValue("firstName").trim()) {
+							missing.push("First name");
+							missingFields.push("firstName");
+						}
+						if (!form.getFieldValue("lastName").trim()) {
+							missing.push("Last name");
+							missingFields.push("lastName");
+						}
+						if (!form.getFieldValue("contactNumber").trim()) {
+							missing.push("Phone number");
+							missingFields.push("contactNumber");
+						}
+						if (!(form.getFieldValue("address") || "").trim()) {
+							missing.push("Address");
+							missingFields.push("address");
+						}
+
+						if (missing.length > 0) {
+							for (const f of missingFields) {
+								form.setFieldMeta(
+									f as "firstName" | "lastName" | "contactNumber" | "address",
+									(prev) => ({
+										...prev,
+										isTouched: true,
+										isDirty: true,
+										errorMap: {
+											...prev.errorMap,
+											onSubmit: "This field is required",
+										},
+									}),
+								);
+							}
+							toast.error("Please fill in the required fields", {
+								description: missing.join(", "),
+							});
+							return;
+						}
+
 						void form.handleSubmit();
 					}}
 				>
@@ -233,6 +279,7 @@ export function CreateBookingDialog({
 								step={step}
 								roomOptions={roomOptions}
 								isDateDisabled={isDateDisabled}
+								bookings={bookings}
 							/>
 
 							{step === 3 && !walkIn && (

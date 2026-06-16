@@ -13,10 +13,12 @@ import { CancelBookingDialog } from "@/components/bookings/CancelBookingDialog";
 import { CheckInBookingDialog } from "@/components/bookings/CheckInBookingDialog";
 import { CheckOutBookingDialog } from "@/components/bookings/CheckOutBookingDialog";
 import { EvictBookingDialog } from "@/components/bookings/EvictBookingDialog";
+import { TransferBookingDialog } from "@/components/bookings/TransferBookingDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
 import { bookingQueries } from "@/lib/bookings/bookings.queries";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
+import { roomQueries } from "@/lib/rooms/rooms.queries";
 
 function BookingNotFound() {
 	return (
@@ -45,6 +47,7 @@ export const Route = createFileRoute("/_authenticated/bookings/$bookingId/")({
 				context.queryClient.ensureQueryData(bookingQueries.detail(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.transactions(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.details(id)),
+				context.queryClient.ensureQueryData(roomQueries.list()),
 			]);
 		} catch {
 			throw notFound();
@@ -77,12 +80,21 @@ function BookingDetailPage() {
 	const { data: booking } = useSuspenseQuery(
 		bookingQueries.detail(numericBookingId),
 	);
+	const { data: rooms } = useSuspenseQuery(roomQueries.list());
 	const [cancelOpen, setCancelOpen] = useState(false);
 	const [evictOpen, setEvictOpen] = useState(false);
 	const [checkInOpen, setCheckInOpen] = useState(false);
 	const [checkOutOpen, setCheckOutOpen] = useState(false);
+	const [transferOpen, setTransferOpen] = useState(false);
 
 	const updateStatus = useMutation(bookingMutations.updateStatus(queryClient));
+	const transferMutation = useMutation(
+		bookingMutations.transfer(queryClient, numericBookingId),
+	);
+
+	const availableRooms = rooms.filter(
+		(r) => r.status === "AVAILABLE" && r.id !== booking.roomId,
+	);
 
 	const handleCancel = (reason: string) => {
 		updateStatus.mutate({
@@ -102,6 +114,15 @@ function BookingDetailPage() {
 		setEvictOpen(false);
 	};
 
+	const handleTransfer = (targetRoomId: number, reason: string) => {
+		transferMutation.mutate({
+			bookingRef: booking.bookingRef,
+			targetRoomId,
+			reason,
+		});
+		setTransferOpen(false);
+	};
+
 	return (
 		<main className="page-wrap px-4 py-6 pb-8">
 			<div className="space-y-8">
@@ -111,6 +132,7 @@ function BookingDetailPage() {
 					onEvictClick={() => setEvictOpen(true)}
 					onCheckIn={() => setCheckInOpen(true)}
 					onCheckOut={() => setCheckOutOpen(true)}
+					onTransferClick={() => setTransferOpen(true)}
 				/>
 
 				<BookingInfoCards booking={booking} />
@@ -148,6 +170,14 @@ function BookingDetailPage() {
 					onOpenChange={setCheckOutOpen}
 					booking={booking}
 					bookingId={numericBookingId}
+				/>
+
+				<TransferBookingDialog
+					open={transferOpen}
+					onOpenChange={setTransferOpen}
+					booking={booking}
+					availableRooms={availableRooms}
+					onConfirm={handleTransfer}
 				/>
 			</div>
 		</main>

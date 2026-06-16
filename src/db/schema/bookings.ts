@@ -1,5 +1,4 @@
 import {
-	date,
 	decimal,
 	integer,
 	pgTable,
@@ -21,8 +20,9 @@ export const bookings = pgTable("bookings", {
 	firstName: varchar("first_name").notNull(),
 	lastName: varchar("last_name").notNull(),
 	contactNumber: varchar("contact_number"),
-	checkInDate: date("check_in_date").notNull(),
-	checkOutDate: date("check_out_date").notNull(),
+	checkIn: timestamp("check_in", { withTimezone: true }),
+	checkOut: timestamp("check_out", { withTimezone: true }),
+	address: text("address").default(""),
 	occupantsCount: integer("occupants_count").notNull(),
 	status: bookingStatusEnum("status").default("RESERVED").notNull(),
 	paymentStatus: bookingPaymentStatusEnum("payment_status")

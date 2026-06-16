@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -15,6 +15,17 @@ import {
 } from "@/components/ui/table";
 import { computeBookingDisplayStatus } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { BookingsFilterBar, type SortOption } from "./BookingsFilterBar";
+
+function safeFormatDate(value: string, fmt: string): string {
+	try {
+		const d = new Date(value);
+		if (Number.isNaN(d.getTime())) return value;
+		return format(d, fmt);
+	} catch {
+		return value;
+	}
+}
 
 const statusColorMap: Record<
 	string,
@@ -26,6 +37,12 @@ const statusColorMap: Record<
 	CANCELLED: "destructive",
 	EVICTED: "destructive",
 	OVERDUE: "destructive",
+	TRANSFERRED: "secondary",
+};
+
+type StatusOption = {
+	value: string;
+	label: string;
 };
 
 type BookingsTableProps = {
@@ -33,6 +50,14 @@ type BookingsTableProps = {
 	searchQuery: string;
 	onSearchChange: (query: string) => void;
 	emptyMessage?: string;
+	roomFilter: string;
+	statusFilter: string;
+	sortBy: SortOption;
+	rooms: { id: number; roomNumber: string; type: string }[];
+	statusOptions: StatusOption[];
+	onRoomFilterChange: (value: string) => void;
+	onStatusFilterChange: (value: string) => void;
+	onSortByChange: (value: SortOption) => void;
 };
 
 export function BookingsTable({
@@ -40,6 +65,14 @@ export function BookingsTable({
 	searchQuery,
 	onSearchChange,
 	emptyMessage = "No bookings found.",
+	roomFilter,
+	statusFilter,
+	sortBy,
+	rooms,
+	statusOptions,
+	onRoomFilterChange,
+	onStatusFilterChange,
+	onSortByChange,
 }: BookingsTableProps) {
 	return (
 		<Card>
@@ -58,6 +91,16 @@ export function BookingsTable({
 						/>
 					</div>
 				</div>
+				<BookingsFilterBar
+					roomFilter={roomFilter}
+					statusFilter={statusFilter}
+					sortBy={sortBy}
+					rooms={rooms}
+					statusOptions={statusOptions}
+					onRoomFilterChange={onRoomFilterChange}
+					onStatusFilterChange={onStatusFilterChange}
+					onSortByChange={onSortByChange}
+				/>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
@@ -87,7 +130,7 @@ export function BookingsTable({
 								booking.status === "CHECKED_IN"
 									? computeBookingDisplayStatus(
 											booking.status,
-											booking.checkOutDate,
+											booking.checkOut,
 										)
 									: booking.status;
 							return (
@@ -105,11 +148,17 @@ export function BookingsTable({
 									</TableCell>
 									<TableCell>
 										<p className="text-sm">
-											{format(parseISO(booking.checkInDate), "MMMM d, yyyy")}{" "}
+											{safeFormatDate(
+												booking.checkIn,
+												"MMMM d, yyyy 'at' HH:mm",
+											)}
 											&rarr;
 										</p>
 										<p className="text-sm text-muted-foreground mt-0.5">
-											{format(parseISO(booking.checkOutDate), "MMMM d, yyyy")}
+											{safeFormatDate(
+												booking.checkOut,
+												"MMMM d, yyyy 'at' HH:mm",
+											)}
 										</p>
 									</TableCell>
 									<TableCell>

@@ -1,5 +1,3 @@
-import { parseISO, startOfDay } from "date-fns";
-
 import type { TimelineLegendStatus } from "./types";
 
 export type BookingStatusPresentation = {
@@ -8,7 +6,10 @@ export type BookingStatusPresentation = {
 	colorVar: string;
 };
 
-export type DerivedBookingStatus = TimelineLegendStatus | "OVERDUE";
+export type DerivedBookingStatus =
+	| TimelineLegendStatus
+	| "OVERDUE"
+	| "TRANSFERRED";
 
 const presentationByStatus: Record<
 	DerivedBookingStatus,
@@ -34,6 +35,11 @@ const presentationByStatus: Record<
 		legendLabel: "Overdue",
 		colorVar: "--status-overdue",
 	},
+	TRANSFERRED: {
+		label: "Transferred",
+		legendLabel: "Transferred",
+		colorVar: "--status-checked-out",
+	},
 };
 
 export const timelineLegendStatuses: TimelineLegendStatus[] = [
@@ -44,25 +50,25 @@ export const timelineLegendStatuses: TimelineLegendStatus[] = [
 
 export function normalizeBookingStatus(status: string): TimelineLegendStatus {
 	if (status === "CHECKED_IN") return "CHECKED_IN";
-	if (status === "CHECKED_OUT") return "CHECKED_OUT";
+	if (status === "CHECKED_OUT" || status === "TRANSFERRED")
+		return "CHECKED_OUT";
 	return "RESERVED";
 }
 
 export function computeBookingDisplayStatus(
 	status: string,
-	checkOutDate: string | Date,
+	checkOut: string | Date,
 ): DerivedBookingStatus {
 	if (status === "CHECKED_IN") {
-		const checkout = startOfDay(
-			typeof checkOutDate === "string" ? parseISO(checkOutDate) : checkOutDate,
-		);
-		const today = startOfDay(new Date());
-		if (today > checkout) return "OVERDUE";
+		const checkout = new Date(checkOut);
+		const now = new Date();
+		if (now > checkout) return "OVERDUE";
 	}
 	if (
 		status === "CHECKED_IN" ||
 		status === "CHECKED_OUT" ||
-		status === "RESERVED"
+		status === "RESERVED" ||
+		status === "TRANSFERRED"
 	) {
 		return status;
 	}
