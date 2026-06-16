@@ -29,15 +29,14 @@ export function EditRoomSheet({
 	const queryClient = useQueryClient();
 	const updateRoom = useMutation(roomMutations.update(queryClient));
 
-	  const defaultValues: z.infer<typeof updateRoomSchema> = {  
-        id: room?.id ?? 0,  
-        roomNumber: room?.roomNumber ?? "",  
-        type: room?.type ?? "",  
-        capacity: room?.capacity ?? 0,  
-        basePrice: Number(room?.basePrice ?? 0),  
-        status: room?.status ?? "AVAILABLE" as (typeof roomStatusValues)[number],  
-    };  
-
+	const defaultValues: z.infer<typeof updateRoomSchema> = {
+		id: room?.id ?? 0,
+		roomNumber: room?.roomNumber ?? "",
+		type: room?.type ?? "",
+		capacity: room?.capacity ?? 0,
+		basePrice: Number(room?.basePrice ?? 0),
+		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
+	};
 
 	const form = useAppForm({
 		defaultValues,
