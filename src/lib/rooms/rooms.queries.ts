@@ -1,19 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/react-start";
-import { isNull } from "drizzle-orm";
-import { db } from "@/db/index";
-import { rooms } from "@/db/schema";
-
-export const getRooms = createServerFn({ method: "GET" }).handler(async () => {
-	return await db.query.rooms.findMany({
-		where: isNull(rooms.deletedAt),
-		orderBy: [rooms.roomNumber],
-	});
-});
+import { getRoomById, getRooms } from "./rooms.functions";
 
 export const roomKeys = {
 	all: ["rooms"] as const,
 	lists: () => [...roomKeys.all, "list"] as const,
+	detail: (id: number) => [...roomKeys.all, "detail", id] as const,
 };
 
 export const roomQueries = {
@@ -21,5 +12,10 @@ export const roomQueries = {
 		queryOptions({
 			queryKey: roomKeys.lists(),
 			queryFn: () => getRooms(),
+		}),
+	detail: (id: number) =>
+		queryOptions({
+			queryKey: roomKeys.detail(id),
+			queryFn: () => getRoomById({ data: { id } }),
 		}),
 };

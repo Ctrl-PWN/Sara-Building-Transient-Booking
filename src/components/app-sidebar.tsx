@@ -22,9 +22,10 @@ export function AppSidebar() {
 	const navigate = useNavigate();
 	const { data: session } = authClient.useSession();
 	const isAdmin = session?.user.role === "admin";
+	const adminOnlyPaths = ["/user-management", "/room-management"];
 	const visibleNavItems = isAdmin
 		? mainNavItems
-		: mainNavItems.filter((item) => item.to !== "/user-management");
+		: mainNavItems.filter((item) => !adminOnlyPaths.includes(item.to));
 
 	async function handleLogout() {
 		await authClient.signOut();
