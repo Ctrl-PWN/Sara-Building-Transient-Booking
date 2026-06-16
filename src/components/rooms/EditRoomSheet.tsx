@@ -64,7 +64,7 @@ export function EditRoomSheet({
 			form.setFieldValue("basePrice", Number(room.basePrice));
 			form.setFieldValue("status", room.status);
 		}
-	}, [room, open, form.setFieldValue, form.reset]);
+	}, [room, open, form.setFieldValue]);
 
 	if (!room) return null;
 
