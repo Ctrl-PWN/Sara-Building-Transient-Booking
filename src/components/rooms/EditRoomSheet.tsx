@@ -54,7 +54,6 @@ export function EditRoomSheet({
 
 	useEffect(() => {
 		if (room && open) {
-			form.reset();
 			form.setFieldValue("id", room.id);
 			form.setFieldValue("roomNumber", room.roomNumber);
 			form.setFieldValue("type", room.type);
