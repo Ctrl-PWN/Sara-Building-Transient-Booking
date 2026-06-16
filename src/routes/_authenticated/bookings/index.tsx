@@ -1,13 +1,16 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { z } from "zod";
+import type { SortOption } from "@/components/bookings/BookingsFilterBar";
 import { BookingsPageHeader } from "@/components/bookings/BookingsPageHeader";
 import { BookingsTable } from "@/components/bookings/BookingsTable";
 import { CreateBookingDialog } from "@/components/bookings/CreateBookingDialog";
 import { FeedbackDialog } from "@/components/ui/feedback-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { bookingQueries } from "@/lib/bookings/bookings.queries";
+import { computeBookingDisplayStatus } from "@/lib/bookings/status";
+import type { BookingWithRoom } from "@/lib/bookings/types";
 import { roomQueries } from "@/lib/rooms/rooms.queries";
 
 const bookingsSearchSchema = z.object({
@@ -51,16 +54,93 @@ function BookingsListPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [roomFilter, setRoomFilter] = useState("all");
+	const [statusFilter, setStatusFilter] = useState("all");
+	const [sortBy, setSortBy] = useState<SortOption>("checkIn-newest");
 
-	const filterBookings = (list: typeof bookings) => {
-		if (!searchQuery.trim()) return list;
-		const q = searchQuery.toLowerCase();
-		return list.filter(
-			(b) =>
-				b.firstName.toLowerCase().includes(q) ||
-				b.lastName.toLowerCase().includes(q) ||
-				b.bookingRef.toLowerCase().includes(q),
-		);
+	const activeStatusOptions = useMemo(
+		() => [
+			{ value: "RESERVED", label: "Reserved" },
+			{ value: "CHECKED_IN", label: "Checked-In" },
+			{ value: "OVERDUE", label: "Overdue" },
+		],
+		[],
+	);
+
+	const historyStatusOptions = useMemo(
+		() => [
+			{ value: "CHECKED_OUT", label: "Checked-Out" },
+			{ value: "CANCELLED", label: "Cancelled" },
+			{ value: "EVICTED", label: "Evicted" },
+			{ value: "TRANSFERRED", label: "Transferred" },
+		],
+		[],
+	);
+
+	const filterBookings = (list: BookingWithRoom[]) => {
+		let result = list;
+
+		if (searchQuery.trim()) {
+			const q = searchQuery.toLowerCase();
+			result = result.filter(
+				(b) =>
+					b.firstName.toLowerCase().includes(q) ||
+					b.lastName.toLowerCase().includes(q) ||
+					b.bookingRef.toLowerCase().includes(q),
+			);
+		}
+
+		if (roomFilter !== "all") {
+			const roomId = Number(roomFilter);
+			result = result.filter((b) => b.roomId === roomId);
+		}
+
+		if (statusFilter !== "all") {
+			if (statusFilter === "OVERDUE") {
+				result = result.filter((b) => {
+					if (b.status !== "CHECKED_IN") return false;
+					return (
+						computeBookingDisplayStatus(b.status, b.checkOut) === "OVERDUE"
+					);
+				});
+			} else {
+				result = result.filter((b) => b.status === statusFilter);
+			}
+		}
+
+		const sorted = [...result];
+		switch (sortBy) {
+			case "name-asc":
+				sorted.sort((a, b) =>
+					`${a.firstName} ${a.lastName}`.localeCompare(
+						`${b.firstName} ${b.lastName}`,
+					),
+				);
+				break;
+			case "name-desc":
+				sorted.sort((a, b) =>
+					`${b.firstName} ${b.lastName}`.localeCompare(
+						`${a.firstName} ${a.lastName}`,
+					),
+				);
+				break;
+			case "checkIn-newest":
+				sorted.sort((a, b) => b.checkIn.localeCompare(a.checkIn));
+				break;
+			case "checkIn-oldest":
+				sorted.sort((a, b) => a.checkIn.localeCompare(b.checkIn));
+				break;
+			case "room":
+				sorted.sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
+				break;
+			case "status":
+				sorted.sort((a, b) => a.status.localeCompare(b.status));
+				break;
+			default:
+				break;
+		}
+
+		return sorted;
 	};
 
 	const filteredActive = filterBookings(bookings);
@@ -103,6 +183,14 @@ function BookingsListPage() {
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
 							emptyMessage="No active bookings."
+							roomFilter={roomFilter}
+							statusFilter={statusFilter}
+							sortBy={sortBy}
+							rooms={rooms}
+							statusOptions={activeStatusOptions}
+							onRoomFilterChange={setRoomFilter}
+							onStatusFilterChange={setStatusFilter}
+							onSortByChange={setSortBy}
 						/>
 					</TabsContent>
 					<TabsContent value="history" className="mt-4">
@@ -111,6 +199,14 @@ function BookingsListPage() {
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
 							emptyMessage="No finished bookings yet."
+							roomFilter={roomFilter}
+							statusFilter={statusFilter}
+							sortBy={sortBy}
+							rooms={rooms}
+							statusOptions={historyStatusOptions}
+							onRoomFilterChange={setRoomFilter}
+							onStatusFilterChange={setStatusFilter}
+							onSortByChange={setSortBy}
 						/>
 					</TabsContent>
 				</Tabs>

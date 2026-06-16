@@ -13,6 +13,15 @@ import type {
 import type { TimelineWeekData } from "./types";
 import { getWeekDays, getWeekEnd } from "./week";
 
+function toISOString(value: string | Date | null): string {
+	if (value == null) return "";
+	if (typeof value === "string") {
+		const parsed = new Date(value);
+		return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+	}
+	return value.toISOString();
+}
+
 const timelineWeekSchema = z.object({
 	weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
@@ -25,8 +34,8 @@ function mapBookingRow(row: {
 	contactNumber: string | null;
 	roomId: number;
 	roomNumber: string;
-	checkInDate: string;
-	checkOutDate: string;
+	checkIn: string | Date | null;
+	checkOut: string | Date | null;
 	occupantsCount: number;
 	status: string;
 	paymentStatus: string;
@@ -37,10 +46,11 @@ function mapBookingRow(row: {
 		firstName: row.firstName,
 		lastName: row.lastName,
 		contactNumber: row.contactNumber,
+		address: "",
 		roomId: row.roomId,
 		roomNumber: row.roomNumber,
-		checkInDate: row.checkInDate,
-		checkOutDate: row.checkOutDate,
+		checkIn: toISOString(row.checkIn),
+		checkOut: toISOString(row.checkOut),
 		occupantsCount: row.occupantsCount,
 		status: bookingStatusSchema.parse(row.status),
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,
@@ -79,8 +89,8 @@ async function getTimelineWeekFromDb(
 				contactNumber: bookings.contactNumber,
 				roomId: bookings.roomId,
 				roomNumber: rooms.roomNumber,
-				checkInDate: bookings.checkInDate,
-				checkOutDate: bookings.checkOutDate,
+				checkIn: bookings.checkIn,
+				checkOut: bookings.checkOut,
 				occupantsCount: bookings.occupantsCount,
 				status: bookings.status,
 				paymentStatus: bookings.paymentStatus,
@@ -89,13 +99,14 @@ async function getTimelineWeekFromDb(
 			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 			.where(
 				and(
-					lt(bookings.checkInDate, weekEnd),
-					gt(bookings.checkOutDate, weekStart),
+					lt(bookings.checkIn, new Date(weekEnd)),
+					gt(bookings.checkOut, new Date(weekStart)),
 					isNull(bookings.deletedAt),
 					ne(bookings.status, "CANCELLED"),
+					ne(bookings.status, "TRANSFERRED"),
 				),
 			)
-			.orderBy(asc(bookings.checkInDate)),
+			.orderBy(asc(bookings.checkIn)),
 	]);
 
 	return {

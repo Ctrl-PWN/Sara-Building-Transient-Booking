@@ -6,6 +6,7 @@ export const bookingStatusEnum = pgEnum("booking_status", [
 	"CHECKED_OUT",
 	"CANCELLED",
 	"EVICTED",
+	"TRANSFERRED",
 ]);
 
 export const bookingPaymentStatusEnum = pgEnum("booking_payment_status", [

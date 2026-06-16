@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 
 import type { ReactNode } from "react";
 
@@ -25,8 +25,8 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
-function formatDate(date: string) {
-	return format(parseISO(date), "EEE d MMM yyyy");
+function formatDate(isoString: string) {
+	return format(new Date(isoString), "EEE d MMM yyyy 'at' HH:mm");
 }
 
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
@@ -35,9 +35,10 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
 			<Field label="Guest" value={formatGuestName(booking)} />
 			<Field label="Reference" value={booking.bookingRef} />
 			<Field label="Contact" value={booking.contactNumber ?? "Not provided"} />
+			<Field label="Address" value={booking.address || "Not provided"} />
 			<Field label="Room" value={booking.roomNumber} />
-			<Field label="Check-in" value={formatDate(booking.checkInDate)} />
-			<Field label="Check-out" value={formatDate(booking.checkOutDate)} />
+			<Field label="Check-in" value={formatDate(booking.checkIn)} />
+			<Field label="Check-out" value={formatDate(booking.checkOut)} />
 			<Field label="Occupants" value={booking.occupantsCount} />
 			<Field
 				label="Status"
@@ -45,7 +46,7 @@ export function BookingFieldGrid({ booking }: BookingFieldGridProps) {
 					<BookingStatusBadge
 						status={computeBookingDisplayStatus(
 							booking.status,
-							booking.checkOutDate,
+							booking.checkOut,
 						)}
 					/>
 				}

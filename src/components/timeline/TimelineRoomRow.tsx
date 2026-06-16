@@ -60,8 +60,8 @@ export function TimelineRoomRow({
 				<div className="absolute inset-0">
 					{bookings.map((booking) => {
 						const position = getBarPosition(
-							booking.checkInDate,
-							booking.checkOutDate,
+							booking.checkIn,
+							booking.checkOut,
 							weekStart,
 							weekEnd,
 						);
