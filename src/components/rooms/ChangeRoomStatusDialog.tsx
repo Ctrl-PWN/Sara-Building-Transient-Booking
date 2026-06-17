@@ -2,7 +2,7 @@ import { ArrowsClockwiseIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { RoomStatus } from "@/db/schema/enums";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogClose,
@@ -12,7 +12,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -20,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { RoomStatus } from "@/db/schema/enums";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { getValidRoomStatusTransitions } from "@/lib/rooms/status";
 import type { Room } from "@/lib/rooms/types";
@@ -55,9 +55,7 @@ export function ChangeRoomStatusDialog({
 				id: room.id,
 				status: selectedStatus as RoomStatus,
 			});
-			toast.success(
-				`Status updated to ${selectedStatus.replace(/_/g, " ")}`,
-			);
+			toast.success(`Status updated to ${selectedStatus.replace(/_/g, " ")}`);
 			onOpenChange(false);
 		} catch (err) {
 			toast.error(
