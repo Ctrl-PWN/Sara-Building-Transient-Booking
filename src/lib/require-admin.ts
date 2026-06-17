@@ -25,3 +25,29 @@ export function authMiddleware() {
 		return next();
 	});
 }
+
+export async function requireSession() {
+	const [{ auth }, { getRequestHeaders }] = await Promise.all([
+		import("./auth"),
+		import("@tanstack/react-start/server"),
+	]);
+
+	const session = await auth.api.getSession({
+		headers: getRequestHeaders(),
+	});
+
+	if (!session) {
+		throw new Response("Unauthorized", {
+			status: 401,
+		});
+	}
+
+	return session;
+}
+
+export function sessionMiddleware() {
+	return createMiddleware().server(async ({ next }) => {
+		await requireSession();
+		return next();
+	});
+}

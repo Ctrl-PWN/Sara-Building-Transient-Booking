@@ -36,7 +36,7 @@ export function ChangeRoomStatusDialog({
 	onOpenChange,
 }: ChangeRoomStatusDialogProps) {
 	const queryClient = useQueryClient();
-	const updateRoom = useMutation(roomMutations.update(queryClient));
+	const updateStatus = useMutation(roomMutations.updateStatus(queryClient));
 	const validStatuses = getValidRoomStatusTransitions(room.status);
 	const [selectedStatus, setSelectedStatus] = useState<string>(
 		validStatuses[0] ?? room.status,
@@ -51,7 +51,7 @@ export function ChangeRoomStatusDialog({
 
 	const handleConfirm = async () => {
 		try {
-			await updateRoom.mutateAsync({
+			await updateStatus.mutateAsync({
 				id: room.id,
 				status: selectedStatus as RoomStatus,
 			});
@@ -111,12 +111,12 @@ export function ChangeRoomStatusDialog({
 					<DialogClose render={<Button variant="outline">Cancel</Button>} />
 					<Button
 						onClick={handleConfirm}
-						disabled={updateRoom.isPending || validStatuses.length === 0}
+						disabled={updateStatus.isPending || validStatuses.length === 0}
 					>
-						{updateRoom.isPending ? (
+						{updateStatus.isPending ? (
 							<ArrowsClockwiseIcon className="size-4 animate-spin" />
 						) : null}
-						{updateRoom.isPending ? "Updating..." : "Update status"}
+						{updateStatus.isPending ? "Updating..." : "Update status"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

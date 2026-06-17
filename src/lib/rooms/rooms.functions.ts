@@ -3,11 +3,12 @@ import { and, count, eq, isNull, ne } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/db/index";
 import { bookings, rooms } from "@/db/schema";
-import { authMiddleware } from "@/lib/require-admin";
+import { authMiddleware, sessionMiddleware } from "@/lib/require-admin";
 import {
 	createRoomSchema,
 	deleteRoomSchema,
 	updateRoomSchema,
+	updateRoomStatusSchema,
 } from "./schemas";
 
 export const getRooms = createServerFn({ method: "GET" }).handler(async () => {
@@ -96,6 +97,25 @@ export const updateRoom = createServerFn({ method: "POST" })
 		const [room] = await db
 			.update(rooms)
 			.set(updateData)
+			.where(eq(rooms.id, data.id))
+			.returning();
+		return room;
+	});
+
+export const updateRoomStatus = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
+	.inputValidator(updateRoomStatusSchema)
+	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+
+		const [room] = await db
+			.update(rooms)
+			.set({ status: data.status })
 			.where(eq(rooms.id, data.id))
 			.returning();
 		return room;

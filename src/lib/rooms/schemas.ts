@@ -47,6 +47,11 @@ export const updateRoomSchema = z.object({
 	status: z.enum(roomStatusValues).optional(),
 });
 
+export const updateRoomStatusSchema = z.object({
+	id: z.number(),
+	status: z.enum(roomStatusValues),
+});
+
 export const deleteRoomSchema = z.object({
 	id: z.number(),
 });
