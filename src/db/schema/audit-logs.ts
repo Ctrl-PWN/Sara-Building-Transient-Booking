@@ -8,5 +8,5 @@ export const auditLogs = pgTable("audit_logs", {
 	oldValue: text("old_value"),
 	newValue: text("new_value"),
 	performedBy: varchar("performed_by").notNull(),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
+	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });
