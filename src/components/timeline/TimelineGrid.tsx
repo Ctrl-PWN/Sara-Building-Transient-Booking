@@ -75,7 +75,6 @@ export function TimelineGrid({
 					{rooms.map((room) => (
 						<TimelineRoomRow
 							key={room.id}
-							roomId={room.id}
 							roomNumber={room.roomNumber}
 							roomType={room.type}
 							days={days}

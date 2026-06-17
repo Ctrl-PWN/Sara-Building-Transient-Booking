@@ -6,8 +6,8 @@ export type DashboardBookingRow = {
 	roomId: number;
 	roomNumber: string;
 	roomType: string;
-	checkIn: string;
-	checkOut: string;
+	checkIn: string | null;
+	checkOut: string | null;
 	occupantsCount: number;
 };
 

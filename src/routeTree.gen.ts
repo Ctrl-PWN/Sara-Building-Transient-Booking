@@ -18,8 +18,6 @@ import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from "./rou
 import { Route as AuthenticatedBookingsIndexRouteImport } from "./routes/_authenticated/bookings/index";
 import { Route as AuthenticatedDashboardIndexRouteImport } from "./routes/_authenticated/dashboard/index";
 import { Route as AuthenticatedIndexRouteImport } from "./routes/_authenticated/index";
-import { Route as AuthenticatedRoomsRoomIdHistoryRouteImport } from "./routes/_authenticated/rooms/$roomId/history";
-import { Route as AuthenticatedRoomsRoomIdIndexRouteImport } from "./routes/_authenticated/rooms/$roomId/index";
 import { Route as AuthenticatedRoomsIndexRouteImport } from "./routes/_authenticated/rooms/index";
 import { Route as AuthenticatedTimelineIndexRouteImport } from "./routes/_authenticated/timeline/index";
 import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
@@ -71,12 +69,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 	path: "/api/auth/$",
 	getParentRoute: () => rootRouteImport,
 } as any);
-const AuthenticatedRoomsRoomIdIndexRoute =
-	AuthenticatedRoomsRoomIdIndexRouteImport.update({
-		id: "/rooms/$roomId/",
-		path: "/rooms/$roomId/",
-		getParentRoute: () => AuthenticatedRoute,
-	} as any);
 const AuthenticatedBookingsBookingIdIndexRoute =
 	AuthenticatedBookingsBookingIdIndexRouteImport.update({
 		id: "/bookings/$bookingId/",
@@ -95,12 +87,6 @@ const AuthenticatedAdminRoomManagementIndexRoute =
 		path: "/room-management/",
 		getParentRoute: () => AuthenticatedAdminRoute,
 	} as any);
-const AuthenticatedRoomsRoomIdHistoryRoute =
-	AuthenticatedRoomsRoomIdHistoryRouteImport.update({
-		id: "/rooms/$roomId/history",
-		path: "/rooms/$roomId/history",
-		getParentRoute: () => AuthenticatedRoute,
-	} as any);
 const AuthenticatedBookingsBookingIdInvoiceRoute =
 	AuthenticatedBookingsBookingIdInvoiceRouteImport.update({
 		id: "/bookings/$bookingId/invoice",
@@ -117,11 +103,9 @@ export interface FileRoutesByFullPath {
 	"/rooms/": typeof AuthenticatedRoomsIndexRoute;
 	"/timeline/": typeof AuthenticatedTimelineIndexRoute;
 	"/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
-	"/rooms/$roomId/history": typeof AuthenticatedRoomsRoomIdHistoryRoute;
 	"/room-management/": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/user-management/": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/bookings/$bookingId/": typeof AuthenticatedBookingsBookingIdIndexRoute;
-	"/rooms/$roomId/": typeof AuthenticatedRoomsRoomIdIndexRoute;
 }
 export interface FileRoutesByTo {
 	"/": typeof AuthenticatedIndexRoute;
@@ -132,11 +116,9 @@ export interface FileRoutesByTo {
 	"/rooms": typeof AuthenticatedRoomsIndexRoute;
 	"/timeline": typeof AuthenticatedTimelineIndexRoute;
 	"/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
-	"/rooms/$roomId/history": typeof AuthenticatedRoomsRoomIdHistoryRoute;
 	"/room-management": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/user-management": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/bookings/$bookingId": typeof AuthenticatedBookingsBookingIdIndexRoute;
-	"/rooms/$roomId": typeof AuthenticatedRoomsRoomIdIndexRoute;
 }
 export interface FileRoutesById {
 	__root__: typeof rootRouteImport;
@@ -150,11 +132,9 @@ export interface FileRoutesById {
 	"/_authenticated/rooms/": typeof AuthenticatedRoomsIndexRoute;
 	"/_authenticated/timeline/": typeof AuthenticatedTimelineIndexRoute;
 	"/_authenticated/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
-	"/_authenticated/rooms/$roomId/history": typeof AuthenticatedRoomsRoomIdHistoryRoute;
 	"/_authenticated/_admin/room-management/": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/_authenticated/_admin/user-management/": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/_authenticated/bookings/$bookingId/": typeof AuthenticatedBookingsBookingIdIndexRoute;
-	"/_authenticated/rooms/$roomId/": typeof AuthenticatedRoomsRoomIdIndexRoute;
 }
 export interface FileRouteTypes {
 	fileRoutesByFullPath: FileRoutesByFullPath;
@@ -167,11 +147,9 @@ export interface FileRouteTypes {
 		| "/rooms/"
 		| "/timeline/"
 		| "/bookings/$bookingId/invoice"
-		| "/rooms/$roomId/history"
 		| "/room-management/"
 		| "/user-management/"
-		| "/bookings/$bookingId/"
-		| "/rooms/$roomId/";
+		| "/bookings/$bookingId/";
 	fileRoutesByTo: FileRoutesByTo;
 	to:
 		| "/"
@@ -182,11 +160,9 @@ export interface FileRouteTypes {
 		| "/rooms"
 		| "/timeline"
 		| "/bookings/$bookingId/invoice"
-		| "/rooms/$roomId/history"
 		| "/room-management"
 		| "/user-management"
-		| "/bookings/$bookingId"
-		| "/rooms/$roomId";
+		| "/bookings/$bookingId";
 	id:
 		| "__root__"
 		| "/_authenticated"
@@ -199,11 +175,9 @@ export interface FileRouteTypes {
 		| "/_authenticated/rooms/"
 		| "/_authenticated/timeline/"
 		| "/_authenticated/bookings/$bookingId/invoice"
-		| "/_authenticated/rooms/$roomId/history"
 		| "/_authenticated/_admin/room-management/"
 		| "/_authenticated/_admin/user-management/"
-		| "/_authenticated/bookings/$bookingId/"
-		| "/_authenticated/rooms/$roomId/";
+		| "/_authenticated/bookings/$bookingId/";
 	fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -277,13 +251,6 @@ declare module "@tanstack/react-router" {
 			preLoaderRoute: typeof ApiAuthSplatRouteImport;
 			parentRoute: typeof rootRouteImport;
 		};
-		"/_authenticated/rooms/$roomId/": {
-			id: "/_authenticated/rooms/$roomId/";
-			path: "/rooms/$roomId";
-			fullPath: "/rooms/$roomId/";
-			preLoaderRoute: typeof AuthenticatedRoomsRoomIdIndexRouteImport;
-			parentRoute: typeof AuthenticatedRoute;
-		};
 		"/_authenticated/bookings/$bookingId/": {
 			id: "/_authenticated/bookings/$bookingId/";
 			path: "/bookings/$bookingId";
@@ -304,13 +271,6 @@ declare module "@tanstack/react-router" {
 			fullPath: "/room-management/";
 			preLoaderRoute: typeof AuthenticatedAdminRoomManagementIndexRouteImport;
 			parentRoute: typeof AuthenticatedAdminRoute;
-		};
-		"/_authenticated/rooms/$roomId/history": {
-			id: "/_authenticated/rooms/$roomId/history";
-			path: "/rooms/$roomId/history";
-			fullPath: "/rooms/$roomId/history";
-			preLoaderRoute: typeof AuthenticatedRoomsRoomIdHistoryRouteImport;
-			parentRoute: typeof AuthenticatedRoute;
 		};
 		"/_authenticated/bookings/$bookingId/invoice": {
 			id: "/_authenticated/bookings/$bookingId/invoice";
@@ -345,9 +305,7 @@ interface AuthenticatedRouteChildren {
 	AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute;
 	AuthenticatedTimelineIndexRoute: typeof AuthenticatedTimelineIndexRoute;
 	AuthenticatedBookingsBookingIdInvoiceRoute: typeof AuthenticatedBookingsBookingIdInvoiceRoute;
-	AuthenticatedRoomsRoomIdHistoryRoute: typeof AuthenticatedRoomsRoomIdHistoryRoute;
 	AuthenticatedBookingsBookingIdIndexRoute: typeof AuthenticatedBookingsBookingIdIndexRoute;
-	AuthenticatedRoomsRoomIdIndexRoute: typeof AuthenticatedRoomsRoomIdIndexRoute;
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -359,10 +317,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
 	AuthenticatedTimelineIndexRoute: AuthenticatedTimelineIndexRoute,
 	AuthenticatedBookingsBookingIdInvoiceRoute:
 		AuthenticatedBookingsBookingIdInvoiceRoute,
-	AuthenticatedRoomsRoomIdHistoryRoute: AuthenticatedRoomsRoomIdHistoryRoute,
 	AuthenticatedBookingsBookingIdIndexRoute:
 		AuthenticatedBookingsBookingIdIndexRoute,
-	AuthenticatedRoomsRoomIdIndexRoute: AuthenticatedRoomsRoomIdIndexRoute,
 };
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

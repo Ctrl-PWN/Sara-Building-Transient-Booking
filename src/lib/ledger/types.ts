@@ -15,7 +15,7 @@ export type LedgerTransactionListItem = {
 	description: string | null;
 	paymentMethod: PaymentMethod | null;
 	referenceNumber: string | null;
-	createdAt: Date;
+	createdAt: string;
 };
 
 export type LedgerDetails = {

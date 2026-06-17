@@ -9,7 +9,6 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { roomStatusValues } from "@/db/schema/enums";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { updateRoomSchema } from "@/lib/rooms/schemas";
@@ -35,7 +34,6 @@ export function EditRoomSheet({
 		type: room?.type ?? "",
 		capacity: room?.capacity ?? 0,
 		basePrice: Number(room?.basePrice ?? 0),
-		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
 	};
 
 	const form = useAppForm({
@@ -61,7 +59,6 @@ export function EditRoomSheet({
 			form.setFieldValue("type", room.type);
 			form.setFieldValue("capacity", room.capacity);
 			form.setFieldValue("basePrice", Number(room.basePrice));
-			form.setFieldValue("status", room.status);
 		}
 	}, [room, open, form.setFieldValue]);
 
@@ -88,19 +85,32 @@ export function EditRoomSheet({
 					<form.AppForm>
 						<form.AppField name="roomNumber">
 							{(field) => (
-								<field.TextField label="Room number" placeholder="101" />
+								<field.TextField
+									label="Room number"
+									placeholder="101"
+									maxLength={3}
+								/>
 							)}
 						</form.AppField>
 
 						<form.AppField name="type">
 							{(field) => (
-								<field.TextField label="Room type" placeholder="Standard" />
+								<field.TextField
+									label="Room type"
+									placeholder="Standard"
+									maxLength={20}
+								/>
 							)}
 						</form.AppField>
 
 						<form.AppField name="capacity">
 							{(field) => (
-								<field.NumberField label="Capacity" placeholder="2" />
+								<field.NumberField
+									label="Capacity"
+									placeholder="2"
+									min={1}
+									max={1000}
+								/>
 							)}
 						</form.AppField>
 
@@ -109,19 +119,8 @@ export function EditRoomSheet({
 								<field.NumberField
 									label="Base price"
 									placeholder="1200"
-									description="Price per night in PHP"
-								/>
-							)}
-						</form.AppField>
-
-						<form.AppField name="status">
-							{(field) => (
-								<field.SelectField
-									label="Status"
-									options={roomStatusValues.map((s) => ({
-										value: s,
-										label: s.replace(/_/g, " "),
-									}))}
+									min={1}
+									max={9999999}
 								/>
 							)}
 						</form.AppField>
