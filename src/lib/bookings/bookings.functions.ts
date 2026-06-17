@@ -274,8 +274,10 @@ export const createBooking = createServerFn({ method: "POST" })
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
-		);
-		const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000);
+		).toISOString();
+		const finalDueDate = new Date(
+			checkOut.getTime() + 7 * 24 * 60 * 60 * 1000,
+		).toISOString();
 
 		const bookingRef = generateBookingRef();
 		const status = data.walkIn ? "CHECKED_IN" : "RESERVED";
@@ -291,8 +293,8 @@ export const createBooking = createServerFn({ method: "POST" })
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
 					address: data.address,
-					checkIn: new Date(data.checkIn),
-					checkOut: new Date(data.checkOut),
+					checkIn: new Date(data.checkIn).toISOString(),
+					checkOut: new Date(data.checkOut).toISOString(),
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
@@ -609,8 +611,8 @@ export const transferBooking = createServerFn({ method: "POST" })
 					lastName: booking.lastName,
 					contactNumber: booking.contactNumber,
 					address: booking.address ?? "",
-					checkIn: new Date(booking.checkIn ?? ""),
-					checkOut: new Date(booking.checkOut ?? ""),
+					checkIn: new Date(booking.checkIn ?? "").toISOString(),
+					checkOut: new Date(booking.checkOut ?? "").toISOString(),
 					occupantsCount: booking.occupantsCount,
 					status: "CHECKED_IN",
 					paymentStatus: "PAID_IN_FULL",

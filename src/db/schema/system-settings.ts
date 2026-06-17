@@ -22,5 +22,5 @@ export const systemSettings = pgTable("system_settings", {
 	taxRate: decimal("tax_rate", { precision: 5, scale: 2 })
 		.default("0")
 		.notNull(),
-	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });

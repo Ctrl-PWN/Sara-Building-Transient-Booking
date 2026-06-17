@@ -76,6 +76,6 @@ export const deleteRoom = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		await db
 			.update(rooms)
-			.set({ deletedAt: new Date() })
+			.set({ deletedAt: new Date().toISOString() })
 			.where(eq(rooms.id, data.id));
 	});

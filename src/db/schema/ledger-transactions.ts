@@ -22,5 +22,5 @@ export const ledgerTransactions = pgTable("ledger_transactions", {
 	description: text("description"),
 	paymentMethod: paymentMethodEnum("payment_method"),
 	referenceNumber: varchar("reference_number"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
+	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });
