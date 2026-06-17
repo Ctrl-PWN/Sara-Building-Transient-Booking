@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { roomStatusValues } from "@/db/schema/enums";
 
 export const createRoomSchema = z.object({
 	roomNumber: z
@@ -43,6 +44,7 @@ export const updateRoomSchema = z.object({
 		.positive("Base price must be a positive number")
 		.max(9999999, "Base price is too large")
 		.optional(),
+	status: z.enum(roomStatusValues).optional(),
 });
 
 export const deleteRoomSchema = z.object({

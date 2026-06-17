@@ -69,6 +69,7 @@ export const updateRoom = createServerFn({ method: "POST" })
 		if (data.capacity !== undefined) updateData.capacity = data.capacity;
 		if (data.basePrice !== undefined)
 			updateData.basePrice = data.basePrice.toString();
+		if (data.status !== undefined) updateData.status = data.status;
 
 		const [room] = await db
 			.update(rooms)
