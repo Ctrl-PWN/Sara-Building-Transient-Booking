@@ -1,6 +1,6 @@
+import { sql } from "drizzle-orm";
 import {
 	boolean,
-	date,
 	foreignKey,
 	index,
 	integer,
@@ -25,26 +25,18 @@ export const bookingStatus = pgEnum("booking_status", [
 	"CHECKED_OUT",
 	"CANCELLED",
 	"EVICTED",
+	"TRANSFERRED",
 ]);
 export const ledgerTransactionCategory = pgEnum("ledger_transaction_category", [
 	"ROOM_CHARGE",
 	"DEPOSIT",
 	"PAYMENT",
 	"REFUND",
-	"LATE_FEE",
-	"ADJUSTMENT",
-]);
-export const ledgerTransactionType = pgEnum("ledger_transaction_type", [
-	"DEPOSIT",
-	"PAYMENT",
-	"REFUND",
-	"ADJUSTMENT",
 ]);
 export const paymentMethod = pgEnum("payment_method", [
 	"CASH",
-	"CARD",
-	"BANK_TRANSFER",
 	"GCASH",
+	"BANK_TRANSFER",
 ]);
 export const roomStatus = pgEnum("room_status", [
 	"AVAILABLE",
@@ -52,7 +44,7 @@ export const roomStatus = pgEnum("room_status", [
 	"OUT_OF_ORDER",
 	"OCCUPIED",
 ]);
-export const userRole = pgEnum("user_role", ["ADMIN", "STAFF"]);
+export const userRole = pgEnum("user_role", ["admin", "staff"]);
 
 export const verification = pgTable(
 	"verification",
@@ -112,6 +104,55 @@ export const account = pgTable(
 	],
 );
 
+export const bookings = pgTable(
+	"bookings",
+	{
+		id: serial().primaryKey().notNull(),
+		bookingRef: varchar("booking_ref").notNull(),
+		roomId: integer("room_id").notNull(),
+		contactNumber: varchar("contact_number"),
+		occupantsCount: integer("occupants_count").notNull(),
+		status: bookingStatus().default("RESERVED").notNull(),
+		paymentStatus: bookingPaymentStatus("payment_status")
+			.default("CURRENT")
+			.notNull(),
+		depositDeadline: timestamp("deposit_deadline", {
+			withTimezone: true,
+			mode: "string",
+		}).notNull(),
+		finalDueDate: timestamp("final_due_date", {
+			withTimezone: true,
+			mode: "string",
+		}),
+		depositPctSnapshot: numeric("deposit_pct_snapshot", {
+			precision: 5,
+			scale: 2,
+		}).notNull(),
+		cancellationReason: text("cancellation_reason"),
+		cancelledAt: timestamp("cancelled_at", {
+			withTimezone: true,
+			mode: "string",
+		}),
+		createdAt: timestamp("created_at", { mode: "string" })
+			.defaultNow()
+			.notNull(),
+		deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "string" }),
+		firstName: varchar("first_name").notNull(),
+		lastName: varchar("last_name").notNull(),
+		address: text().default(""),
+		checkIn: timestamp("check_in", { withTimezone: true, mode: "string" }),
+		checkOut: timestamp("check_out", { withTimezone: true, mode: "string" }),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "bookings_room_id_rooms_id_fk",
+		}),
+		unique("bookings_booking_ref_unique").on(table.bookingRef),
+	],
+);
+
 export const auditLogs = pgTable("audit_logs", {
 	id: serial().primaryKey().notNull(),
 	entityType: varchar("entity_type").notNull(),
@@ -141,54 +182,6 @@ export const systemSettings = pgTable("system_settings", {
 	updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
 
-export const bookings = pgTable(
-	"bookings",
-	{
-		id: serial().primaryKey().notNull(),
-		bookingRef: varchar("booking_ref").notNull(),
-		roomId: integer("room_id").notNull(),
-		contactNumber: varchar("contact_number"),
-		checkInDate: date("check_in_date").notNull(),
-		checkOutDate: date("check_out_date").notNull(),
-		occupantsCount: integer("occupants_count").notNull(),
-		status: bookingStatus().default("RESERVED").notNull(),
-		paymentStatus: bookingPaymentStatus("payment_status")
-			.default("CURRENT")
-			.notNull(),
-		depositDeadline: timestamp("deposit_deadline", {
-			withTimezone: true,
-			mode: "string",
-		}).notNull(),
-		finalDueDate: timestamp("final_due_date", {
-			withTimezone: true,
-			mode: "string",
-		}),
-		depositPctSnapshot: numeric("deposit_pct_snapshot", {
-			precision: 5,
-			scale: 2,
-		}).notNull(),
-		cancellationReason: text("cancellation_reason"),
-		cancelledAt: timestamp("cancelled_at", {
-			withTimezone: true,
-			mode: "string",
-		}),
-		createdAt: timestamp("created_at", { mode: "string" })
-			.defaultNow()
-			.notNull(),
-		deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "string" }),
-		firstName: varchar("first_name").notNull(),
-		lastName: varchar("last_name").notNull(),
-	},
-	(table) => [
-		foreignKey({
-			columns: [table.roomId],
-			foreignColumns: [rooms.id],
-			name: "bookings_room_id_rooms_id_fk",
-		}),
-		unique("bookings_booking_ref_unique").on(table.bookingRef),
-	],
-);
-
 export const rooms = pgTable(
 	"rooms",
 	{
@@ -211,7 +204,6 @@ export const ledgerTransactions = pgTable(
 	{
 		id: serial().primaryKey().notNull(),
 		bookingId: integer("booking_id").notNull(),
-		type: ledgerTransactionType().notNull(),
 		category: ledgerTransactionCategory().notNull(),
 		amount: numeric({ precision: 19, scale: 4 }).notNull(),
 		description: text(),
@@ -220,6 +212,7 @@ export const ledgerTransactions = pgTable(
 		createdAt: timestamp("created_at", { mode: "string" })
 			.defaultNow()
 			.notNull(),
+		isPaid: boolean("is_paid").default(false).notNull(),
 	},
 	(table) => [
 		foreignKey({
@@ -244,8 +237,14 @@ export const user = pgTable(
 		updatedAt: timestamp("updated_at", { mode: "string" })
 			.defaultNow()
 			.notNull(),
-		role: userRole().default("STAFF").notNull(),
-		isActive: boolean("is_active").default(true).notNull(),
+		role: text().default("STAFF").notNull(),
+		isActive: boolean("is_active").default(true),
+		banned: boolean().default(false),
+		banReason: text("ban_reason"),
+		banExpires: timestamp("ban_expires", { mode: "string" }),
+		firstName: text("first_name").notNull(),
+		lastName: text("last_name").notNull(),
+		phone: text(),
 	},
 	(table) => [unique("user_email_unique").on(table.email)],
 );
@@ -263,6 +262,7 @@ export const session = pgTable(
 		ipAddress: text("ip_address"),
 		userAgent: text("user_agent"),
 		userId: text("user_id").notNull(),
+		impersonatedBy: text("impersonated_by"),
 	},
 	(table) => [
 		index("session_userId_idx").using(

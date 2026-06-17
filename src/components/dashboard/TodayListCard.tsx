@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { formatGuestName } from "@/lib/bookings/types";
 import type { DashboardBookingRow } from "@/lib/dashboard/dashboard.types";
+import { formatManilaDate } from "@/lib/date/manila";
 
 type TodayListCardProps = {
 	title: string;
@@ -45,7 +46,8 @@ export function TodayListCard({
 									</p>
 								</div>
 								<span className="font-body text-xs font-medium text-on-surface-variant group-hover:text-on-surface">
-									{booking.checkInDate} → {booking.checkOutDate}
+									{formatManilaDate(booking.checkIn)} →{" "}
+									{formatManilaDate(booking.checkOut)}
 								</span>
 							</Link>
 						))}
