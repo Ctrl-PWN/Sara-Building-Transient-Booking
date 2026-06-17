@@ -9,7 +9,6 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { roomStatusValues } from "@/db/schema/enums";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { updateRoomSchema } from "@/lib/rooms/schemas";
@@ -35,7 +34,6 @@ export function EditRoomSheet({
 		type: room?.type ?? "",
 		capacity: room?.capacity ?? 0,
 		basePrice: Number(room?.basePrice ?? 0),
-		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
 	};
 
 	const form = useAppForm({
@@ -61,13 +59,10 @@ export function EditRoomSheet({
 			form.setFieldValue("type", room.type);
 			form.setFieldValue("capacity", room.capacity);
 			form.setFieldValue("basePrice", Number(room.basePrice));
-			form.setFieldValue("status", room.status);
 		}
 	}, [room, open, form.setFieldValue]);
 
 	if (!room) return null;
-
-	const isOccupied = room.status === "OCCUPIED";
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -78,12 +73,6 @@ export function EditRoomSheet({
 						Update details for room {room.roomNumber}.
 					</SheetDescription>
 				</SheetHeader>
-
-				{isOccupied ? (
-					<div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mx-4">
-						This room is currently occupied and cannot be edited.
-					</div>
-				) : null}
 
 				<form
 					className="flex flex-col gap-4 px-4"
@@ -99,7 +88,7 @@ export function EditRoomSheet({
 								<field.TextField
 									label="Room number"
 									placeholder="101"
-									disabled={isOccupied}
+									maxLength={3}
 								/>
 							)}
 						</form.AppField>
@@ -109,23 +98,18 @@ export function EditRoomSheet({
 								<field.TextField
 									label="Room type"
 									placeholder="Standard"
-									disabled={isOccupied}
+									maxLength={20}
 								/>
 							)}
 						</form.AppField>
 
 						<form.AppField name="capacity">
 							{(field) => (
-								<field.NumberField label="Capacity" placeholder="2" />
-							)}
-						</form.AppField>
-
-						<form.AppField name="basePrice">
-							{(field) => (
 								<field.NumberField
-									label="Base price"
-									placeholder="1200"
-									description="Price per night in PHP"
+									label="Capacity"
+									placeholder="2"
+									min={1}
+									max={1000}
 								/>
 							)}
 						</form.AppField>
@@ -135,20 +119,8 @@ export function EditRoomSheet({
 								<field.NumberField
 									label="Base price"
 									placeholder="1200"
-									description="Price per night in PHP"
-									disabled={isOccupied}
-								/>
-							)}
-						</form.AppField>
-
-						<form.AppField name="status">
-							{(field) => (
-								<field.SelectField
-									label="Status"
-									options={roomStatusValues.map((s) => ({
-										value: s,
-										label: s.replace(/_/g, " "),
-									}))}
+									min={1}
+									max={9999999}
 								/>
 							)}
 						</form.AppField>
