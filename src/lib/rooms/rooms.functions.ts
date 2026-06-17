@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNull, ne } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/db/index";
 import { bookings, rooms } from "@/db/schema";
@@ -37,6 +37,18 @@ export const createRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.inputValidator(createRoomSchema)
 	.handler(async ({ data }) => {
+		const existing = await db.query.rooms.findFirst({
+			where: and(
+				eq(rooms.roomNumber, data.roomNumber),
+				isNull(rooms.deletedAt),
+			),
+		});
+		if (existing) {
+			throw new Error(
+				"A room with this number already exists",
+			);
+		}
+
 		const [room] = await db
 			.insert(rooms)
 			.values({
@@ -59,8 +71,18 @@ export const updateRoom = createServerFn({ method: "POST" })
 		if (!current) {
 			throw new Error("Room not found");
 		}
-		if (current.status === "OCCUPIED") {
-			throw new Error("Cannot update an occupied room");
+
+		if (data.roomNumber !== undefined && data.roomNumber !== current.roomNumber) {
+			const existing = await db.query.rooms.findFirst({
+				where: and(
+					eq(rooms.roomNumber, data.roomNumber),
+					ne(rooms.id, data.id),
+					isNull(rooms.deletedAt),
+				),
+			});
+			if (existing) {
+				throw new Error("A room with this number already exists");
+			}
 		}
 
 		const updateData: Record<string, unknown> = {};

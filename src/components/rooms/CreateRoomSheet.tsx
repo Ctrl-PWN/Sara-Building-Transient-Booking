@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
 	Sheet,
 	SheetContent,
@@ -28,9 +29,15 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 		},
 		validators: { onSubmit: createRoomSchema },
 		onSubmit: async ({ value }) => {
-			await createRoom.mutateAsync(value);
-			form.reset();
-			onOpenChange(false);
+			try {
+				await createRoom.mutateAsync(value);
+				form.reset();
+				onOpenChange(false);
+			} catch (err) {
+				toast.error(
+					err instanceof Error ? err.message : "Failed to create room",
+				);
+			}
 		},
 	});
 

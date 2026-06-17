@@ -64,8 +64,6 @@ export function EditRoomSheet({
 
 	if (!room) return null;
 
-	const isOccupied = room.status === "OCCUPIED";
-
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent side="right">
@@ -75,12 +73,6 @@ export function EditRoomSheet({
 						Update details for room {room.roomNumber}.
 					</SheetDescription>
 				</SheetHeader>
-
-				{isOccupied ? (
-					<div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mx-4">
-						This room is currently occupied and cannot be edited.
-					</div>
-				) : null}
 
 				<form
 					className="flex flex-col gap-4 px-4"
