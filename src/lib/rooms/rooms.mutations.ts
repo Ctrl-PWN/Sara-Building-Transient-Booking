@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type { z } from "zod";
+import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
 	createRoom,
 	deleteRoom,
@@ -8,7 +9,6 @@ import {
 	updateRoomStatus,
 } from "./rooms.functions";
 import { roomKeys } from "./rooms.queries";
-import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import type {
 	createRoomSchema,
 	deleteRoomSchema,
