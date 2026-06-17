@@ -45,9 +45,7 @@ export const createRoom = createServerFn({ method: "POST" })
 			),
 		});
 		if (existing) {
-			throw new Error(
-				"A room with this number already exists",
-			);
+			throw new Error("A room with this number already exists");
 		}
 
 		const [room] = await db
@@ -73,7 +71,10 @@ export const updateRoom = createServerFn({ method: "POST" })
 			throw new Error("Room not found");
 		}
 
-		if (data.roomNumber !== undefined && data.roomNumber !== current.roomNumber) {
+		if (
+			data.roomNumber !== undefined &&
+			data.roomNumber !== current.roomNumber
+		) {
 			const existing = await db.query.rooms.findFirst({
 				where: and(
 					eq(rooms.roomNumber, data.roomNumber),
