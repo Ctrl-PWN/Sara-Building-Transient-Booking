@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNull } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/db/index";
-import { rooms } from "@/db/schema";
+import { bookings, rooms } from "@/db/schema";
 import { authMiddleware } from "@/lib/require-admin";
 import {
 	createRoomSchema,
@@ -54,6 +54,16 @@ export const updateRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.inputValidator(updateRoomSchema)
 	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+		if (current.status === "OCCUPIED") {
+			throw new Error("Cannot update an occupied room");
+		}
+
 		const updateData: Record<string, unknown> = {};
 		if (data.roomNumber !== undefined) updateData.roomNumber = data.roomNumber;
 		if (data.type !== undefined) updateData.type = data.type;
@@ -74,6 +84,26 @@ export const deleteRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.inputValidator(deleteRoomSchema)
 	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+		if (current.status === "OCCUPIED") {
+			throw new Error("Cannot delete an occupied room");
+		}
+
+		const [result] = await db
+			.select({ bookingCount: count() })
+			.from(bookings)
+			.where(and(eq(bookings.roomId, data.id), isNull(bookings.deletedAt)));
+		if (result.bookingCount > 0) {
+			throw new Error(
+				"Cannot delete a room with existing booking records. Consider disabling the room instead.",
+			);
+		}
+
 		await db
 			.update(rooms)
 			.set({ deletedAt: new Date().toISOString() })
