@@ -23,7 +23,18 @@ export function formatManilaDate(
 	date: Date | string | number,
 	dateFormat = "yyyy-MM-dd",
 ): string {
-	return format(new TZDate(date, MANILA_TZ), dateFormat);
+	const tzDate = toManilaTzDate(date);
+	return format(tzDate, dateFormat);
+}
+
+function toManilaTzDate(date: Date | string | number): TZDate {
+	if (date instanceof Date) {
+		return new TZDate(date, MANILA_TZ);
+	}
+	if (typeof date === "number") {
+		return new TZDate(date, MANILA_TZ);
+	}
+	return new TZDate(date, MANILA_TZ);
 }
 
 export function formatManilaDisplayDate(date: Date | string | number): string {

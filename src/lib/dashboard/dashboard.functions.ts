@@ -131,7 +131,10 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 			...booking,
 			daysOverdue: Math.max(
 				0,
-				differenceInCalendarDays(todayDate, parseManilaDate(booking.checkOut)),
+				differenceInCalendarDays(
+					todayDate,
+					booking.checkOut ? parseManilaDate(booking.checkOut) : todayDate,
+				),
 			),
 		}));
 
