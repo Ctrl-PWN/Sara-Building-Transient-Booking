@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { differenceInCalendarDays } from "date-fns";
 import {
+	type AnyColumn,
 	and,
 	count,
 	eq,
@@ -8,7 +9,6 @@ import {
 	isNull,
 	lt,
 	sql,
-	type AnyColumn,
 } from "drizzle-orm";
 import { z } from "zod";
 
@@ -131,10 +131,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 			...booking,
 			daysOverdue: Math.max(
 				0,
-				differenceInCalendarDays(
-					todayDate,
-					parseManilaDate(booking.checkOut),
-				),
+				differenceInCalendarDays(todayDate, parseManilaDate(booking.checkOut)),
 			),
 		}));
 

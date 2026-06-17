@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { formatGuestName } from "@/lib/bookings/types";
-import { formatManilaDate } from "@/lib/date/manila";
 import type { DashboardBookingRow } from "@/lib/dashboard/dashboard.types";
+import { formatManilaDate } from "@/lib/date/manila";
 
 type TodayListCardProps = {
 	title: string;
