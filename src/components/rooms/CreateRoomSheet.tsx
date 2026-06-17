@@ -6,7 +6,6 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { roomStatusValues } from "@/db/schema/enums";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { createRoomSchema } from "@/lib/rooms/schemas";
@@ -26,7 +25,6 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 			type: "",
 			capacity: 1,
 			basePrice: 0,
-			status: "AVAILABLE" as (typeof roomStatusValues)[number],
 		},
 		validators: { onSubmit: createRoomSchema },
 		onSubmit: async ({ value }) => {
@@ -58,7 +56,7 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 								<field.TextField
 									label="Room number"
 									placeholder="101"
-									description="Unique room identifier"
+									maxLength={3}
 								/>
 							)}
 						</form.AppField>
@@ -68,7 +66,7 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 								<field.TextField
 									label="Room type"
 									placeholder="Standard"
-									description="e.g. Standard, Deluxe, Suite"
+									maxLength={20}
 								/>
 							)}
 						</form.AppField>
@@ -78,7 +76,8 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 								<field.NumberField
 									label="Capacity"
 									placeholder="2"
-									description="Maximum number of guests"
+									min={1}
+									max={9999}
 								/>
 							)}
 						</form.AppField>
@@ -88,19 +87,8 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 								<field.NumberField
 									label="Base price"
 									placeholder="1200"
-									description="Price per night in PHP"
-								/>
-							)}
-						</form.AppField>
-
-						<form.AppField name="status">
-							{(field) => (
-								<field.SelectField
-									label="Status"
-									options={roomStatusValues.map((s) => ({
-										value: s,
-										label: s.replace(/_/g, " "),
-									}))}
+									min={1}
+									max={9999999}
 								/>
 							)}
 						</form.AppField>
