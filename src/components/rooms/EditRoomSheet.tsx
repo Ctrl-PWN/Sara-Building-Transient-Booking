@@ -67,6 +67,8 @@ export function EditRoomSheet({
 
 	if (!room) return null;
 
+	const isOccupied = room.status === "OCCUPIED";
+
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent side="right">
@@ -76,6 +78,12 @@ export function EditRoomSheet({
 						Update details for room {room.roomNumber}.
 					</SheetDescription>
 				</SheetHeader>
+
+				{isOccupied ? (
+					<div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mx-4">
+						This room is currently occupied and cannot be edited.
+					</div>
+				) : null}
 
 				<form
 					className="flex flex-col gap-4 px-4"
@@ -88,13 +96,21 @@ export function EditRoomSheet({
 					<form.AppForm>
 						<form.AppField name="roomNumber">
 							{(field) => (
-								<field.TextField label="Room number" placeholder="101" />
+								<field.TextField
+									label="Room number"
+									placeholder="101"
+									disabled={isOccupied}
+								/>
 							)}
 						</form.AppField>
 
 						<form.AppField name="type">
 							{(field) => (
-								<field.TextField label="Room type" placeholder="Standard" />
+								<field.TextField
+									label="Room type"
+									placeholder="Standard"
+									disabled={isOccupied}
+								/>
 							)}
 						</form.AppField>
 
@@ -110,6 +126,17 @@ export function EditRoomSheet({
 									label="Base price"
 									placeholder="1200"
 									description="Price per night in PHP"
+								/>
+							)}
+						</form.AppField>
+
+						<form.AppField name="basePrice">
+							{(field) => (
+								<field.NumberField
+									label="Base price"
+									placeholder="1200"
+									description="Price per night in PHP"
+									disabled={isOccupied}
 								/>
 							)}
 						</form.AppField>
