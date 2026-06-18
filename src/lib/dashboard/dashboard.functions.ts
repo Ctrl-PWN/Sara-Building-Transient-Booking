@@ -44,7 +44,7 @@ const bookingSelect = {
 };
 
 export const getDashboardMetrics = createServerFn({ method: "GET" })
-	.inputValidator(getDashboardMetricsSchema)
+	.validator(getDashboardMetricsSchema)
 	.handler(async ({ data }): Promise<DashboardMetrics> => {
 		const today = data.date ?? todayIsoInManila();
 		const todayDate = parseManilaDate(today);

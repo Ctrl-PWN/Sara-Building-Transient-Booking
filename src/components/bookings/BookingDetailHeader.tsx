@@ -23,7 +23,14 @@ const isNonRefundable = (depositPctSnapshot: string) =>
 
 const canCancel = (status: string) => ["RESERVED"].includes(status);
 
-const canCheckIn = (status: string) => ["RESERVED"].includes(status);
+const canCheckIn = (status: string, checkIn: string) => {
+	if (status !== "RESERVED") return false;
+	const checkInDate = new Date(checkIn);
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	checkInDate.setHours(0, 0, 0, 0);
+	return today >= checkInDate;
+};
 
 const canCheckOut = (status: string) => ["CHECKED_IN"].includes(status);
 
@@ -32,6 +39,10 @@ const canEvict = (status: string, paymentStatus: string) =>
 
 const canTransfer = (status: string) => status === "CHECKED_IN";
 
+const canExtend = (bookingType: string, status: string) => {
+	return bookingType === "MONTHLY" && status === "CHECKED_IN";
+};
+
 type BookingDetailHeaderProps = {
 	booking: BookingWithRoom;
 	onCancelClick: () => void;
@@ -39,6 +50,7 @@ type BookingDetailHeaderProps = {
 	onCheckIn: () => void;
 	onCheckOut: () => void;
 	onTransferClick: () => void;
+	onExtendClick: () => void;
 };
 
 export function BookingDetailHeader({
@@ -48,6 +60,7 @@ export function BookingDetailHeader({
 	onCheckIn,
 	onCheckOut,
 	onTransferClick,
+	onExtendClick,
 }: BookingDetailHeaderProps) {
 	const displayStatus = computeBookingDisplayStatus(
 		booking.status,
@@ -72,6 +85,9 @@ export function BookingDetailHeader({
 						<Badge variant={statusColorMap[displayStatus]}>
 							{displayStatus.replace("_", " ")}
 						</Badge>
+						<Badge variant="secondary" className="text-[10px] uppercase">
+							{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
+						</Badge>
 						{booking.paymentStatus === "OVERDUE" && (
 							<Badge variant="destructive">OVERDUE</Badge>
 						)}
@@ -82,6 +98,14 @@ export function BookingDetailHeader({
 					<p className="text-muted-foreground">
 						Guest: {booking.firstName} {booking.lastName}
 					</p>
+					{booking.transferredFromBookingRef && (
+						<p className="text-sm text-muted-foreground mt-1">
+							Transferred from:{" "}
+							<span className="font-medium text-foreground">
+								{booking.transferredFromBookingRef}
+							</span>
+						</p>
+					)}
 				</div>
 				<div className="flex gap-2">
 					{canCancel(booking.status) && (
@@ -89,7 +113,7 @@ export function BookingDetailHeader({
 							Cancel
 						</Button>
 					)}
-					{canCheckIn(booking.status) && (
+					{canCheckIn(booking.status, booking.checkIn) && (
 						<Button onClick={onCheckIn}>Check In</Button>
 					)}
 					{canCheckOut(booking.status) && (
@@ -103,6 +127,11 @@ export function BookingDetailHeader({
 					{canTransfer(booking.status) && (
 						<Button variant="outline" onClick={onTransferClick}>
 							Transfer
+						</Button>
+					)}
+					{canExtend(booking.bookingType, booking.status) && (
+						<Button variant="outline" onClick={onExtendClick}>
+							Extend
 						</Button>
 					)}
 				</div>

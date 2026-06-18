@@ -1,7 +1,11 @@
 import type { bookings } from "@/db/schema";
-import type { BookingPaymentStatus, BookingStatus } from "@/db/schema/enums";
+import type {
+	BookingPaymentStatus,
+	BookingStatus,
+	BookingType,
+} from "@/db/schema/enums";
 
-export type { BookingPaymentStatus, BookingStatus };
+export type { BookingPaymentStatus, BookingStatus, BookingType };
 
 export type BookingWithRoom = {
 	id: number;
@@ -14,11 +18,14 @@ export type BookingWithRoom = {
 	roomNumber: string;
 	roomType: string;
 	roomBasePrice: string | null;
+	roomMonthlyPrice: string | null;
+	transferredFromBookingRef: string | null;
 	checkIn: string;
 	checkOut: string;
 	occupantsCount: number;
 	status: BookingStatus;
 	paymentStatus: BookingPaymentStatus;
+	bookingType: BookingType;
 	depositDeadline: string | Date | null;
 	finalDueDate: string | Date | null;
 	depositPctSnapshot: string;

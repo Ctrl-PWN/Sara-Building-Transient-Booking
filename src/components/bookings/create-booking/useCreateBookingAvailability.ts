@@ -121,10 +121,12 @@ export function useCreateBookingAvailability({
 	rooms,
 	bookings,
 	walkIn,
+	bookingType,
 }: {
 	rooms: Room[];
 	bookings: BookingWithRoom[];
 	walkIn: boolean;
+	bookingType: "DAILY" | "MONTHLY";
 }) {
 	const bookedDaysByRoom = buildBookedDaysByRoom(bookings);
 
@@ -179,7 +181,7 @@ export function useCreateBookingAvailability({
 
 		let statusTag = "";
 		if (room.status !== "AVAILABLE") {
-			statusTag = ` [${room.status}]`;
+			statusTag = "";
 		} else if (walkIn && isWalkInBlocked) {
 			const activeBooking = roomBookings.find((b) => {
 				const bCheckIn = new Date(b.checkIn);
@@ -187,7 +189,7 @@ export function useCreateBookingAvailability({
 				return bCheckIn <= now && bCheckOut > now;
 			});
 			if (activeBooking?.status === "CHECKED_IN") {
-				statusTag = " [OCCUPIED]";
+				statusTag = "";
 			} else {
 				const todayBooking = roomBookings.find((b) => {
 					const bStart = new Date(b.checkIn);
@@ -199,7 +201,7 @@ export function useCreateBookingAvailability({
 					: "";
 			}
 		} else if (!walkIn && hasActiveBooking) {
-			statusTag = " [OCCUPIED]";
+			statusTag = "";
 		} else if (walkIn && hasFutureReservation && isBookedToday) {
 			const futureBooking = roomBookings.find((b) => {
 				const bStart = new Date(b.checkIn);
@@ -219,12 +221,20 @@ export function useCreateBookingAvailability({
 				: "";
 		}
 
+		const isMonthlyDisabled = bookingType === "MONTHLY" && !room.monthlyPrice;
+
+		const priceLabel =
+			bookingType === "MONTHLY" && room.monthlyPrice
+				? `₱${Number(room.monthlyPrice).toFixed(0)}/mo`
+				: `₱${Number(room.basePrice).toFixed(2)}/day`;
+
 		return {
 			value: room.id.toString(),
-			label: `${room.roomNumber} - ${room.type} (₱${Number(room.basePrice).toFixed(2)})${statusTag}`,
+			label: `${room.roomNumber} - ${room.type} (${priceLabel})${statusTag}${isMonthlyDisabled ? " [NO MONTHLY RATE]" : ""}`,
 			disabled:
 				["MAINTENANCE", "OUT_OF_ORDER"].includes(room.status) ||
-				(walkIn && isWalkInBlocked),
+				(walkIn && isWalkInBlocked) ||
+				isMonthlyDisabled,
 		};
 	});
 
