@@ -12,8 +12,6 @@ const COLORS = {
 	text: "#1a1c1b",
 	muted: "#6b7280",
 	border: "#e5e7eb",
-	emerald: "#059669",
-	amber: "#d97706",
 	paidBg: "#f5dcbe",
 	paidFg: "#725f48",
 	unpaidBorder: "#d1d5db",
@@ -124,15 +122,9 @@ const styles = StyleSheet.create({
 	},
 	cellStatus: { width: "15%", alignItems: "flex-end" },
 	descTitle: { fontSize: 10, fontWeight: 500, color: COLORS.text },
-	descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
+descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
 	cellMuted: { fontSize: 10, color: COLORS.muted },
 	cellText: { fontSize: 10, color: COLORS.text },
-	empty: {
-		paddingVertical: 40,
-		textAlign: "center",
-		fontSize: 10,
-		color: COLORS.muted,
-	},
 	paidPill: {
 		backgroundColor: COLORS.paidBg,
 		color: COLORS.paidFg,
@@ -163,9 +155,9 @@ const styles = StyleSheet.create({
 		paddingVertical: 4,
 	},
 	totalsLabel: { fontSize: 10, color: COLORS.muted },
-	totalsValue: { fontSize: 10, fontWeight: 500, color: COLORS.text },
-	totalsValueEmerald: { fontSize: 10, fontWeight: 500, color: COLORS.emerald },
-	totalsDivider: {
+totalsValue: { fontSize: 10, fontWeight: 500, color: COLORS.text },
+totalsValueEmerald: { fontSize: 10, fontWeight: 500, color: COLORS.emerald },
+totalsDivider: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		paddingTop: 8,
@@ -174,8 +166,8 @@ const styles = StyleSheet.create({
 		borderTopColor: COLORS.border,
 	},
 	totalsBalanceLabel: { fontSize: 11, fontWeight: 600, color: COLORS.text },
-	totalsBalanceValue: { fontSize: 11, fontWeight: 600, color: COLORS.emerald },
-	totalsBalanceValueAmber: {
+totalsBalanceValue: { fontSize: 11, fontWeight: 600, color: COLORS.emerald },
+totalsBalanceValueAmber: {
 		fontSize: 11,
 		fontWeight: 600,
 		color: COLORS.amber,
@@ -221,7 +213,7 @@ export function InvoiceDocument({
 			author="Sara Building Transient"
 			subject={`Invoice for ${formatGuestName(booking)}`}
 		>
-			<Page size="A4" style={styles.page}>
+			<Page size="A4" style={styles.page} wrap={false}>
 				<View style={styles.header} fixed>
 					<View>
 						<Text style={styles.title}>Invoice</Text>
@@ -244,15 +236,16 @@ export function InvoiceDocument({
 						{booking.contactNumber ? (
 							<Text style={styles.sectionSub}>{booking.contactNumber}</Text>
 						) : null}
+						<Text style={styles.sectionLabel}>
+							Check-out:
+						</Text>
+						<Text style={styles.sectionValue}>
+							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
+						</Text>
 					</View>
 					<View style={styles.gridColRight}>
 						<Text style={styles.sectionLabel}>Booking</Text>
 						<Text style={styles.sectionValue}>{booking.bookingRef}</Text>
-						<Text style={styles.sectionSub}>
-							Room {booking.roomNumber} ·{" "}
-							{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")} —{" "}
-							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
-						</Text>
 					</View>
 				</View>
 
@@ -261,7 +254,6 @@ export function InvoiceDocument({
 						<Text style={[styles.tableHeaderCell, styles.thDescription]}>
 							Description
 						</Text>
-
 						<Text style={[styles.tableHeaderCell, styles.thPayment]}>
 							Payment
 						</Text>
@@ -269,7 +261,7 @@ export function InvoiceDocument({
 							Reference
 						</Text>
 						<Text style={[styles.tableHeaderCell, styles.thAmount]}>
-							Amount
+							Price
 						</Text>
 						<Text style={[styles.tableHeaderCell, styles.thStatus]}>
 							Status
@@ -296,16 +288,16 @@ export function InvoiceDocument({
 									wrap={false}
 								>
 									{tx.referenceNumber ?? "—"}
-								</Text>
-								<Text style={[styles.cellAmount, styles.cellText]}>
-									{formatPeso(Number(tx.amount))}
-								</Text>
-								<View style={styles.cellStatus}>
-									{tx.isPaid ? (
-										<Text style={styles.paidPill}>Paid</Text>
-									) : (
-										<Text style={styles.unpaidPill}>Unpaid</Text>
-									)}
+									</Text>
+									<Text style={[styles.cellAmount, styles.cellText]}>
+										{formatPeso(Number(tx.amount))}
+									</Text>
+									<View style={styles.cellStatus}>
+										{tx.isPaid ? (
+											<Text style={styles.paidPill}>Paid</Text>
+										) : (
+											<Text style={styles.unpaidPill}>Unpaid</Text>
+										)}
 								</View>
 							</View>
 						))
