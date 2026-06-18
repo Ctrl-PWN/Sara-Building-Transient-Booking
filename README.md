@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-Welcome to your new TanStack Start app! 
+Welcome to your new TanStack Start app!
 
 # Getting Started
 
@@ -41,7 +40,6 @@ If you prefer not to use Tailwind CSS:
 
 ## Linting & Formatting
 
-
 This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
 
 ```bash
@@ -49,7 +47,6 @@ npm run lint
 npm run format
 npm run check
 ```
-
 
 ## Deploy with Nitro
 
@@ -64,7 +61,6 @@ The build output is a self-contained Node server. To deploy, push the `dist/` di
 
 For host-specific presets (Vercel, Netlify, Cloudflare, AWS Lambda, etc.) and tuning, see https://v3.nitro.build/deploy.
 
-
 ## Setting up Neon
 
 When running the `dev` command, `vite-plugin-neon-new` will identify there is not a database setup. It will then create and seed a claimable database.
@@ -74,7 +70,6 @@ It is the same process as [Neon Launchpad](https://neon.new).
 > [!IMPORTANT]  
 > Claimable databases expire in 72 hours.
 
-
 ## Shadcn
 
 Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
@@ -82,7 +77,6 @@ Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
 ```bash
 pnpm dlx shadcn@latest add button
 ```
-
 
 ## Setting up Better Auth
 
@@ -100,15 +94,15 @@ Better Auth can work in stateless mode, but to persist user data, add a database
 
 ```typescript
 // src/lib/auth.ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { betterAuth } from 'better-auth'
+import { Pool } from 'pg'
 
 export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
   // ... rest of config
-});
+})
 ```
 
 Then run migrations:
@@ -116,8 +110,6 @@ Then run migrations:
 ```bash
 npx -y @better-auth/cli migrate
 ```
-
-
 
 ## Routing
 
@@ -136,7 +128,7 @@ Now that you have two routes you can use a `Link` component to navigate between 
 To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
 
 ```tsx
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router'
 ```
 
 Then anywhere in your JSX you can use it like so:
@@ -204,11 +196,11 @@ const getServerTime = createServerFn({
 // Use in a component
 function MyComponent() {
   const [time, setTime] = useState('')
-  
+
   useEffect(() => {
     getServerTime().then(setTime)
   }, [])
-  
+
   return <div>Server time: {time}</div>
 }
 ```
@@ -269,7 +261,8 @@ Files prefixed with `demo` can be safely deleted. They are there to provide a st
 
 You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
 
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
-=======
+# For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+
 # Sara-Building-Transient-Booking
->>>>>>> 1a9d4ca1b9291282a8f415f1b7e87cd60b5b197e
+
+> > > > > > > 1a9d4ca1b9291282a8f415f1b7e87cd60b5b197e

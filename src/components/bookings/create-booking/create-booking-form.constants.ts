@@ -1,0 +1,67 @@
+import {
+	BankIcon,
+	CalendarBlankIcon,
+	ClockIcon,
+	DeviceMobileIcon,
+	MoneyIcon,
+	PercentIcon,
+} from "@phosphor-icons/react";
+
+import { paymentMethodValues } from "@/db/schema/enums";
+
+// biome-ignore lint/suspicious/useIterableCallbackReturn: all enum branches covered, no default needed
+export const paymentMethodOptions = paymentMethodValues.map((method) => {
+	switch (method) {
+		case "CASH":
+			return {
+				value: method,
+				title: "Cash",
+				description: "Pay in person at the front desk",
+				icon: MoneyIcon,
+			};
+		case "GCASH":
+			return {
+				value: method,
+				title: "GCash",
+				description: "Mobile payment — reference number required",
+				icon: DeviceMobileIcon,
+			};
+		case "BANK_TRANSFER":
+			return {
+				value: method,
+				title: "Bank transfer",
+				description: "Direct bank deposit — reference number required",
+				icon: BankIcon,
+			};
+	}
+});
+
+export const reservationFeeTypeOptions = [
+	{
+		value: "PERCENT",
+		title: "Percent of total",
+		description: "Charge a percentage of the stay total",
+		icon: PercentIcon,
+	},
+	{
+		value: "FIXED",
+		title: "Fixed amount",
+		description: "Charge a flat peso amount",
+		icon: MoneyIcon,
+	},
+] as const;
+
+export const bookingTypeOptions = [
+	{
+		value: "DAILY" as const,
+		title: "Daily",
+		description: "Per-night stay with specific check-in/check-out dates",
+		icon: ClockIcon,
+	},
+	{
+		value: "MONTHLY" as const,
+		title: "Monthly",
+		description: "Monthly rental with start month and duration",
+		icon: CalendarBlankIcon,
+	},
+] as const;

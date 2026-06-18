@@ -1,0 +1,508 @@
+{
+	"id": "cdcc7c89-cd98-41c2-a4bc-7b046f197118",
+	"prevId": "82e3dd84-07d9-472a-b72b-1aab086afcb5",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.audit_logs": {
+			"name": "audit_logs",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"entity_type": {
+					"name": "entity_type",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"entity_id": {
+					"name": "entity_id",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"action": {
+					"name": "action",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"old_value": {
+					"name": "old_value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"new_value": {
+					"name": "new_value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"performed_by": {
+					"name": "performed_by",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.bookings": {
+			"name": "bookings",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"booking_ref": {
+					"name": "booking_ref",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"first_name": {
+					"name": "first_name",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_name": {
+					"name": "last_name",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"contact_number": {
+					"name": "contact_number",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"check_in_date": {
+					"name": "check_in_date",
+					"type": "date",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"check_out_date": {
+					"name": "check_out_date",
+					"type": "date",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"occupants_count": {
+					"name": "occupants_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'RESERVED'"
+				},
+				"payment_status": {
+					"name": "payment_status",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'CURRENT'"
+				},
+				"deposit_deadline": {
+					"name": "deposit_deadline",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"final_due_date": {
+					"name": "final_due_date",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"deposit_pct_snapshot": {
+					"name": "deposit_pct_snapshot",
+					"type": "numeric(5, 2)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"cancellation_reason": {
+					"name": "cancellation_reason",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"cancelled_at": {
+					"name": "cancelled_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"bookings_room_id_rooms_id_fk": {
+					"name": "bookings_room_id_rooms_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "rooms",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"bookings_booking_ref_unique": {
+					"name": "bookings_booking_ref_unique",
+					"nullsNotDistinct": false,
+					"columns": ["booking_ref"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.system_settings": {
+			"name": "system_settings",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"deposit_percentage": {
+					"name": "deposit_percentage",
+					"type": "numeric(5, 2)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"deposit_deadline_hours": {
+					"name": "deposit_deadline_hours",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"grace_period_days": {
+					"name": "grace_period_days",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"property_name": {
+					"name": "property_name",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"property_address": {
+					"name": "property_address",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"contact_phone": {
+					"name": "contact_phone",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"currency_symbol": {
+					"name": "currency_symbol",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'$'"
+				},
+				"tax_rate": {
+					"name": "tax_rate",
+					"type": "numeric(5, 2)",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'0'"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.rooms": {
+			"name": "rooms",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"room_number": {
+					"name": "room_number",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"capacity": {
+					"name": "capacity",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"base_price": {
+					"name": "base_price",
+					"type": "numeric(19, 4)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'AVAILABLE'"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"rooms_room_number_unique": {
+					"name": "rooms_room_number_unique",
+					"nullsNotDistinct": false,
+					"columns": ["room_number"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.ledger_transactions": {
+			"name": "ledger_transactions",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"booking_id": {
+					"name": "booking_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"category": {
+					"name": "category",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"amount": {
+					"name": "amount",
+					"type": "numeric(19, 4)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"payment_method": {
+					"name": "payment_method",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"reference_number": {
+					"name": "reference_number",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"ledger_transactions_booking_id_bookings_id_fk": {
+					"name": "ledger_transactions_booking_id_bookings_id_fk",
+					"tableFrom": "ledger_transactions",
+					"tableTo": "bookings",
+					"columnsFrom": ["booking_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.users": {
+			"name": "users",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"password": {
+					"name": "password",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'STAFF'"
+				},
+				"is_active": {
+					"name": "is_active",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"users_email_unique": {
+					"name": "users_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

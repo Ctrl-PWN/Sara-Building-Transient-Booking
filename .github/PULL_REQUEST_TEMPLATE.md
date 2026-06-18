@@ -1,6 +1,7 @@
 # Pull Request Template
 
 ## Description
+
 Briefly describe the purpose of this PR.
 
 - What feature, fix, or improvement does this introduce?
@@ -9,11 +10,13 @@ Briefly describe the purpose of this PR.
 ---
 
 ## Related Issue / Ticket
+
 Closes #
 
 ---
 
 ## Type of Change
+
 Please delete options that are not relevant.
 
 - [ ] New Feature
@@ -27,15 +30,15 @@ Please delete options that are not relevant.
 ---
 
 ## Changes Made
+
 List the major changes included in this PR.
 
-- 
-- 
-- 
-
----
+-
+-
+- ***
 
 ## Testing
+
 Describe the tests you ran and how to verify the changes.
 
 - [ ] Unit Tests
@@ -44,6 +47,7 @@ Describe the tests you ran and how to verify the changes.
 - [ ] Responsive Testing
 
 ### Test Notes
+
 ```bash
 # Example commands
 npm run test
