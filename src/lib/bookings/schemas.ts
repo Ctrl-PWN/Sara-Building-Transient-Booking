@@ -86,7 +86,11 @@ export const createBookingFormSchema = z
 					path: ["reservationFeeValue"],
 				});
 			}
-			if (data.reservationFeeType === "PERCENT" && data.reservationFeeValue != null && data.reservationFeeValue > 100) {
+			if (
+				data.reservationFeeType === "PERCENT" &&
+				data.reservationFeeValue != null &&
+				data.reservationFeeValue > 100
+			) {
 				ctx.addIssue({
 					code: "custom",
 					message: "Percentage fee cannot exceed 100%",
@@ -124,7 +128,11 @@ export const createBookingFormSchema = z
 				});
 			}
 			// Validate cash advance if provided
-			if (data.cashAdvanceType === "PERCENT" && data.cashAdvanceValue != null && data.cashAdvanceValue > 100) {
+			if (
+				data.cashAdvanceType === "PERCENT" &&
+				data.cashAdvanceValue != null &&
+				data.cashAdvanceValue > 100
+			) {
 				ctx.addIssue({
 					code: "custom",
 					message: "Percentage cash advance cannot exceed 100%",

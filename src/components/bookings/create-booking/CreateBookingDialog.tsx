@@ -130,7 +130,11 @@ export function CreateBookingDialog({
 			let depositPercentage = 0;
 
 			if (isMonthly) {
-				const dates = computeMonthlyDates(value.checkInDate, value.checkInTime, 1);
+				const dates = computeMonthlyDates(
+					value.checkInDate,
+					value.checkInTime,
+					1,
+				);
 				checkIn = dates.checkIn;
 				checkOut = dates.checkOut;
 
@@ -143,15 +147,14 @@ export function CreateBookingDialog({
 				const monthlyPrice = Number(selectedRoom?.monthlyPrice) || 0;
 				const subtotal = monthlyPrice;
 				const depositAmount =
-					feeType === "PERCENT"
-						? (subtotal * feeValue) / 100
-						: feeValue;
-				depositPercentage =
-					subtotal > 0 ? (depositAmount / subtotal) * 100 : 0;
+					feeType === "PERCENT" ? (subtotal * feeValue) / 100 : feeValue;
+				depositPercentage = subtotal > 0 ? (depositAmount / subtotal) * 100 : 0;
 			} else {
 				checkIn = `${value.checkInDate}T${value.checkInTime}`;
 				checkOut = `${value.checkOutDate}T${value.checkOutTime}`;
-				feeType = value.walkIn ? "PERCENT" : (value.reservationFeeType ?? "PERCENT");
+				feeType = value.walkIn
+					? "PERCENT"
+					: (value.reservationFeeType ?? "PERCENT");
 				feeValue = value.walkIn ? 0 : (value.reservationFeeValue ?? 0);
 				depositPercentage = value.walkIn
 					? 100
@@ -198,7 +201,10 @@ export function CreateBookingDialog({
 	const selectedRoomId = useSelector(form.store, (s) => s.values.roomId);
 	const bookingType = useSelector(form.store, (s) => s.values.bookingType);
 	const formCheckInDate = useSelector(form.store, (s) => s.values.checkInDate);
-	const formCheckOutDate = useSelector(form.store, (s) => s.values.checkOutDate);
+	const formCheckOutDate = useSelector(
+		form.store,
+		(s) => s.values.checkOutDate,
+	);
 
 	const { roomOptions, getBookedDatesForRoom } = useCreateBookingAvailability({
 		rooms,
@@ -240,9 +246,7 @@ export function CreateBookingDialog({
 	const canProceed =
 		(step === 1 && !!selectedRoomId) ||
 		(step === 2 &&
-			(isMonthly
-				? hasCheckInDate
-				: hasCheckInDate && !!formCheckOutDate));
+			(isMonthly ? hasCheckInDate : hasCheckInDate && !!formCheckOutDate));
 
 	const handleNext = () => {
 		if (step === 1 && selectedRoomId) {

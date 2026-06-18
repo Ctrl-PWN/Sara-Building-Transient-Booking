@@ -76,9 +76,9 @@ export function CreateBookingStayFields({
 			? getLatestCheckOutTime(bookings, roomIdNum, checkOutDate)
 			: null;
 
-		const isMonthly = bookingType === "MONTHLY";
+	const isMonthly = bookingType === "MONTHLY";
 
-		return (
+	return (
 		<>
 			{step === 1 && (
 				<>
@@ -169,52 +169,55 @@ export function CreateBookingStayFields({
 				</>
 			)}
 
-		{step === 2 && isMonthly && (
-			<>
-				<form.AppField name="checkInDate">
-					{(field) => (
-						<Field>
-							<FieldLabel htmlFor={field.name}>Check-in Date</FieldLabel>
-							<Input
-								id={field.name}
-								name={field.name}
-								type="date"
-								value={field.state.value as string}
-								min={(() => {
-									const today = new Date();
-									const y = today.getFullYear();
-									const m = String(today.getMonth() + 1).padStart(2, "0");
-									const d = String(today.getDate()).padStart(2, "0");
-									return `${y}-${m}-${d}`;
-								})()}
-								onBlur={field.handleBlur}
-								onChange={(e) => {
-									field.handleChange(e.target.value);
-									if (e.target.value) {
-										const newCheckOut = computeMonthlyCheckOut(e.target.value, 1);
-										form.setFieldValue("checkOutDate", newCheckOut);
-									}
-								}}
-							/>
-						</Field>
+			{step === 2 && isMonthly && (
+				<>
+					<form.AppField name="checkInDate">
+						{(field) => (
+							<Field>
+								<FieldLabel htmlFor={field.name}>Check-in Date</FieldLabel>
+								<Input
+									id={field.name}
+									name={field.name}
+									type="date"
+									value={field.state.value as string}
+									min={(() => {
+										const today = new Date();
+										const y = today.getFullYear();
+										const m = String(today.getMonth() + 1).padStart(2, "0");
+										const d = String(today.getDate()).padStart(2, "0");
+										return `${y}-${m}-${d}`;
+									})()}
+									onBlur={field.handleBlur}
+									onChange={(e) => {
+										field.handleChange(e.target.value);
+										if (e.target.value) {
+											const newCheckOut = computeMonthlyCheckOut(
+												e.target.value,
+												1,
+											);
+											form.setFieldValue("checkOutDate", newCheckOut);
+										}
+									}}
+								/>
+							</Field>
+						)}
+					</form.AppField>
+
+					<form.AppField name="checkInTime">
+						{(field) => <field.TimeField label="Check-in Time" />}
+					</form.AppField>
+
+					{checkInDate && (
+						<p className="text-xs text-muted-foreground">
+							Check-out:{" "}
+							<span className="font-medium text-foreground">
+								{formatDateDisplay(computeMonthlyCheckOut(checkInDate, 1))}
+							</span>{" "}
+							(1 month)
+						</p>
 					)}
-				</form.AppField>
-
-				<form.AppField name="checkInTime">
-					{(field) => <field.TimeField label="Check-in Time" />}
-				</form.AppField>
-
-				{checkInDate && (
-					<p className="text-xs text-muted-foreground">
-						Check-out:{" "}
-						<span className="font-medium text-foreground">
-							{formatDateDisplay(computeMonthlyCheckOut(checkInDate, 1))}
-						</span>
-						{" "} (1 month)
-					</p>
-				)}
-			</>
-		)}
+				</>
+			)}
 
 			{step === 3 && (
 				<>

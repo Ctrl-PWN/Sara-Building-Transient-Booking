@@ -1,4 +1,8 @@
-import { MagnifyingGlassIcon, PlusIcon, ArrowClockwiseIcon } from "@phosphor-icons/react";
+import {
+	ArrowClockwiseIcon,
+	MagnifyingGlassIcon,
+	PlusIcon,
+} from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import Fuse from "fuse.js";
