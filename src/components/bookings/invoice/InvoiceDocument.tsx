@@ -15,6 +15,8 @@ const COLORS = {
 	paidBg: "#f5dcbe",
 	paidFg: "#725f48",
 	unpaidBorder: "#d1d5db",
+	emerald: "#047857",
+	amber: "#b45309",
 };
 
 const styles = StyleSheet.create({
@@ -87,6 +89,12 @@ const styles = StyleSheet.create({
 	},
 	tableSection: {
 		paddingVertical: 20,
+	},
+	empty: {
+		paddingVertical: 16,
+		fontSize: 10,
+		color: COLORS.muted,
+		textAlign: "center",
 	},
 	tableHeader: {
 		flexDirection: "row",

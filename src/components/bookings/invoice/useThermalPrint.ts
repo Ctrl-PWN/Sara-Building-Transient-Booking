@@ -1,11 +1,14 @@
-import { useCallback, useRef, useState } from "react";
+import type { DocumentProps } from "@react-pdf/renderer";
+import { type ReactElement, useCallback, useRef, useState } from "react";
 
 type PrintStatus = "idle" | "preparing" | "ready" | "printing" | "error";
+
+type PrintableDocument = ReactElement<DocumentProps>;
 
 type UseThermalPrintResult = {
 	status: PrintStatus;
 	error: string | null;
-	print: (element: React.ReactElement) => Promise<void>;
+	print: (element: PrintableDocument) => Promise<void>;
 	reset: () => void;
 };
 
@@ -36,7 +39,7 @@ export function useThermalPrint(): UseThermalPrintResult {
 	}, [cleanup]);
 
 	const print = useCallback(
-		async (element: React.ReactElement) => {
+		async (element: PrintableDocument) => {
 			setError(null);
 			setStatus("preparing");
 			let blobUrl: string | null = null;
