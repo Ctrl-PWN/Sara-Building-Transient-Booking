@@ -40,23 +40,14 @@ const statusColorMap: Record<
 	TRANSFERRED: "secondary",
 };
 
-type StatusOption = {
-	value: string;
-	label: string;
-};
-
 type BookingsTableProps = {
 	bookings: BookingWithRoom[];
 	searchQuery: string;
 	onSearchChange: (query: string) => void;
 	emptyMessage?: string;
-	roomFilter: string;
-	statusFilter: string;
+	bookingTypeFilter: string;
 	sortBy: SortOption;
-	rooms: { id: number; roomNumber: string; type: string }[];
-	statusOptions: StatusOption[];
-	onRoomFilterChange: (value: string) => void;
-	onStatusFilterChange: (value: string) => void;
+	onBookingTypeFilterChange: (value: string) => void;
 	onSortByChange: (value: SortOption) => void;
 };
 
@@ -65,13 +56,9 @@ export function BookingsTable({
 	searchQuery,
 	onSearchChange,
 	emptyMessage = "No bookings found.",
-	roomFilter,
-	statusFilter,
+	bookingTypeFilter,
 	sortBy,
-	rooms,
-	statusOptions,
-	onRoomFilterChange,
-	onStatusFilterChange,
+	onBookingTypeFilterChange,
 	onSortByChange,
 }: BookingsTableProps) {
 	return (
@@ -92,13 +79,9 @@ export function BookingsTable({
 					</div>
 				</div>
 				<BookingsFilterBar
-					roomFilter={roomFilter}
-					statusFilter={statusFilter}
+					bookingTypeFilter={bookingTypeFilter}
 					sortBy={sortBy}
-					rooms={rooms}
-					statusOptions={statusOptions}
-					onRoomFilterChange={onRoomFilterChange}
-					onStatusFilterChange={onStatusFilterChange}
+					onBookingTypeFilterChange={onBookingTypeFilterChange}
 					onSortByChange={onSortByChange}
 				/>
 			</CardHeader>
@@ -110,6 +93,7 @@ export function BookingsTable({
 							<TableHead>Guest</TableHead>
 							<TableHead>Dates</TableHead>
 							<TableHead>Room</TableHead>
+							<TableHead>Type</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
@@ -119,7 +103,7 @@ export function BookingsTable({
 							<TableRow>
 								<TableCell
 									className="text-center text-muted-foreground py-8"
-									colSpan={6}
+									colSpan={7}
 								>
 									{emptyMessage}
 								</TableCell>
@@ -168,6 +152,14 @@ export function BookingsTable({
 										<span className="text-xs text-muted-foreground ml-2">
 											{booking.roomType}
 										</span>
+									</TableCell>
+									<TableCell>
+										<Badge
+											variant="secondary"
+											className="text-[10px] uppercase"
+										>
+											{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
+										</Badge>
 									</TableCell>
 									<TableCell>
 										<Badge variant={statusColorMap[displayStatus]}>

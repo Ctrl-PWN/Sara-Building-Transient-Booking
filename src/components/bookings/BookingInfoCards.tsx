@@ -15,6 +15,12 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 				</CardHeader>
 				<CardContent className="grid grid-cols-2 gap-y-6">
 					<div>
+						<p className="text-sm text-muted-foreground">Booking Type</p>
+						<p className="font-medium mt-1">
+							{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
+						</p>
+					</div>
+					<div>
 						<p className="text-sm text-muted-foreground">Check-in</p>
 						<p className="font-medium mt-1">
 							{format(new Date(booking.checkIn), "MMMM d, yyyy 'at' HH:mm")}

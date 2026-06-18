@@ -1,7 +1,4 @@
-import {
-	dynamicSchemaValidators,
-	useAppForm,
-} from "@/integrations/tanstack-form";
+import { useAppForm } from "@/integrations/tanstack-form";
 import type { CreateBookingFormValues } from "@/lib/bookings/schemas";
 import {
 	createBookingFormDefaultValues,
@@ -17,7 +14,7 @@ export function useCreateBookingForm({
 }) {
 	return useAppForm({
 		defaultValues: createBookingFormDefaultValues(walkIn),
-		...dynamicSchemaValidators(createBookingFormSchema),
+		validators: { onSubmit: createBookingFormSchema },
 		onSubmit: async ({ value }) => onSubmit(value),
 	});
 }

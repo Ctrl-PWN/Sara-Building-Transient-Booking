@@ -5,6 +5,7 @@ import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
 	createRoom,
 	deleteRoom,
+	syncRoomStatuses,
 	updateRoom,
 	updateRoomStatus,
 } from "./rooms.functions";
@@ -50,6 +51,14 @@ export const roomMutations = {
 		mutationOptions({
 			mutationFn: (input: z.infer<typeof deleteRoomSchema>) =>
 				deleteRoom({ data: input }),
+			onSuccess: () => {
+				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+			},
+		}),
+
+	syncStatuses: (queryClient: QueryClient) =>
+		mutationOptions({
+			mutationFn: () => syncRoomStatuses({ data: undefined }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
 			},
