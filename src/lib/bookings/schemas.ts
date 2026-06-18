@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { bookingPaymentStatusEnum, bookingStatusEnum } from "@/db/schema/enums";
+import {
+	bookingPaymentStatusEnum,
+	bookingStatusEnum,
+	bookingTypeEnum,
+} from "@/db/schema/enums";
 import {
 	ledgerPaymentFieldsShape,
 	paymentMethodSchema,
@@ -13,6 +17,7 @@ export const bookingStatusSchema = z.enum(bookingStatusEnum.enumValues);
 export const bookingPaymentStatusSchema = z.enum(
 	bookingPaymentStatusEnum.enumValues,
 );
+export const bookingTypeSchema = z.enum(bookingTypeEnum.enumValues);
 
 export const reservationFeeTypeSchema = z.enum(["PERCENT", "FIXED"]);
 
@@ -24,95 +29,134 @@ export const timelineSearchSchema = z.object({
 	week: z.string().optional(),
 });
 
-const dateRangeRefine = {
-	check: (data: {
-		checkInDate: string;
-		checkOutDate: string;
-		checkInTime?: string;
-		checkOutTime?: string;
-	}) =>
-		!data.checkInDate ||
-		!data.checkOutDate ||
-		new Date(data.checkOutDate) > new Date(data.checkInDate) ||
-		(data.checkInDate === data.checkOutDate &&
-			(!data.checkInTime ||
-				!data.checkOutTime ||
-				data.checkOutTime > data.checkInTime)),
-	message: "Check-out cannot be before check-in" as const,
-	path: ["checkOutDate"] as const,
-};
+export const createBookingFormSchema = z
+	.object({
+		roomId: z.string().min(1, "Room is required"),
+		firstName: z.string().min(1, "First name is required"),
+		lastName: z.string().min(1, "Last name is required"),
+		contactNumber: z.string(),
+		address: z.string().optional(),
+		occupantsCount: z.number().int().min(1, "At least 1 occupant required"),
+		bookingType: z.enum(["DAILY", "MONTHLY"]),
+		walkIn: z.boolean(),
+		// Daily fields
+		checkInDate: z.string(),
+		checkOutDate: z.string(),
+		checkInTime: z.string(),
+		checkOutTime: z.string(),
+		// Daily reservation
+		reservationFeeType: reservationFeeTypeSchema.optional(),
+		reservationFeeValue: z.number().min(0).optional(),
+		// Monthly cash advance
+		cashAdvanceType: reservationFeeTypeSchema.optional(),
+		cashAdvanceValue: z.number().min(0).optional(),
+		// Payment
+		...ledgerPaymentFieldsShape,
+	})
+	.superRefine((data, ctx) => {
+		if (data.bookingType === "DAILY" && !data.walkIn) {
+			// Reservation daily - validate date range
+			if (
+				data.checkInDate &&
+				data.checkOutDate &&
+				!(new Date(data.checkOutDate) > new Date(data.checkInDate)) &&
+				!(
+					data.checkInDate === data.checkOutDate &&
+					data.checkOutTime > data.checkInTime
+				)
+			) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Check-out cannot be before check-in",
+					path: ["checkOutDate"],
+				});
+			}
+			// Validate reservation fee
+			if (data.reservationFeeType == null) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Reservation fee type is required",
+					path: ["reservationFeeType"],
+				});
+			}
+			if (data.reservationFeeValue == null || data.reservationFeeValue < 0) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Reservation fee value is required",
+					path: ["reservationFeeValue"],
+				});
+			}
+			if (data.reservationFeeType === "PERCENT" && data.reservationFeeValue != null && data.reservationFeeValue > 100) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Percentage fee cannot exceed 100%",
+					path: ["reservationFeeValue"],
+				});
+			}
+		}
 
-export const createBookingStayFieldsShape = {
-	roomId: z.string().min(1, "Room is required"),
-	firstName: z.string().min(1, "First name is required"),
-	lastName: z.string().min(1, "Last name is required"),
-	contactNumber: z.string(),
-	address: z.string().optional(),
-	checkInDate: z.string().min(1, "Check-in date is required"),
-	checkOutDate: z.string().min(1, "Check-out date is required"),
-	checkInTime: z.string().min(1, "Check-in time is required"),
-	checkOutTime: z.string().min(1, "Check-out time is required"),
-	occupantsCount: z.number().int().min(1, "At least 1 occupant required"),
-} as const;
+		if (data.bookingType === "DAILY" && data.walkIn) {
+			// Walk-in daily - validate date range
+			if (
+				data.checkInDate &&
+				data.checkOutDate &&
+				!(new Date(data.checkOutDate) > new Date(data.checkInDate)) &&
+				!(
+					data.checkInDate === data.checkOutDate &&
+					data.checkOutTime > data.checkInTime
+				)
+			) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Check-out cannot be before check-in",
+					path: ["checkOutDate"],
+				});
+			}
+		}
 
-const reservationFeeRefine = (
-	data: {
-		reservationFeeType: z.infer<typeof reservationFeeTypeSchema>;
-		reservationFeeValue: number;
-	},
-	ctx: z.RefinementCtx,
-) => {
-	if (data.reservationFeeType === "PERCENT") {
-		if (data.reservationFeeValue > 100) {
+		if (data.bookingType === "MONTHLY" && !data.walkIn) {
+			// Reservation monthly - validate date fields
+			if (!data.checkInDate) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Check-in date is required",
+					path: ["checkInDate"],
+				});
+			}
+			// Validate cash advance if provided
+			if (data.cashAdvanceType === "PERCENT" && data.cashAdvanceValue != null && data.cashAdvanceValue > 100) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Percentage cash advance cannot exceed 100%",
+					path: ["cashAdvanceValue"],
+				});
+			}
+		}
+
+		if (data.bookingType === "MONTHLY" && data.walkIn) {
+			// Walk-in monthly
+			if (!data.checkInDate) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Check-in date is required",
+					path: ["checkInDate"],
+				});
+			}
+		}
+
+		// Payment reference validation
+		if (
+			(data.paymentMethod === "GCASH" ||
+				data.paymentMethod === "BANK_TRANSFER") &&
+			!data.referenceNumber?.trim()
+		) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Percentage fee cannot exceed 100%",
-				path: ["reservationFeeValue"],
+				message: "Reference number is required for this payment method",
+				path: ["referenceNumber"],
 			});
 		}
-		return;
-	}
-
-	if (data.reservationFeeValue <= 0) {
-		ctx.addIssue({
-			code: "custom",
-			message: "Fixed fee must be greater than 0",
-			path: ["reservationFeeValue"],
-		});
-	}
-};
-
-const walkInBookingFormSchema = z
-	.object({
-		...createBookingStayFieldsShape,
-		walkIn: z.literal(true),
-		...ledgerPaymentFieldsShape,
-	})
-	.refine(dateRangeRefine.check, {
-		message: dateRangeRefine.message,
-		path: [dateRangeRefine.path[0]],
-	})
-	.superRefine(paymentReferenceRefine);
-
-const reservationBookingFormSchema = z
-	.object({
-		...createBookingStayFieldsShape,
-		walkIn: z.literal(false),
-		reservationFeeType: reservationFeeTypeSchema,
-		reservationFeeValue: z.number().min(0, "Fee must be 0 or greater"),
-		...ledgerPaymentFieldsShape,
-	})
-	.refine(dateRangeRefine.check, {
-		message: dateRangeRefine.message,
-		path: [dateRangeRefine.path[0]],
-	})
-	.superRefine(paymentReferenceRefine)
-	.superRefine(reservationFeeRefine);
-
-export const createBookingFormSchema = z.discriminatedUnion("walkIn", [
-	walkInBookingFormSchema,
-	reservationBookingFormSchema,
-]);
+	});
 
 export type CreateBookingFormValues = z.infer<typeof createBookingFormSchema>;
 
@@ -141,10 +185,6 @@ const createBookingStayDefaultValues = () => {
 		lastName: "",
 		contactNumber: "",
 		address: "",
-		checkInDate: "",
-		checkOutDate: "",
-		checkInTime: currentTimeHHMM(),
-		checkOutTime: "14:00",
 		occupantsCount: 2,
 		paymentMethod: "CASH" as const,
 		referenceNumber: "",
@@ -160,12 +200,22 @@ export function createBookingFormDefaultValues(
 		return {
 			...stay,
 			walkIn: true,
+			bookingType: "DAILY",
+			checkInDate: todayIsoDate(),
+			checkOutDate: "",
+			checkInTime: currentTimeHHMM(),
+			checkOutTime: "14:00",
 		};
 	}
 
 	return {
 		...stay,
 		walkIn: false,
+		bookingType: "DAILY",
+		checkInDate: "",
+		checkOutDate: "",
+		checkInTime: currentTimeHHMM(),
+		checkOutTime: "14:00",
 		reservationFeeType: "PERCENT",
 		reservationFeeValue: 20,
 	};
@@ -183,6 +233,7 @@ export const createBookingServerSchema = z
 		checkOut: z.string().min(1, "Check-out date is required"),
 		occupantsCount: z.number().int().positive("At least 1 occupant required"),
 		walkIn: z.boolean(),
+		bookingType: bookingTypeSchema,
 		paymentMethod: paymentMethodSchema,
 		referenceNumber: z.string().optional(),
 		reservationFeeType: reservationFeeTypeSchema.optional(),
@@ -246,3 +297,19 @@ export const transferBookingSchema = z.object({
 	targetRoomId: z.number().int().positive("Target room is required"),
 	reason: z.string().min(1, "Transfer reason is required"),
 });
+
+export const extendBookingSchema = z
+	.object({
+		bookingRef: z.string().min(1, "Booking reference is required"),
+		withCashAdvance: z.boolean(),
+		...ledgerPaymentFieldsShape,
+	})
+	.superRefine((data, ctx) => {
+		paymentReferenceRefine(
+			{
+				paymentMethod: data.paymentMethod,
+				referenceNumber: data.referenceNumber,
+			},
+			ctx,
+		);
+	});

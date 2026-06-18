@@ -26,6 +26,7 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 			type: "",
 			capacity: 1,
 			basePrice: 0,
+			monthlyPrice: 0,
 			status: "AVAILABLE" as (typeof roomStatusValues)[number],
 		},
 		validators: { onSubmit: createRoomSchema },
@@ -88,7 +89,17 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 								<field.NumberField
 									label="Base price"
 									placeholder="1200"
-									description="Price per night in PHP"
+									description="Price per day in PHP"
+								/>
+							)}
+						</form.AppField>
+
+						<form.AppField name="monthlyPrice">
+							{(field) => (
+								<field.NumberField
+									label="Monthly price"
+									placeholder="15000"
+									description="Price per month in PHP (leave 0 if not applicable)"
 								/>
 							)}
 						</form.AppField>

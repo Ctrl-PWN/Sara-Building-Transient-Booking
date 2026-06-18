@@ -45,7 +45,7 @@ export function TodayListCard({
 									</p>
 								</div>
 								<span className="font-body text-xs font-medium text-on-surface-variant group-hover:text-on-surface">
-									{booking.checkInDate} → {booking.checkOutDate}
+									{booking.checkIn} → {booking.checkOut}
 								</span>
 							</Link>
 						))}

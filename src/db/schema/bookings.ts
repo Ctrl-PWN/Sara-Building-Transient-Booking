@@ -8,7 +8,11 @@ import {
 	varchar,
 } from "drizzle-orm/pg-core";
 
-import { bookingPaymentStatusEnum, bookingStatusEnum } from "./enums";
+import {
+	bookingPaymentStatusEnum,
+	bookingStatusEnum,
+	bookingTypeEnum,
+} from "./enums";
 import { rooms } from "./rooms";
 
 export const bookings = pgTable("bookings", {
@@ -28,6 +32,8 @@ export const bookings = pgTable("bookings", {
 	paymentStatus: bookingPaymentStatusEnum("payment_status")
 		.default("CURRENT")
 		.notNull(),
+	bookingType: bookingTypeEnum("booking_type").default("DAILY").notNull(),
+	transferredFromBookingRef: varchar("transferred_from_booking_ref"),
 	depositDeadline: timestamp("deposit_deadline", {
 		withTimezone: true,
 	}).notNull(),

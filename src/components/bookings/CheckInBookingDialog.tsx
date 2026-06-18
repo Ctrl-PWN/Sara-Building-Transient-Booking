@@ -12,6 +12,7 @@ import {
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
 import type { PaymentMethod } from "@/db/schema/enums";
@@ -84,17 +85,18 @@ export function CheckInBookingDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Check in guest</DialogTitle>
-				</DialogHeader>
-				<form
-					className="space-y-4 py-2"
-					onSubmit={(event) => {
-						event.preventDefault();
-						void form.handleSubmit();
-					}}
-				>
+			<DialogOutsideScroll className="sm:max-w-lg">
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Check in guest</DialogTitle>
+					</DialogHeader>
+					<form
+						className="space-y-4 py-2"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void form.handleSubmit();
+						}}
+					>
 					<form.AppForm>
 						<div className="rounded-lg border p-4 space-y-2 text-sm">
 							<p>
@@ -134,6 +136,7 @@ export function CheckInBookingDialog({
 					</form.AppForm>
 				</form>
 			</DialogContent>
-		</Dialog>
-	);
+		</DialogOutsideScroll>
+	</Dialog>
+);
 }

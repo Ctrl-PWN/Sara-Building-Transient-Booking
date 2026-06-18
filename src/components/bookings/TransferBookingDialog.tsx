@@ -6,6 +6,7 @@ import {
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -54,11 +55,12 @@ export function TransferBookingDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
-					<DialogTitle>Transfer Booking</DialogTitle>
-				</DialogHeader>
-				<div className="space-y-4 py-4">
+			<DialogOutsideScroll className="sm:max-w-[425px]">
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Transfer Booking</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
 					<p className="text-sm text-muted-foreground">
 						Transfer {booking.bookingRef} ({booking.firstName}{" "}
 						{booking.lastName}) from Room {booking.roomNumber} to a different
@@ -132,6 +134,7 @@ export function TransferBookingDialog({
 					</Button>
 				</DialogFooter>
 			</DialogContent>
-		</Dialog>
-	);
+		</DialogOutsideScroll>
+	</Dialog>
+);
 }

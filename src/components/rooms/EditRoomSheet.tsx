@@ -35,6 +35,7 @@ export function EditRoomSheet({
 		type: room?.type ?? "",
 		capacity: room?.capacity ?? 0,
 		basePrice: Number(room?.basePrice ?? 0),
+		monthlyPrice: Number(room?.monthlyPrice ?? 0),
 		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
 	};
 
@@ -61,6 +62,7 @@ export function EditRoomSheet({
 			form.setFieldValue("type", room.type);
 			form.setFieldValue("capacity", room.capacity);
 			form.setFieldValue("basePrice", Number(room.basePrice));
+			form.setFieldValue("monthlyPrice", Number(room.monthlyPrice ?? 0));
 			form.setFieldValue("status", room.status);
 		}
 	}, [room, open, form.setFieldValue]);
@@ -109,7 +111,17 @@ export function EditRoomSheet({
 								<field.NumberField
 									label="Base price"
 									placeholder="1200"
-									description="Price per night in PHP"
+									description="Price per day in PHP"
+								/>
+							)}
+						</form.AppField>
+
+						<form.AppField name="monthlyPrice">
+							{(field) => (
+								<field.NumberField
+									label="Monthly price"
+									placeholder="15000"
+									description="Price per month in PHP (optional, leave 0 if not applicable)"
 								/>
 							)}
 						</form.AppField>

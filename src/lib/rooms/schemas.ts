@@ -6,6 +6,7 @@ export const createRoomSchema = z.object({
 	type: z.string().min(1, "Room type is required"),
 	capacity: z.number().int().positive("Capacity must be a positive number"),
 	basePrice: z.number().positive("Base price must be a positive number"),
+	monthlyPrice: z.number().min(0, "Monthly price must be 0 or greater"),
 	status: z.enum(roomStatusValues),
 });
 
@@ -21,6 +22,10 @@ export const updateRoomSchema = z.object({
 	basePrice: z
 		.number()
 		.positive("Base price must be a positive number")
+		.optional(),
+	monthlyPrice: z
+		.number()
+		.min(0, "Monthly price must be 0 or greater")
 		.optional(),
 	status: z.enum(roomStatusValues).optional(),
 });

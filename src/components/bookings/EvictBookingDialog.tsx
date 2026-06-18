@@ -5,6 +5,7 @@ import {
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -34,11 +35,12 @@ export function EvictBookingDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
-					<DialogTitle>Evict Guest</DialogTitle>
-				</DialogHeader>
-				<div className="space-y-4 py-4">
+			<DialogOutsideScroll className="sm:max-w-[425px]">
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Evict Guest</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
 					<p className="text-sm text-muted-foreground">
 						This is a non-refundable booking. Evicting {guestName} from{" "}
 						{roomNumber}.
@@ -61,6 +63,7 @@ export function EvictBookingDialog({
 					</Button>
 				</DialogFooter>
 			</DialogContent>
-		</Dialog>
-	);
+		</DialogOutsideScroll>
+	</Dialog>
+);
 }

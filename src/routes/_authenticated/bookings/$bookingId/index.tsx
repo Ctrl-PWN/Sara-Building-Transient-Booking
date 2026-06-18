@@ -13,6 +13,7 @@ import { CancelBookingDialog } from "@/components/bookings/CancelBookingDialog";
 import { CheckInBookingDialog } from "@/components/bookings/CheckInBookingDialog";
 import { CheckOutBookingDialog } from "@/components/bookings/CheckOutBookingDialog";
 import { EvictBookingDialog } from "@/components/bookings/EvictBookingDialog";
+import { ExtendBookingDialog } from "@/components/bookings/ExtendBookingDialog";
 import { TransferBookingDialog } from "@/components/bookings/TransferBookingDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
@@ -86,10 +87,14 @@ function BookingDetailPage() {
 	const [checkInOpen, setCheckInOpen] = useState(false);
 	const [checkOutOpen, setCheckOutOpen] = useState(false);
 	const [transferOpen, setTransferOpen] = useState(false);
+	const [extendOpen, setExtendOpen] = useState(false);
 
 	const updateStatus = useMutation(bookingMutations.updateStatus(queryClient));
 	const transferMutation = useMutation(
 		bookingMutations.transfer(queryClient, numericBookingId),
+	);
+	const extendMutation = useMutation(
+		bookingMutations.extend(queryClient, numericBookingId),
 	);
 
 	const availableRooms = rooms.filter(
@@ -123,6 +128,20 @@ function BookingDetailPage() {
 		setTransferOpen(false);
 	};
 
+	const handleExtend = (
+		withCashAdvance: boolean,
+		paymentMethod: string,
+		referenceNumber: string,
+	) => {
+		extendMutation.mutate({
+			bookingRef: booking.bookingRef,
+			withCashAdvance,
+			paymentMethod: paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
+			referenceNumber,
+		});
+		setExtendOpen(false);
+	};
+
 	return (
 		<main className="page-wrap px-4 py-6 pb-8">
 			<div className="space-y-8">
@@ -133,6 +152,7 @@ function BookingDetailPage() {
 					onCheckIn={() => setCheckInOpen(true)}
 					onCheckOut={() => setCheckOutOpen(true)}
 					onTransferClick={() => setTransferOpen(true)}
+					onExtendClick={() => setExtendOpen(true)}
 				/>
 
 				<BookingInfoCards booking={booking} />
@@ -178,6 +198,13 @@ function BookingDetailPage() {
 					booking={booking}
 					availableRooms={availableRooms}
 					onConfirm={handleTransfer}
+				/>
+
+				<ExtendBookingDialog
+					open={extendOpen}
+					onOpenChange={setExtendOpen}
+					booking={booking}
+					onConfirm={handleExtend}
 				/>
 			</div>
 		</main>

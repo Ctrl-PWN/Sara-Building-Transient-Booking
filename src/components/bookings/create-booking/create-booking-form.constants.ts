@@ -1,6 +1,7 @@
 import {
 	BankIcon,
-	CurrencyDollarIcon,
+	CalendarBlankIcon,
+	ClockIcon,
 	DeviceMobileIcon,
 	MoneyIcon,
 	PercentIcon,
@@ -46,6 +47,21 @@ export const reservationFeeTypeOptions = [
 		value: "FIXED",
 		title: "Fixed amount",
 		description: "Charge a flat peso amount",
-		icon: CurrencyDollarIcon,
+		icon: MoneyIcon,
+	},
+] as const;
+
+export const bookingTypeOptions = [
+	{
+		value: "DAILY" as const,
+		title: "Daily",
+		description: "Per-night stay with specific check-in/check-out dates",
+		icon: ClockIcon,
+	},
+	{
+		value: "MONTHLY" as const,
+		title: "Monthly",
+		description: "Monthly rental with start month and duration",
+		icon: CalendarBlankIcon,
 	},
 ] as const;

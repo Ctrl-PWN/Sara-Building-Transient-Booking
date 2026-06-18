@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type { z } from "zod";
-import { createRoom, deleteRoom, updateRoom } from "./rooms.functions";
+import { createRoom, deleteRoom, syncRoomStatuses, updateRoom } from "./rooms.functions";
 import { roomKeys } from "./rooms.queries";
 import type {
 	createRoomSchema,
@@ -33,6 +33,14 @@ export const roomMutations = {
 		mutationOptions({
 			mutationFn: (input: z.infer<typeof deleteRoomSchema>) =>
 				deleteRoom({ data: input }),
+			onSuccess: () => {
+				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+			},
+		}),
+
+	syncStatuses: (queryClient: QueryClient) =>
+		mutationOptions({
+			mutationFn: () => syncRoomStatuses({ data: undefined }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
 			},

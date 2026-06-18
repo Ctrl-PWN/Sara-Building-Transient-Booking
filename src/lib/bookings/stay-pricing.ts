@@ -11,6 +11,17 @@ export type StayPricingResult = {
 	subtotal: number;
 };
 
+export type MonthlyPricingInput = {
+	monthlyPrice: number | string;
+	durationMonths: number;
+};
+
+export type MonthlyPricingResult = {
+	subtotal: number;
+	deposit: number;
+	balance: number;
+};
+
 export type ReservationFeeInput = {
 	total: number;
 	feeType: ReservationFeeType;
@@ -34,6 +45,17 @@ export function calculateStayPricing({
 	const rate = Number(basePrice) || 0;
 	const subtotal = nights * rate;
 	return { nights, subtotal };
+}
+
+export function calculateMonthlyPricing({
+	monthlyPrice,
+	durationMonths,
+}: MonthlyPricingInput): MonthlyPricingResult {
+	const rate = Number(monthlyPrice) || 0;
+	const subtotal = rate * durationMonths;
+	const deposit = rate;
+	const balance = subtotal - deposit;
+	return { subtotal, deposit, balance };
 }
 
 export function calculateReservationFee({
