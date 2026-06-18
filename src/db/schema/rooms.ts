@@ -11,12 +11,15 @@ import { roomStatusEnum } from "./enums";
 
 export const rooms = pgTable("rooms", {
 	id: serial("id").primaryKey(),
-	roomNumber: varchar("room_number").unique().notNull(),
+	roomNumber: varchar("room_number").notNull(),
 	type: varchar("type").notNull(),
 	capacity: integer("capacity").notNull(),
 	basePrice: decimal("base_price", { precision: 19, scale: 4 }).notNull(),
 	monthlyPrice: decimal("monthly_price", { precision: 19, scale: 4 }),
 	status: roomStatusEnum("status").default("AVAILABLE").notNull(),
-	deletedAt: timestamp("deleted_at", { withTimezone: true }),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at", {
+		withTimezone: true,
+		mode: "string",
+	}),
+	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });

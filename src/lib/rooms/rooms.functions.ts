@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, isNull, not, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, ne, not, sql } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/db/index";
 import { bookings, rooms } from "@/db/schema";
-import { authMiddleware } from "@/lib/require-admin";
+import { authMiddleware, sessionMiddleware } from "@/lib/require-admin";
 import {
 	createRoomSchema,
 	deleteRoomSchema,
 	updateRoomSchema,
+	updateRoomStatusSchema,
 } from "./schemas";
 
 export const getRooms = createServerFn({ method: "GET" }).handler(async () => {
@@ -37,6 +38,16 @@ export const createRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.validator(createRoomSchema)
 	.handler(async ({ data }) => {
+		const existing = await db.query.rooms.findFirst({
+			where: and(
+				eq(rooms.roomNumber, data.roomNumber),
+				isNull(rooms.deletedAt),
+			),
+		});
+		if (existing) {
+			throw new Error("A room with this number already exists");
+		}
+
 		const [room] = await db
 			.insert(rooms)
 			.values({
@@ -56,6 +67,29 @@ export const updateRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.validator(updateRoomSchema)
 	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+
+		if (
+			data.roomNumber !== undefined &&
+			data.roomNumber !== current.roomNumber
+		) {
+			const existing = await db.query.rooms.findFirst({
+				where: and(
+					eq(rooms.roomNumber, data.roomNumber),
+					ne(rooms.id, data.id),
+					isNull(rooms.deletedAt),
+				),
+			});
+			if (existing) {
+				throw new Error("A room with this number already exists");
+			}
+		}
+
 		const updateData: Record<string, unknown> = {};
 		if (data.roomNumber !== undefined) updateData.roomNumber = data.roomNumber;
 		if (data.type !== undefined) updateData.type = data.type;
@@ -75,13 +109,52 @@ export const updateRoom = createServerFn({ method: "POST" })
 		return room;
 	});
 
+export const updateRoomStatus = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
+	.inputValidator(updateRoomStatusSchema)
+	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+
+		const [room] = await db
+			.update(rooms)
+			.set({ status: data.status })
+			.where(eq(rooms.id, data.id))
+			.returning();
+		return room;
+	});
+
 export const deleteRoom = createServerFn({ method: "POST" })
 	.middleware([authMiddleware()])
 	.validator(deleteRoomSchema)
 	.handler(async ({ data }) => {
+		const current = await db.query.rooms.findFirst({
+			where: eq(rooms.id, data.id),
+		});
+		if (!current) {
+			throw new Error("Room not found");
+		}
+		if (current.status === "OCCUPIED") {
+			throw new Error("Cannot delete an occupied room");
+		}
+
+		const [result] = await db
+			.select({ bookingCount: count() })
+			.from(bookings)
+			.where(and(eq(bookings.roomId, data.id), isNull(bookings.deletedAt)));
+		if (result.bookingCount > 0) {
+			throw new Error(
+				"Cannot delete a room with existing booking records. Consider disabling the room instead.",
+			);
+		}
+
 		await db
 			.update(rooms)
-			.set({ deletedAt: new Date() })
+			.set({ deletedAt: new Date().toISOString() })
 			.where(eq(rooms.id, data.id));
 	});
 

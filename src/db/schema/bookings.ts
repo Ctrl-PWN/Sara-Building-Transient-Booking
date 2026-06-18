@@ -21,12 +21,7 @@ export const bookings = pgTable("bookings", {
 	roomId: integer("room_id")
 		.references(() => rooms.id)
 		.notNull(),
-	firstName: varchar("first_name").notNull(),
-	lastName: varchar("last_name").notNull(),
 	contactNumber: varchar("contact_number"),
-	checkIn: timestamp("check_in", { withTimezone: true }),
-	checkOut: timestamp("check_out", { withTimezone: true }),
-	address: text("address").default(""),
 	occupantsCount: integer("occupants_count").notNull(),
 	status: bookingStatusEnum("status").default("RESERVED").notNull(),
 	paymentStatus: bookingPaymentStatusEnum("payment_status")
@@ -36,14 +31,35 @@ export const bookings = pgTable("bookings", {
 	transferredFromBookingRef: varchar("transferred_from_booking_ref"),
 	depositDeadline: timestamp("deposit_deadline", {
 		withTimezone: true,
+		mode: "string",
 	}).notNull(),
-	finalDueDate: timestamp("final_due_date", { withTimezone: true }),
+	finalDueDate: timestamp("final_due_date", {
+		withTimezone: true,
+		mode: "string",
+	}),
 	depositPctSnapshot: decimal("deposit_pct_snapshot", {
 		precision: 5,
 		scale: 2,
 	}).notNull(),
 	cancellationReason: text("cancellation_reason"),
-	cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	deletedAt: timestamp("deleted_at", { withTimezone: true }),
+	cancelledAt: timestamp("cancelled_at", {
+		withTimezone: true,
+		mode: "string",
+	}),
+	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at", {
+		withTimezone: true,
+		mode: "string",
+	}),
+	firstName: varchar("first_name").notNull(),
+	lastName: varchar("last_name").notNull(),
+	address: text("address").default(""),
+	checkIn: timestamp("check_in", {
+		withTimezone: true,
+		mode: "string",
+	}),
+	checkOut: timestamp("check_out", {
+		withTimezone: true,
+		mode: "string",
+	}),
 });

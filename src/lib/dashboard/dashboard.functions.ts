@@ -1,18 +1,34 @@
 import { createServerFn } from "@tanstack/react-start";
 import { differenceInCalendarDays } from "date-fns";
-import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
+import {
+	type AnyColumn,
+	and,
+	count,
+	eq,
+	inArray,
+	isNull,
+	lt,
+	sql,
+} from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/index";
 import { bookings, rooms } from "@/db/schema";
 import { ledgerTransactions } from "@/db/schema/ledger-transactions";
-import { parseManilaDate, todayIsoInManila } from "@/lib/date/manila";
+import {
+	MANILA_TZ,
+	parseManilaDate,
+	todayIsoInManila,
+} from "@/lib/date/manila";
 
 import type { DashboardMetrics, OverdueFlagRow } from "./dashboard.types";
 
 const getDashboardMetricsSchema = z.object({
 	date: z.string().date().optional(),
 });
+
+const bookingDateInManila = (column: AnyColumn) =>
+	sql<string>`DATE(${column} AT TIME ZONE ${MANILA_TZ})`;
 
 const bookingSelect = {
 	id: bookings.id,
@@ -22,8 +38,8 @@ const bookingSelect = {
 	roomId: rooms.id,
 	roomNumber: rooms.roomNumber,
 	roomType: rooms.type,
-	checkIn: sql<string>`to_char(${bookings.checkIn}, 'YYYY-MM-DD"T"HH24:MI:SS')`,
-	checkOut: sql<string>`to_char(${bookings.checkOut}, 'YYYY-MM-DD"T"HH24:MI:SS')`,
+	checkIn: bookings.checkIn,
+	checkOut: bookings.checkOut,
 	occupantsCount: bookings.occupantsCount,
 };
 
@@ -32,7 +48,6 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 	.handler(async ({ data }): Promise<DashboardMetrics> => {
 		const today = data.date ?? todayIsoInManila();
 		const todayDate = parseManilaDate(today);
-		const todayStart = new Date(`${today}T00:00:00`);
 
 		const [
 			totalRoomsResult,
@@ -54,7 +69,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 				.where(
 					and(
-						sql`date(${bookings.checkIn}) = ${todayStart}::date`,
+					eq(bookingDateInManila(bookings.checkIn), today),
 						inArray(bookings.status, ["RESERVED", "CHECKED_IN"]),
 						isNull(bookings.deletedAt),
 					),
@@ -66,7 +81,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 				.where(
 					and(
-						sql`date(${bookings.checkOut}) = ${todayStart}::date`,
+					eq(bookingDateInManila(bookings.checkOut), today),
 						eq(bookings.status, "CHECKED_IN"),
 						isNull(bookings.deletedAt),
 					),
@@ -100,7 +115,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.where(
 					and(
 						eq(bookings.status, "CHECKED_IN"),
-						sql`date(${bookings.checkOut}) < ${todayStart}::date`,
+					lt(bookingDateInManila(bookings.checkOut), today),
 						isNull(bookings.deletedAt),
 					),
 				)
@@ -116,7 +131,10 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 			...booking,
 			daysOverdue: Math.max(
 				0,
-				differenceInCalendarDays(todayDate, parseManilaDate(booking.checkOut)),
+				differenceInCalendarDays(
+					todayDate,
+					booking.checkOut ? parseManilaDate(booking.checkOut) : todayDate,
+				),
 			),
 		}));
 

@@ -231,8 +231,8 @@ export const createBooking = createServerFn({ method: "POST" })
 						eq(bookings.status, "CHECKED_IN"),
 					),
 					and(
-						lte(bookings.checkIn, new Date(data.checkOut)),
-						gte(bookings.checkOut, new Date(data.checkIn)),
+						lte(bookings.checkIn, new Date(data.checkOut).toISOString()),
+						gte(bookings.checkOut, new Date(data.checkIn).toISOString()),
 					),
 				),
 			)
@@ -311,8 +311,10 @@ export const createBooking = createServerFn({ method: "POST" })
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
-		);
-		const finalDueDate = new Date(checkOut.getTime() + 7 * 24 * 60 * 60 * 1000);
+		).toISOString();
+		const finalDueDate = new Date(
+			checkOut.getTime() + 7 * 24 * 60 * 60 * 1000,
+		).toISOString();
 
 		const bookingRef = generateBookingRef();
 		const status = data.walkIn ? "CHECKED_IN" : "RESERVED";
@@ -328,8 +330,8 @@ export const createBooking = createServerFn({ method: "POST" })
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
 					address: data.address,
-					checkIn: new Date(data.checkIn),
-					checkOut: new Date(data.checkOut),
+					checkIn: new Date(data.checkIn).toISOString(),
+					checkOut: new Date(data.checkOut).toISOString(),
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
@@ -659,8 +661,8 @@ export const transferBooking = createServerFn({ method: "POST" })
 					lastName: booking.lastName,
 					contactNumber: booking.contactNumber,
 					address: booking.address ?? "",
-					checkIn: new Date(),
-					checkOut: new Date(booking.checkOut ?? ""),
+					checkIn: new Date().toISOString(),
+					checkOut: new Date(booking.checkOut ?? "").toISOString(),
 					occupantsCount: booking.occupantsCount,
 					status: "CHECKED_IN",
 					paymentStatus: "PAID_IN_FULL",
@@ -755,8 +757,8 @@ export const extendBooking = createServerFn({ method: "POST" })
 						eq(bookings.status, "CHECKED_IN"),
 					),
 					and(
-						lte(bookings.checkIn, newCheckOut),
-						gte(bookings.checkOut, currentCheckOut),
+						lte(bookings.checkIn, newCheckOut.toISOString()),
+						gte(bookings.checkOut, currentCheckOut.toISOString()),
 					),
 					ne(bookings.id, booking.id),
 				),
@@ -793,10 +795,10 @@ export const extendBooking = createServerFn({ method: "POST" })
 			await tx
 				.update(bookings)
 				.set({
-					checkOut: newCheckOut,
+					checkOut: newCheckOut.toISOString(),
 					finalDueDate: new Date(
 						newCheckOut.getTime() + 7 * 24 * 60 * 60 * 1000,
-					),
+					).toISOString(),
 				})
 				.where(eq(bookings.id, booking.id));
 

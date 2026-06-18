@@ -87,7 +87,13 @@ function TextField({
 				maxLength={maxLength}
 				disabled={disabled}
 				onBlur={field.handleBlur}
-				onChange={(event) => field.handleChange(event.target.value)}
+				onChange={(event) => {
+					let next = event.target.value;
+					if (maxLength !== undefined && next.length > maxLength) {
+						next = next.slice(0, maxLength);
+					}
+					field.handleChange(next);
+				}}
 				aria-invalid={isInvalid || undefined}
 				aria-describedby={description ? `${field.name}-description` : undefined}
 			/>
@@ -579,6 +585,9 @@ function NumberField({
 	description,
 	placeholder,
 	autoComplete,
+	min,
+	max,
+	step,
 }: NumberFieldProps) {
 	const { field, isInvalid } = useFieldInvalidState();
 	const value = field.state.value as number;
@@ -592,8 +601,17 @@ function NumberField({
 				value={value}
 				placeholder={placeholder}
 				autoComplete={autoComplete}
+				min={min}
+				max={max}
+				step={step}
 				onBlur={field.handleBlur}
-				onChange={(event) => field.handleChange(event.target.valueAsNumber)}
+				onChange={(event) => {
+					let next = event.target.valueAsNumber;
+					if (max !== undefined && next > max) {
+						next = max;
+					}
+					field.handleChange(next);
+				}}
 			/>
 			{description ? (
 				<p
