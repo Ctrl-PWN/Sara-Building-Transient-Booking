@@ -16,18 +16,24 @@ export function CreateBookingReservationSection({
 	const feeValueField = isMonthly ? "cashAdvanceValue" : "reservationFeeValue";
 
 	if (isMonthly) {
-		const selectedRoom = rooms.find((r) => String(r.id) === String(selectedRoomId));
-		const monthlyPrice = selectedRoom?.monthlyPrice ? Number(selectedRoom.monthlyPrice) : 0;
+		const selectedRoom = rooms.find(
+			(r) => String(r.id) === String(selectedRoomId),
+		);
+		const monthlyPrice = selectedRoom?.monthlyPrice
+			? Number(selectedRoom.monthlyPrice)
+			: 0;
 
 		return (
 			<div className="grid gap-4 rounded-lg border p-4">
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
-						<FieldLabel className="text-base">
-							Collect cash advance
-						</FieldLabel>
+						<FieldLabel className="text-base">Collect cash advance</FieldLabel>
 						<p className="text-xs text-muted-foreground">
-							Guest pays {monthlyPrice > 0 ? `₱${monthlyPrice.toLocaleString()}` : "monthly rate"} now to reserve this slot.
+							Guest pays{" "}
+							{monthlyPrice > 0
+								? `₱${monthlyPrice.toLocaleString()}`
+								: "monthly rate"}{" "}
+							now to reserve this slot.
 						</p>
 					</div>
 					<SwitchWithForm
@@ -61,9 +67,7 @@ export function CreateBookingReservationSection({
 					/>
 				)}
 			</form.AppField>
-			<form.Subscribe
-				selector={(state) => state.values.reservationFeeType}
-			>
+			<form.Subscribe selector={(state) => state.values.reservationFeeType}>
 				{(feeType) => (
 					<form.AppField name={feeValueField}>
 						{(field) => (
@@ -91,11 +95,9 @@ function SwitchWithForm({
 	fieldName: string;
 	onCheckedChange: (checked: boolean) => void;
 }) {
-	const value = useSelector(form.store, (s) => (s.values as Record<string, unknown>)[fieldName]);
-	return (
-		<Switch
-			checked={!!value}
-			onCheckedChange={onCheckedChange}
-		/>
+	const value = useSelector(
+		form.store,
+		(s) => (s.values as Record<string, unknown>)[fieldName],
 	);
+	return <Switch checked={!!value} onCheckedChange={onCheckedChange} />;
 }

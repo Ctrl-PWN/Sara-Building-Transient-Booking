@@ -77,32 +77,35 @@ export function BookingDetailHeader({
 				Back to Bookings
 			</Link>
 			<div className="flex justify-between items-end">
-					<div>
-						<div className="flex items-center gap-3 mb-2">
-							<h2 className="text-3xl font-serif tracking-tight text-foreground">
-								{booking.bookingRef}
-							</h2>
-							<Badge variant={statusColorMap[displayStatus]}>
-								{displayStatus.replace("_", " ")}
-							</Badge>
-							<Badge variant="secondary" className="text-[10px] uppercase">
-								{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
-							</Badge>
-							{booking.paymentStatus === "OVERDUE" && (
-								<Badge variant="destructive">OVERDUE</Badge>
-							)}
-							{isNonRefundable(booking.depositPctSnapshot) && (
-								<Badge variant="destructive">NON-REFUNDABLE</Badge>
-							)}
-						</div>
-						<p className="text-muted-foreground">
-							Guest: {booking.firstName} {booking.lastName}
-						</p>
-						{booking.transferredFromBookingRef && (
-							<p className="text-sm text-muted-foreground mt-1">
-								Transferred from: <span className="font-medium text-foreground">{booking.transferredFromBookingRef}</span>
-							</p>
+				<div>
+					<div className="flex items-center gap-3 mb-2">
+						<h2 className="text-3xl font-serif tracking-tight text-foreground">
+							{booking.bookingRef}
+						</h2>
+						<Badge variant={statusColorMap[displayStatus]}>
+							{displayStatus.replace("_", " ")}
+						</Badge>
+						<Badge variant="secondary" className="text-[10px] uppercase">
+							{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
+						</Badge>
+						{booking.paymentStatus === "OVERDUE" && (
+							<Badge variant="destructive">OVERDUE</Badge>
 						)}
+						{isNonRefundable(booking.depositPctSnapshot) && (
+							<Badge variant="destructive">NON-REFUNDABLE</Badge>
+						)}
+					</div>
+					<p className="text-muted-foreground">
+						Guest: {booking.firstName} {booking.lastName}
+					</p>
+					{booking.transferredFromBookingRef && (
+						<p className="text-sm text-muted-foreground mt-1">
+							Transferred from:{" "}
+							<span className="font-medium text-foreground">
+								{booking.transferredFromBookingRef}
+							</span>
+						</p>
+					)}
 				</div>
 				<div className="flex gap-2">
 					{canCancel(booking.status) && (

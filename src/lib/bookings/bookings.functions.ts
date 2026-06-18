@@ -1,5 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, eq, gte, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
+import {
+	and,
+	desc,
+	eq,
+	gte,
+	inArray,
+	isNull,
+	lte,
+	ne,
+	or,
+	sql,
+} from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db/index";
 import { bookings, ledgerTransactions, rooms } from "@/db/schema";
@@ -321,7 +332,7 @@ export const createBooking = createServerFn({ method: "POST" })
 		const paymentStatus = data.walkIn ? "PAID_IN_FULL" : "CURRENT";
 
 		const { bookingId } = await db.transaction(async (tx) => {
-				const [row] = await tx
+			const [row] = await tx
 				.insert(bookings)
 				.values({
 					bookingRef,
@@ -457,9 +468,7 @@ export const checkInBooking = createServerFn({ method: "POST" })
 		const checkInDate = new Date(booking.checkIn ?? new Date());
 		checkInDate.setHours(0, 0, 0, 0);
 		if (today < checkInDate) {
-			throw new Error(
-				"Cannot check in before the scheduled check-in date",
-			);
+			throw new Error("Cannot check in before the scheduled check-in date");
 		}
 
 		const unpaidRoomCharges = await db

@@ -1,6 +1,3 @@
-import { useAppForm } from "@/integrations/tanstack-form";
-import { FieldLabel } from "@/components/ui/field";
-import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -11,6 +8,9 @@ import {
 	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { FieldLabel } from "@/components/ui/field";
+import { Switch } from "@/components/ui/switch";
+import { useAppForm } from "@/integrations/tanstack-form";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 
@@ -86,7 +86,9 @@ export function ExtendBookingDialog({
 						<div className="grid gap-4 py-4">
 							<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
 								<div className="flex justify-between">
-									<span className="text-muted-foreground">Current checkout</span>
+									<span className="text-muted-foreground">
+										Current checkout
+									</span>
 									<span className="font-medium">
 										{format(new Date(booking.checkOut), "MMM d, yyyy")}
 									</span>
@@ -105,47 +107,57 @@ export function ExtendBookingDialog({
 								</div>
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">Monthly rate</span>
-									<span className="font-medium">{formatPeso(monthlyPrice)}</span>
+									<span className="font-medium">
+										{formatPeso(monthlyPrice)}
+									</span>
 								</div>
 							</div>
 
-						<form.Subscribe
-							selector={(state) => state.values.withCashAdvance}
-						>
-							{(withCashAdvance) => (
-								<>
-									<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
-										{withCashAdvance && (
-											<div className="flex justify-between text-green-600">
-												<span>Cash advance (due now)</span>
-												<span className="font-medium">{formatPeso(monthlyPrice)}</span>
+							<form.Subscribe
+								selector={(state) => state.values.withCashAdvance}
+							>
+								{(withCashAdvance) => (
+									<>
+										<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
+											{withCashAdvance && (
+												<div className="flex justify-between text-green-600">
+													<span>Cash advance (due now)</span>
+													<span className="font-medium">
+														{formatPeso(monthlyPrice)}
+													</span>
+												</div>
+											)}
+											<div className="flex justify-between border-t pt-2 font-semibold">
+												<span>
+													{withCashAdvance
+														? "Balance due at check-in"
+														: "Amount due now"}
+												</span>
+												<span>
+													{formatPeso(withCashAdvance ? 0 : monthlyPrice)}
+												</span>
 											</div>
-										)}
-										<div className="flex justify-between border-t pt-2 font-semibold">
-											<span>{withCashAdvance ? "Balance due at check-in" : "Amount due now"}</span>
-											<span>{formatPeso(withCashAdvance ? 0 : monthlyPrice)}</span>
 										</div>
-									</div>
 
-									<div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-										<div className="space-y-0.5">
-											<FieldLabel className="text-base">
-												Collect cash advance
-											</FieldLabel>
-											<p className="text-xs text-muted-foreground">
-												Guest pays a portion now, rest due at check-in.
-											</p>
+										<div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+											<div className="space-y-0.5">
+												<FieldLabel className="text-base">
+													Collect cash advance
+												</FieldLabel>
+												<p className="text-xs text-muted-foreground">
+													Guest pays a portion now, rest due at check-in.
+												</p>
+											</div>
+											<Switch
+												checked={withCashAdvance}
+												onCheckedChange={(checked) => {
+													form.setFieldValue("withCashAdvance", checked);
+												}}
+											/>
 										</div>
-										<Switch
-											checked={withCashAdvance}
-											onCheckedChange={(checked) => {
-												form.setFieldValue("withCashAdvance", checked);
-											}}
-										/>
-									</div>
-								</>
-							)}
-						</form.Subscribe>
+									</>
+								)}
+							</form.Subscribe>
 
 							<form.AppField name="paymentMethod">
 								{(field) => (

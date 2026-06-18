@@ -56,34 +56,34 @@ export function CreateBookingPricingSummary({
 				if (isMonthly) {
 					if (!start) return null;
 
-				const monthlyPrice = Number(selectedRoom.monthlyPrice) || 0;
-				if (monthlyPrice <= 0) return null;
+					const monthlyPrice = Number(selectedRoom.monthlyPrice) || 0;
+					if (monthlyPrice <= 0) return null;
 
-				const { subtotal } = calculateMonthlyPricing({
-					monthlyPrice,
-					durationMonths: 1,
-				});
+					const { subtotal } = calculateMonthlyPricing({
+						monthlyPrice,
+						durationMonths: 1,
+					});
 
-				if (walkIn) {
-					return (
-						<div className="rounded-lg border bg-muted/40 p-4 text-sm">
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">
-									Monthly total (1 month × {formatPeso(monthlyPrice)})
-								</span>
-								<span className="font-medium">{formatPeso(subtotal)}</span>
+					if (walkIn) {
+						return (
+							<div className="rounded-lg border bg-muted/40 p-4 text-sm">
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										Monthly total (1 month × {formatPeso(monthlyPrice)})
+									</span>
+									<span className="font-medium">{formatPeso(subtotal)}</span>
+								</div>
+								<div className="mt-2 flex justify-between border-t pt-2 font-semibold">
+									<span>Amount due now</span>
+									<span>{formatPeso(subtotal)}</span>
+								</div>
 							</div>
-							<div className="mt-2 flex justify-between border-t pt-2 font-semibold">
-								<span>Amount due now</span>
-								<span>{formatPeso(subtotal)}</span>
-							</div>
-						</div>
-					);
-				}
+						);
+					}
 
-				const hasCashAdvance = !!cashAdvanceType;
-				const depositAmount = hasCashAdvance ? monthlyPrice : subtotal;
-				const balanceDue = hasCashAdvance ? 0 : 0;
+					const hasCashAdvance = !!cashAdvanceType;
+					const depositAmount = hasCashAdvance ? monthlyPrice : subtotal;
+					const balanceDue = hasCashAdvance ? 0 : 0;
 
 					return (
 						<div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">

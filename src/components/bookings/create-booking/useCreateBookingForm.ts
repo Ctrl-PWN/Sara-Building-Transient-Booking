@@ -1,6 +1,4 @@
-import {
-	useAppForm,
-} from "@/integrations/tanstack-form";
+import { useAppForm } from "@/integrations/tanstack-form";
 import type { CreateBookingFormValues } from "@/lib/bookings/schemas";
 import {
 	createBookingFormDefaultValues,

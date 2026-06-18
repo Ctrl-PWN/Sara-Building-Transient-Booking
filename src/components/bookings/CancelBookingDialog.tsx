@@ -41,28 +41,28 @@ export function CancelBookingDialog({
 						<DialogTitle>Cancel Booking</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-					<p className="text-sm text-muted-foreground">
-						Are you sure you want to cancel {bookingRef} for {guestName}?
-					</p>
-					<div className="space-y-2">
-						<Label>Cancellation Reason</Label>
-						<Input
-							value={reason}
-							onChange={(e) => setReason(e.target.value)}
-							placeholder="Reason for cancellation"
-						/>
+						<p className="text-sm text-muted-foreground">
+							Are you sure you want to cancel {bookingRef} for {guestName}?
+						</p>
+						<div className="space-y-2">
+							<Label>Cancellation Reason</Label>
+							<Input
+								value={reason}
+								onChange={(e) => setReason(e.target.value)}
+								placeholder="Reason for cancellation"
+							/>
+						</div>
 					</div>
-				</div>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Keep Booking
-					</Button>
-					<Button variant="destructive" onClick={handleConfirm}>
-						Confirm Cancellation
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</DialogOutsideScroll>
-	</Dialog>
-);
+					<DialogFooter>
+						<Button variant="outline" onClick={() => onOpenChange(false)}>
+							Keep Booking
+						</Button>
+						<Button variant="destructive" onClick={handleConfirm}>
+							Confirm Cancellation
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</DialogOutsideScroll>
+		</Dialog>
+	);
 }

@@ -41,29 +41,29 @@ export function EvictBookingDialog({
 						<DialogTitle>Evict Guest</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-					<p className="text-sm text-muted-foreground">
-						This is a non-refundable booking. Evicting {guestName} from{" "}
-						{roomNumber}.
-					</p>
-					<div className="space-y-2">
-						<Label>Eviction Reason</Label>
-						<Input
-							value={reason}
-							onChange={(e) => setReason(e.target.value)}
-							placeholder="Reason for eviction"
-						/>
+						<p className="text-sm text-muted-foreground">
+							This is a non-refundable booking. Evicting {guestName} from{" "}
+							{roomNumber}.
+						</p>
+						<div className="space-y-2">
+							<Label>Eviction Reason</Label>
+							<Input
+								value={reason}
+								onChange={(e) => setReason(e.target.value)}
+								placeholder="Reason for eviction"
+							/>
+						</div>
 					</div>
-				</div>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Cancel
-					</Button>
-					<Button variant="destructive" onClick={handleConfirm}>
-						Confirm Eviction
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</DialogOutsideScroll>
-	</Dialog>
-);
+					<DialogFooter>
+						<Button variant="outline" onClick={() => onOpenChange(false)}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={handleConfirm}>
+							Confirm Eviction
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</DialogOutsideScroll>
+		</Dialog>
+	);
 }

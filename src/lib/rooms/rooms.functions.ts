@@ -165,7 +165,10 @@ export const syncRoomStatuses = createServerFn({ method: "POST" })
 		const roomsWithActiveBookings = await db
 			.select({
 				roomId: bookings.roomId,
-				hasCheckedIn: sql<boolean>`bool_or(${bookings.status} = 'CHECKED_IN')`.as("has_checked_in"),
+				hasCheckedIn:
+					sql<boolean>`bool_or(${bookings.status} = 'CHECKED_IN')`.as(
+						"has_checked_in",
+					),
 			})
 			.from(bookings)
 			.where(
@@ -191,10 +194,7 @@ export const syncRoomStatuses = createServerFn({ method: "POST" })
 				.update(rooms)
 				.set({ status: "AVAILABLE" })
 				.where(
-					and(
-						isNull(rooms.deletedAt),
-						not(inArray(rooms.id, occupiedRoomIds)),
-					),
+					and(isNull(rooms.deletedAt), not(inArray(rooms.id, occupiedRoomIds))),
 				);
 		} else {
 			await db

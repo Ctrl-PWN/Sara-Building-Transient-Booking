@@ -69,7 +69,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 				.where(
 					and(
-					eq(bookingDateInManila(bookings.checkIn), today),
+						eq(bookingDateInManila(bookings.checkIn), today),
 						inArray(bookings.status, ["RESERVED", "CHECKED_IN"]),
 						isNull(bookings.deletedAt),
 					),
@@ -81,7 +81,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 				.where(
 					and(
-					eq(bookingDateInManila(bookings.checkOut), today),
+						eq(bookingDateInManila(bookings.checkOut), today),
 						eq(bookings.status, "CHECKED_IN"),
 						isNull(bookings.deletedAt),
 					),
@@ -115,7 +115,7 @@ export const getDashboardMetrics = createServerFn({ method: "GET" })
 				.where(
 					and(
 						eq(bookings.status, "CHECKED_IN"),
-					lt(bookingDateInManila(bookings.checkOut), today),
+						lt(bookingDateInManila(bookings.checkOut), today),
 						isNull(bookings.deletedAt),
 					),
 				)
