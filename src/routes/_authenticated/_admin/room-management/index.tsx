@@ -1,5 +1,9 @@
-import { MagnifyingGlassIcon, PlusIcon } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import {
+	ArrowClockwiseIcon,
+	MagnifyingGlassIcon,
+	PlusIcon,
+} from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useState } from "react";
@@ -11,6 +15,7 @@ import { RoomTable } from "@/components/rooms/RoomTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { roomQueries } from "@/lib/rooms/rooms.queries";
 import type { Room } from "@/lib/rooms/types";
 
@@ -26,7 +31,10 @@ function RoomManagementPage() {
 	const [editRoom, setEditRoom] = useState<Room | null>(null);
 	const [deleteRoom, setDeleteRoom] = useState<Room | null>(null);
 
+	const queryClient = useQueryClient();
 	const { data: rooms, isLoading } = useQuery(roomQueries.list());
+
+	const syncStatuses = useMutation(roomMutations.syncStatuses(queryClient));
 
 	const itemList = rooms ?? [];
 	const filtered = !search
@@ -52,10 +60,23 @@ function RoomManagementPage() {
 				title="Room Management"
 				description="Room inventory management for administrators."
 				actions={
-					<Button onClick={() => setCreateOpen(true)}>
-						<PlusIcon data-icon="inline-start" />
-						New room
-					</Button>
+					<>
+						<Button
+							variant="outline"
+							onClick={() => syncStatuses.mutate()}
+							disabled={syncStatuses.isPending}
+						>
+							<ArrowClockwiseIcon
+								data-icon="inline-start"
+								className={syncStatuses.isPending ? "animate-spin" : ""}
+							/>
+							Sync Statuses
+						</Button>
+						<Button onClick={() => setCreateOpen(true)}>
+							<PlusIcon data-icon="inline-start" />
+							New room
+						</Button>
+					</>
 				}
 			/>
 

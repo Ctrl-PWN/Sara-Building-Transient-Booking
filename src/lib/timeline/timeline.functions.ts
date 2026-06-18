@@ -56,6 +56,9 @@ function mapBookingRow(row: {
 		paymentStatus: row.paymentStatus as BookingPaymentStatus,
 		roomType: "",
 		roomBasePrice: null,
+		roomMonthlyPrice: null,
+		transferredFromBookingRef: null,
+		bookingType: "DAILY",
 		depositDeadline: null,
 		finalDueDate: null,
 		depositPctSnapshot: "",
@@ -99,8 +102,8 @@ async function getTimelineWeekFromDb(
 			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 			.where(
 				and(
-					lt(bookings.checkIn, new Date(weekEnd)),
-					gt(bookings.checkOut, new Date(weekStart)),
+					lt(bookings.checkIn, new Date(weekEnd).toISOString()),
+					gt(bookings.checkOut, new Date(weekStart).toISOString()),
 					isNull(bookings.deletedAt),
 					ne(bookings.status, "CANCELLED"),
 					ne(bookings.status, "TRANSFERRED"),

@@ -10,11 +10,49 @@ export { createBookingLedgerLinesSchema };
 
 export type CreateBookingLedgerInput = {
 	walkIn: boolean;
+	bookingType: "DAILY" | "MONTHLY";
 	paymentMethod: PaymentMethod;
 	referenceNumber?: string;
 	reservationFeeType?: ReservationFeeType;
 	reservationFeeValue?: number;
 };
+
+function extractFeeFields(
+	values: CreateBookingFormValues | CreateBookingLedgerInput,
+): { feeType: ReservationFeeType; feeValue: number } {
+	// CreateBookingLedgerInput always has reservationFeeType/reservationFeeValue
+	if ("reservationFeeType" in values && values.reservationFeeType != null) {
+		return {
+			feeType: values.reservationFeeType,
+			feeValue: values.reservationFeeValue ?? 0,
+		};
+	}
+
+	// CreateBookingFormValues for daily reservation
+	if ("reservationFeeType" in values && "reservationFeeValue" in values) {
+		const v = values as {
+			reservationFeeType?: ReservationFeeType;
+			reservationFeeValue?: number;
+		};
+		if (v.reservationFeeType != null) {
+			return {
+				feeType: v.reservationFeeType,
+				feeValue: v.reservationFeeValue ?? 0,
+			};
+		}
+	}
+
+	// CreateBookingFormValues for monthly reservation
+	if ("cashAdvanceType" in values && "cashAdvanceValue" in values) {
+		const v = values as {
+			cashAdvanceType: ReservationFeeType;
+			cashAdvanceValue: number;
+		};
+		return { feeType: v.cashAdvanceType, feeValue: v.cashAdvanceValue };
+	}
+
+	throw new Error("Reservation fee type and value are required");
+}
 
 export function buildCreateBookingLedgerLines(
 	values: CreateBookingFormValues | CreateBookingLedgerInput,
@@ -35,7 +73,10 @@ export function buildCreateBookingLedgerLines(
 				category: "ROOM_CHARGE",
 				amount: toDecimalString(stayTotal),
 				isPaid: true,
-				description: "Room charge (walk-in)",
+				description:
+					values.bookingType === "MONTHLY"
+						? "Monthly room charge (walk-in)"
+						: "Room charge (walk-in)",
 				...paymentFields,
 			},
 		];
@@ -43,14 +84,13 @@ export function buildCreateBookingLedgerLines(
 		return createBookingLedgerLinesSchema.parse(lines);
 	}
 
-	if (values.reservationFeeType == null || values.reservationFeeValue == null) {
-		throw new Error("Reservation fee type and value are required");
-	}
+	// Reservation - daily or monthly
+	const { feeType, feeValue } = extractFeeFields(values);
 
 	const deposit = calculateReservationFee({
 		total: stayTotal,
-		feeType: values.reservationFeeType,
-		feeValue: values.reservationFeeValue,
+		feeType,
+		feeValue,
 	});
 
 	if (deposit <= 0) {
@@ -62,20 +102,27 @@ export function buildCreateBookingLedgerLines(
 	}
 
 	const balance = stayTotal - deposit;
+	const description =
+		values.bookingType === "MONTHLY"
+			? "Monthly reservation deposit (cash advance)"
+			: "Reservation deposit";
 
 	const lines: CreateBookingLedgerLine[] = [
 		{
 			category: "DEPOSIT",
 			amount: toDecimalString(deposit),
 			isPaid: true,
-			description: "Reservation deposit",
+			description,
 			...paymentFields,
 		},
 		{
 			category: "ROOM_CHARGE",
 			amount: toDecimalString(balance),
 			isPaid: false,
-			description: "Room charge balance due at check-in",
+			description:
+				values.bookingType === "MONTHLY"
+					? "Monthly room charge balance due at check-in"
+					: "Room charge balance due at check-in",
 		},
 	];
 

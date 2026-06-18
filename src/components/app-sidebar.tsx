@@ -16,12 +16,18 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { isNavItemActive, mainNavItems } from "@/lib/nav";
+import type { getSession } from "@/lib/session/session.functions";
 
-export function AppSidebar() {
+type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
+
+type AppSidebarProps = {
+	session: Session;
+};
+
+export function AppSidebar({ session }: AppSidebarProps) {
 	const pathname = useRouterState({ select: (s) => s.location.pathname });
 	const navigate = useNavigate();
-	const { data: session } = authClient.useSession();
-	const isAdmin = session?.user.role === "admin";
+	const isAdmin = session.user.role === "admin";
 	const adminOnlyPaths = ["/user-management", "/room-management"];
 	const visibleNavItems = isAdmin
 		? mainNavItems

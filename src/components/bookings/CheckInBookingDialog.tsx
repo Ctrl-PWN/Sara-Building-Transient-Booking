@@ -12,6 +12,7 @@ import {
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
 import type { PaymentMethod } from "@/db/schema/enums";
@@ -84,56 +85,59 @@ export function CheckInBookingDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Check in guest</DialogTitle>
-				</DialogHeader>
-				<form
-					className="space-y-4 py-2"
-					onSubmit={(event) => {
-						event.preventDefault();
-						void form.handleSubmit();
-					}}
-				>
-					<form.AppForm>
-						<div className="rounded-lg border p-4 space-y-2 text-sm">
-							<p>
-								<span className="text-muted-foreground">Guest:</span>{" "}
-								{booking.firstName} {booking.lastName}
-							</p>
-							<p>
-								<span className="text-muted-foreground">Room:</span>{" "}
-								{booking.roomNumber}
-							</p>
-							<p>
-								<span className="text-muted-foreground">Stay:</span>{" "}
-								{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")} –{" "}
-								{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
-							</p>
-							<p className="font-medium pt-1">
-								Room balance due: {formatPeso(balanceAmount)}
-							</p>
-						</div>
+			<DialogOutsideScroll className="sm:max-w-lg">
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Check in guest</DialogTitle>
+					</DialogHeader>
+					<form
+						className="space-y-4 py-2"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void form.handleSubmit();
+						}}
+					>
+						<form.AppForm>
+							<div className="rounded-lg border p-4 space-y-2 text-sm">
+								<p>
+									<span className="text-muted-foreground">Guest:</span>{" "}
+									{booking.firstName} {booking.lastName}
+								</p>
+								<p>
+									<span className="text-muted-foreground">Room:</span>{" "}
+									{booking.roomNumber}
+								</p>
+								<p>
+									<span className="text-muted-foreground">Stay:</span>{" "}
+									{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")}{" "}
+									–{" "}
+									{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
+								</p>
+								<p className="font-medium pt-1">
+									Room balance due: {formatPeso(balanceAmount)}
+								</p>
+							</div>
 
-						<p className="text-sm text-muted-foreground">
-							Collect the full room balance before checking the guest in.
-						</p>
+							<p className="text-sm text-muted-foreground">
+								Collect the full room balance before checking the guest in.
+							</p>
 
-						<LedgerPaymentFieldsSection form={form} />
+							<LedgerPaymentFieldsSection form={form} />
 
-						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-							>
-								Cancel
-							</Button>
-							<form.SubmitButton label="Check in & record payment" />
-						</DialogFooter>
-					</form.AppForm>
-				</form>
-			</DialogContent>
+							<DialogFooter>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => onOpenChange(false)}
+								>
+									Cancel
+								</Button>
+								<form.SubmitButton label="Check in & record payment" />
+							</DialogFooter>
+						</form.AppForm>
+					</form>
+				</DialogContent>
+			</DialogOutsideScroll>
 		</Dialog>
 	);
 }

@@ -46,8 +46,8 @@ export function TodayListCard({
 									</p>
 								</div>
 								<span className="font-body text-xs font-medium text-on-surface-variant group-hover:text-on-surface">
-									{formatManilaDate(booking.checkIn)} →{" "}
-									{formatManilaDate(booking.checkOut)}
+									{booking.checkIn ? formatManilaDate(booking.checkIn) : "—"} →{" "}
+									{booking.checkOut ? formatManilaDate(booking.checkOut) : "—"}
 								</span>
 							</Link>
 						))}

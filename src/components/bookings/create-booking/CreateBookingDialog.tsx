@@ -83,6 +83,26 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 	);
 }
 
+function computeMonthlyDates(
+	checkInDate: string,
+	checkInTime: string,
+	durationMonths: number,
+): { checkIn: string; checkOut: string } {
+	const checkIn = new Date(`${checkInDate}T${checkInTime}`);
+
+	const date = new Date(checkInDate);
+	const targetMonth = date.getMonth() + durationMonths;
+	const targetYear = date.getFullYear();
+	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+	const day = Math.min(date.getDate(), lastDayOfMonth);
+	const checkOut = new Date(targetYear, targetMonth, day, 12, 0, 0);
+
+	return {
+		checkIn: checkIn.toISOString(),
+		checkOut: checkOut.toISOString(),
+	};
+}
+
 export function CreateBookingDialog({
 	open,
 	onOpenChange,
@@ -102,30 +122,66 @@ export function CreateBookingDialog({
 	const form = useCreateBookingForm({
 		walkIn,
 		onSubmit: async (value) => {
+			const isMonthly = value.bookingType === "MONTHLY";
+			let checkIn: string;
+			let checkOut: string;
+			let feeType: "PERCENT" | "FIXED" = "PERCENT";
+			let feeValue = 0;
+			let depositPercentage = 0;
+
+			if (isMonthly) {
+				const dates = computeMonthlyDates(
+					value.checkInDate,
+					value.checkInTime,
+					1,
+				);
+				checkIn = dates.checkIn;
+				checkOut = dates.checkOut;
+
+				feeType = value.cashAdvanceType ?? "PERCENT";
+				feeValue = value.cashAdvanceValue ?? 0;
+
+				const selectedRoom = rooms.find(
+					(r) => r.id.toString() === value.roomId,
+				);
+				const monthlyPrice = Number(selectedRoom?.monthlyPrice) || 0;
+				const subtotal = monthlyPrice;
+				const depositAmount =
+					feeType === "PERCENT" ? (subtotal * feeValue) / 100 : feeValue;
+				depositPercentage = subtotal > 0 ? (depositAmount / subtotal) * 100 : 0;
+			} else {
+				checkIn = `${value.checkInDate}T${value.checkInTime}`;
+				checkOut = `${value.checkOutDate}T${value.checkOutTime}`;
+				feeType = value.walkIn
+					? "PERCENT"
+					: (value.reservationFeeType ?? "PERCENT");
+				feeValue = value.walkIn ? 0 : (value.reservationFeeValue ?? 0);
+				depositPercentage = value.walkIn
+					? 100
+					: feeType === "PERCENT"
+						? feeValue
+						: 0;
+			}
+
 			await mutation.mutateAsync({
 				roomId: Number(value.roomId),
 				firstName: value.firstName.trim(),
 				lastName: value.lastName.trim(),
 				contactNumber: value.contactNumber.trim() || undefined,
-				checkIn: `${value.checkInDate}T${value.checkInTime}`,
-				checkOut: `${value.checkOutDate}T${value.checkOutTime}`,
+				checkIn,
+				checkOut,
 				address: value.address?.trim() || "",
 				occupantsCount: value.occupantsCount,
 				walkIn: value.walkIn,
+				bookingType: value.bookingType,
 				paymentMethod: value.paymentMethod,
 				referenceNumber:
 					value.paymentMethod === "CASH"
 						? undefined
 						: value.referenceNumber.trim() || undefined,
-				reservationFeeType: value.walkIn ? undefined : value.reservationFeeType,
-				reservationFeeValue: value.walkIn
-					? undefined
-					: value.reservationFeeValue,
-				depositPercentage: value.walkIn
-					? 100
-					: value.reservationFeeType === "PERCENT"
-						? value.reservationFeeValue
-						: 0,
+				reservationFeeType: feeType,
+				reservationFeeValue: feeValue,
+				depositPercentage,
 			});
 		},
 	});
@@ -142,18 +198,20 @@ export function CreateBookingDialog({
 		}
 	}, [open, walkIn, form]);
 
-	const { roomOptions, getBookedDatesForRoom } = useCreateBookingAvailability({
-		rooms,
-		bookings,
-		walkIn,
-	});
-
 	const selectedRoomId = useSelector(form.store, (s) => s.values.roomId);
+	const bookingType = useSelector(form.store, (s) => s.values.bookingType);
 	const formCheckInDate = useSelector(form.store, (s) => s.values.checkInDate);
 	const formCheckOutDate = useSelector(
 		form.store,
 		(s) => s.values.checkOutDate,
 	);
+
+	const { roomOptions, getBookedDatesForRoom } = useCreateBookingAvailability({
+		rooms,
+		bookings,
+		walkIn,
+		bookingType,
+	});
 
 	const prevRoomIdRef = useRef(selectedRoomId);
 
@@ -164,12 +222,12 @@ export function CreateBookingDialog({
 		) {
 			form.setFieldValue("checkInDate", "");
 			form.setFieldValue("checkOutDate", "");
-			if (walkIn) {
+			if (walkIn && bookingType === "DAILY") {
 				form.setFieldValue("checkInDate", todayIsoDate());
 			}
 		}
 		prevRoomIdRef.current = selectedRoomId;
-	}, [selectedRoomId, form, walkIn]);
+	}, [selectedRoomId, form, walkIn, bookingType]);
 
 	const isDateDisabled = useCallback(
 		(date: Date) => {
@@ -182,18 +240,28 @@ export function CreateBookingDialog({
 		[selectedRoomId, getBookedDatesForRoom],
 	);
 
+	const isMonthly = bookingType === "MONTHLY";
+	const hasCheckInDate = !!formCheckInDate;
+
 	const canProceed =
 		(step === 1 && !!selectedRoomId) ||
-		(step === 2 && !!formCheckInDate && !!formCheckOutDate);
+		(step === 2 &&
+			(isMonthly ? hasCheckInDate : hasCheckInDate && !!formCheckOutDate));
 
 	const handleNext = () => {
 		if (step === 1 && selectedRoomId) {
-			if (walkIn) {
+			if (walkIn && bookingType === "DAILY") {
 				form.setFieldValue("checkInDate", todayIsoDate());
 			}
 			setStep(2);
-		} else if (step === 2 && formCheckInDate && formCheckOutDate) {
-			setStep(3);
+		} else if (step === 2) {
+			if (isMonthly) {
+				if (formCheckInDate) {
+					setStep(3);
+				}
+			} else if (hasCheckInDate && formCheckOutDate) {
+				setStep(3);
+			}
 		}
 	};
 
@@ -283,7 +351,7 @@ export function CreateBookingDialog({
 							/>
 
 							{step === 3 && !walkIn && (
-								<CreateBookingReservationSection form={form} />
+								<CreateBookingReservationSection form={form} rooms={rooms} />
 							)}
 
 							{step === 3 && <CreateBookingPaymentSection form={form} />}

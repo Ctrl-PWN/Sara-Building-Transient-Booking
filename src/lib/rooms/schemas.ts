@@ -19,6 +19,8 @@ export const createRoomSchema = z.object({
 		.number()
 		.positive("Base price must be a positive number")
 		.max(9999999, "Base price is too large"),
+	monthlyPrice: z.number().min(0, "Monthly price must be 0 or greater"),
+	status: z.enum(roomStatusValues),
 });
 
 export const updateRoomSchema = z.object({
@@ -43,6 +45,10 @@ export const updateRoomSchema = z.object({
 		.number()
 		.positive("Base price must be a positive number")
 		.max(9999999, "Base price is too large")
+		.optional(),
+	monthlyPrice: z
+		.number()
+		.min(0, "Monthly price must be 0 or greater")
 		.optional(),
 	status: z.enum(roomStatusValues).optional(),
 });

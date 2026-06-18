@@ -4,6 +4,7 @@ import {
 	ArrowLeftIcon,
 	ArrowSquareOutIcon,
 	CircleNotchIcon,
+	PrinterIcon,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { formatGuestName } from "@/lib/bookings/types";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 import { InvoiceDocument } from "./InvoiceDocument";
+import { ThermalPrintPreview } from "./ThermalPrintPreview";
 
 const PDFViewer = lazy(() =>
 	import("@react-pdf/renderer").then((m) => ({ default: m.PDFViewer })),
@@ -30,8 +32,8 @@ type InvoicePdfPreviewProps = {
 
 function ViewerSkeleton() {
 	return (
-		<div className="flex h-[calc(100vh-180px)] items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
-			<div className="flex items-center gap-2 text-sm text-gray-500">
+		<div className="flex h-[calc(100vh-180px)] items-center justify-center rounded-xl border border-border bg-muted">
+			<div className="flex items-center gap-2 text-sm text-muted-foreground">
 				<CircleNotchIcon className="animate-spin" size={16} />
 				Preparing invoice…
 			</div>
@@ -44,6 +46,7 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
 	const [blobUrl, setBlobUrl] = useState<string | null>(null);
 	const [opening, setOpening] = useState(false);
 	const [viewerHeight, setViewerHeight] = useState(800);
+	const [thermalOpen, setThermalOpen] = useState(false);
 
 	useEffect(() => {
 		setViewerHeight(window.innerHeight - 180);
@@ -92,48 +95,71 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
 						<ArrowLeftIcon className="mr-2" size={16} />
 						Back to {formatGuestName(booking)}
 					</Link>
-					<Button
-						type="button"
-						size="sm"
-						onClick={openInNewTab}
-						disabled={opening}
-					>
-						{opening ? (
-							<CircleNotchIcon
-								className="animate-spin"
-								data-icon="inline-start"
-								size={16}
-							/>
-						) : (
-							<ArrowSquareOutIcon data-icon="inline-start" size={16} />
-						)}
-						{opening ? "Opening…" : "Open in new tab"}
-					</Button>
+					<div className="flex gap-2">
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => setThermalOpen(true)}
+						>
+							<PrinterIcon data-icon="inline-start" size={16} />
+							Print Receipt
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							onClick={openInNewTab}
+							disabled={opening}
+						>
+							{opening ? (
+								<CircleNotchIcon
+									className="animate-spin"
+									data-icon="inline-start"
+									size={16}
+								/>
+							) : (
+								<ArrowSquareOutIcon data-icon="inline-start" size={16} />
+							)}
+							{opening ? "Opening…" : "Open in new tab"}
+						</Button>
+					</div>
 				</div>
 
 				<Suspense fallback={<ViewerSkeleton />}>
-					<PDFViewer
-						width="100%"
-						height={viewerHeight}
-						showToolbar={false}
-						style={{
-							width: "100%",
-							height: "calc(100vh - 180px)",
-							border: "1px solid #e5e7eb",
-							borderRadius: 12,
-						}}
-					>
-						<InvoiceDocument
-							booking={booking}
-							transactions={props.transactions}
-							total={props.total}
-							payments={props.payments}
-							remainingBalance={props.remainingBalance}
-							issuedBy={props.issuedBy}
-						/>
-					</PDFViewer>
+					<div className="overflow-hidden rounded-xl border border-border">
+						<PDFViewer
+							width="100%"
+							height={viewerHeight}
+							showToolbar={false}
+							style={{
+								width: "100%",
+								height: "calc(100vh - 180px)",
+								border: "none",
+							}}
+						>
+							<InvoiceDocument
+								booking={booking}
+								transactions={props.transactions}
+								total={props.total}
+								payments={props.payments}
+								remainingBalance={props.remainingBalance}
+								issuedBy={props.issuedBy}
+							/>
+						</PDFViewer>
+					</div>
 				</Suspense>
 			</div>
+
+			<ThermalPrintPreview
+				open={thermalOpen}
+				onOpenChange={setThermalOpen}
+				booking={booking}
+				transactions={props.transactions}
+				total={props.total}
+				payments={props.payments}
+				remainingBalance={props.remainingBalance}
+				issuedBy={props.issuedBy}
+			/>
 		</main>
 	);
 }

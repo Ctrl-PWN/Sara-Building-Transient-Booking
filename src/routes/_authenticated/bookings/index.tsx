@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { z } from "zod";
 import type { SortOption } from "@/components/bookings/BookingsFilterBar";
 import { BookingsPageHeader } from "@/components/bookings/BookingsPageHeader";
@@ -9,7 +9,6 @@ import { CreateBookingDialog } from "@/components/bookings/CreateBookingDialog";
 import { FeedbackDialog } from "@/components/ui/feedback-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { bookingQueries } from "@/lib/bookings/bookings.queries";
-import { computeBookingDisplayStatus } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { roomQueries } from "@/lib/rooms/rooms.queries";
 
@@ -54,28 +53,8 @@ function BookingsListPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [roomFilter, setRoomFilter] = useState("all");
-	const [statusFilter, setStatusFilter] = useState("all");
+	const [bookingTypeFilter, setBookingTypeFilter] = useState("all");
 	const [sortBy, setSortBy] = useState<SortOption>("checkIn-newest");
-
-	const activeStatusOptions = useMemo(
-		() => [
-			{ value: "RESERVED", label: "Reserved" },
-			{ value: "CHECKED_IN", label: "Checked-In" },
-			{ value: "OVERDUE", label: "Overdue" },
-		],
-		[],
-	);
-
-	const historyStatusOptions = useMemo(
-		() => [
-			{ value: "CHECKED_OUT", label: "Checked-Out" },
-			{ value: "CANCELLED", label: "Cancelled" },
-			{ value: "EVICTED", label: "Evicted" },
-			{ value: "TRANSFERRED", label: "Transferred" },
-		],
-		[],
-	);
 
 	const filterBookings = (list: BookingWithRoom[]) => {
 		let result = list;
@@ -90,22 +69,8 @@ function BookingsListPage() {
 			);
 		}
 
-		if (roomFilter !== "all") {
-			const roomId = Number(roomFilter);
-			result = result.filter((b) => b.roomId === roomId);
-		}
-
-		if (statusFilter !== "all") {
-			if (statusFilter === "OVERDUE") {
-				result = result.filter((b) => {
-					if (b.status !== "CHECKED_IN") return false;
-					return (
-						computeBookingDisplayStatus(b.status, b.checkOut) === "OVERDUE"
-					);
-				});
-			} else {
-				result = result.filter((b) => b.status === statusFilter);
-			}
+		if (bookingTypeFilter !== "all") {
+			result = result.filter((b) => b.bookingType === bookingTypeFilter);
 		}
 
 		const sorted = [...result];
@@ -129,12 +94,6 @@ function BookingsListPage() {
 				break;
 			case "checkIn-oldest":
 				sorted.sort((a, b) => a.checkIn.localeCompare(b.checkIn));
-				break;
-			case "room":
-				sorted.sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
-				break;
-			case "status":
-				sorted.sort((a, b) => a.status.localeCompare(b.status));
 				break;
 			default:
 				break;
@@ -183,13 +142,9 @@ function BookingsListPage() {
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
 							emptyMessage="No active bookings."
-							roomFilter={roomFilter}
-							statusFilter={statusFilter}
+							bookingTypeFilter={bookingTypeFilter}
 							sortBy={sortBy}
-							rooms={rooms}
-							statusOptions={activeStatusOptions}
-							onRoomFilterChange={setRoomFilter}
-							onStatusFilterChange={setStatusFilter}
+							onBookingTypeFilterChange={setBookingTypeFilter}
 							onSortByChange={setSortBy}
 						/>
 					</TabsContent>
@@ -199,13 +154,9 @@ function BookingsListPage() {
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
 							emptyMessage="No finished bookings yet."
-							roomFilter={roomFilter}
-							statusFilter={statusFilter}
+							bookingTypeFilter={bookingTypeFilter}
 							sortBy={sortBy}
-							rooms={rooms}
-							statusOptions={historyStatusOptions}
-							onRoomFilterChange={setRoomFilter}
-							onStatusFilterChange={setStatusFilter}
+							onBookingTypeFilterChange={setBookingTypeFilter}
 							onSortByChange={setSortBy}
 						/>
 					</TabsContent>

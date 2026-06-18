@@ -15,6 +15,7 @@ export const rooms = pgTable("rooms", {
 	type: varchar("type").notNull(),
 	capacity: integer("capacity").notNull(),
 	basePrice: decimal("base_price", { precision: 19, scale: 4 }).notNull(),
+	monthlyPrice: decimal("monthly_price", { precision: 19, scale: 4 }),
 	status: roomStatusEnum("status").default("AVAILABLE").notNull(),
 	deletedAt: timestamp("deleted_at", {
 		withTimezone: true,
