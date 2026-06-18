@@ -58,7 +58,7 @@ function LogInPage() {
 						<img
 							src="/logo.png"
 							alt="Sara Building"
-							className="h-20 w-100 object-contain"
+							className="h-24 w-auto max-w-full object-contain"
 						/>
 						<h1 className="mt-3 font-display text-3xl text-[var(--on-surface)]">
 							Welcome back
