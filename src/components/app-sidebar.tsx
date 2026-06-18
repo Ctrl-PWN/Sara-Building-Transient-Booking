@@ -41,13 +41,20 @@ export function AppSidebar({ session }: AppSidebarProps) {
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarHeader className="border-b border-sidebar-border">
-				<div className="flex flex-col gap-0.5 px-2 py-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
-					<span className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground group-data-[collapsible=icon]:sr-only">
-						Sara Building
-					</span>
-					<span className="font-display text-lg font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:sr-only">
-						Block Center
-					</span>
+				<div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+					<img
+						src="/logo.png"
+						alt="Sara Building"
+						className="size-9 shrink-0 rounded-md object-contain"
+					/>
+					<div className="flex min-w-0 flex-col group-data-[collapsible=icon]:sr-only">
+						<span className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
+							Sara Building
+						</span>
+						<span className="font-display text-lg font-semibold tracking-tight text-sidebar-foreground">
+							Block Center
+						</span>
+					</div>
 				</div>
 			</SidebarHeader>
 			<SidebarContent>

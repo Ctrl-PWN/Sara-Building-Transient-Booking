@@ -12,10 +12,6 @@ import { and, eq } from "drizzle-orm";
 import { createInterface } from "node:readline/promises";
 import { exit, stdin, stdout } from "node:process";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { db } from "@/db";
-import { account, user } from "../auth-schema";
-import { hashPassword } from "better-auth/crypto";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -62,16 +58,12 @@ function parseArgs(argv: string[]): CliArgs {
     } else if (a === "--first-name") {
       out.firstName = argv[++i];
     } else if (a?.startsWith("--lastName=")) {
-      out.firstName = a.slice("--firstName=".length);
-    } else if (a === "--firstName") {
-      out.firstName = argv[++i];
+      out.lastName = a.slice("--lastName=".length);
+    } else if (a === "--lastName") {
+      out.lastName = argv[++i];
     } else if (a?.startsWith("--last-name=")) {
       out.lastName = a.slice("--last-name=".length);
     } else if (a === "--last-name") {
-      out.lastName = argv[++i];
-    } else if (a?.startsWith("--lastName=")) {
-      out.lastName = a.slice("--lastName=".length);
-    } else if (a === "--lastName") {
       out.lastName = argv[++i];
     } else if (a?.startsWith("--")) {
       out.unknown.push(a);
@@ -147,6 +139,19 @@ async function main(): Promise<void> {
       "DATABASE_URL is not set. Create a .env.local (or .env) file with DATABASE_URL.",
     );
   }
+  if (!process.env.BETTER_AUTH_SECRET) {
+    throw new Error(
+      "BETTER_AUTH_SECRET is not set. Generate one with: npx -y @better-auth/cli secret",
+    );
+  }
+
+  const [{ auth }, { db }, { account, user }, { hashPassword }] =
+    await Promise.all([
+      import("@/lib/auth"),
+      import("@/db"),
+      import("@/db/schema"),
+      import("better-auth/crypto"),
+    ]);
 
   const { email, password, firstName, lastName } = await collectInput(args);
 
@@ -162,7 +167,7 @@ async function main(): Promise<void> {
       `Account with email ${email} already exists (id=${u.id}). Promoting to admin and updating password.`,
     );
 
-    await db.update(user).set({ role: "ADMIN" }).where(eq(user.id, u.id));
+    await db.update(user).set({ role: "admin" }).where(eq(user.id, u.id));
 
     const hashed = await hashPassword(password);
     const updated = await db
@@ -189,11 +194,14 @@ async function main(): Promise<void> {
 
   const name = `${firstName} ${lastName}`.trim();
   const result = await auth.api.createUser({
-    body: { email, name, password, data: { firstName, lastName } },
-    headers: new Headers(),
+    body: {
+      email,
+      name,
+      password,
+      role: "admin",
+      data: { firstName, lastName },
+    },
   });
-
-  await db.update(user).set({ role: "ADMIN" }).where(eq(user.email, email));
 
   console.log(`Created admin user ${result.user.id} (${email}).`);
 }
