@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 	},
 	cellStatus: { width: "15%", alignItems: "flex-end" },
 	descTitle: { fontSize: 10, fontWeight: 500, color: COLORS.text },
-descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
+	descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
 	cellMuted: { fontSize: 10, color: COLORS.muted },
 	cellText: { fontSize: 10, color: COLORS.text },
 	paidPill: {
@@ -155,9 +155,9 @@ descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
 		paddingVertical: 4,
 	},
 	totalsLabel: { fontSize: 10, color: COLORS.muted },
-totalsValue: { fontSize: 10, fontWeight: 500, color: COLORS.text },
-totalsValueEmerald: { fontSize: 10, fontWeight: 500, color: COLORS.emerald },
-totalsDivider: {
+	totalsValue: { fontSize: 10, fontWeight: 500, color: COLORS.text },
+	totalsValueEmerald: { fontSize: 10, fontWeight: 500, color: COLORS.emerald },
+	totalsDivider: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		paddingTop: 8,
@@ -166,8 +166,8 @@ totalsDivider: {
 		borderTopColor: COLORS.border,
 	},
 	totalsBalanceLabel: { fontSize: 11, fontWeight: 600, color: COLORS.text },
-totalsBalanceValue: { fontSize: 11, fontWeight: 600, color: COLORS.emerald },
-totalsBalanceValueAmber: {
+	totalsBalanceValue: { fontSize: 11, fontWeight: 600, color: COLORS.emerald },
+	totalsBalanceValueAmber: {
 		fontSize: 11,
 		fontWeight: 600,
 		color: COLORS.amber,
@@ -236,9 +236,7 @@ export function InvoiceDocument({
 						{booking.contactNumber ? (
 							<Text style={styles.sectionSub}>{booking.contactNumber}</Text>
 						) : null}
-						<Text style={styles.sectionLabel}>
-							Check-out:
-						</Text>
+						<Text style={styles.sectionLabel}>Check-out:</Text>
 						<Text style={styles.sectionValue}>
 							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
 						</Text>
@@ -260,9 +258,7 @@ export function InvoiceDocument({
 						<Text style={[styles.tableHeaderCell, styles.thReference]}>
 							Reference
 						</Text>
-						<Text style={[styles.tableHeaderCell, styles.thAmount]}>
-							Price
-						</Text>
+						<Text style={[styles.tableHeaderCell, styles.thAmount]}>Price</Text>
 						<Text style={[styles.tableHeaderCell, styles.thStatus]}>
 							Status
 						</Text>
@@ -288,16 +284,16 @@ export function InvoiceDocument({
 									wrap={false}
 								>
 									{tx.referenceNumber ?? "—"}
-									</Text>
-									<Text style={[styles.cellAmount, styles.cellText]}>
-										{formatPeso(Number(tx.amount))}
-									</Text>
-									<View style={styles.cellStatus}>
-										{tx.isPaid ? (
-											<Text style={styles.paidPill}>Paid</Text>
-										) : (
-											<Text style={styles.unpaidPill}>Unpaid</Text>
-										)}
+								</Text>
+								<Text style={[styles.cellAmount, styles.cellText]}>
+									{formatPeso(Number(tx.amount))}
+								</Text>
+								<View style={styles.cellStatus}>
+									{tx.isPaid ? (
+										<Text style={styles.paidPill}>Paid</Text>
+									) : (
+										<Text style={styles.unpaidPill}>Unpaid</Text>
+									)}
 								</View>
 							</View>
 						))
