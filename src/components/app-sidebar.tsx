@@ -40,19 +40,18 @@ export function AppSidebar({ session }: AppSidebarProps) {
 
 	return (
 		<Sidebar collapsible="icon">
-			<SidebarHeader className="border-b border-sidebar-border">
-				<div className="flex items-center gap-3 px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-					<img
-						src="/logo.png"
-						alt="Sara Building"
-						className="size-9 shrink-0 rounded-md object-contain"
-					/>
+			<SidebarHeader className="h-14 border-b border-sidebar-border px-4">
+				<div className="flex items-center gap-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:px-0">
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">
+						{session.user.firstName?.[0] ?? "U"}
+						{session.user.lastName?.[0] ?? ""}
+					</div>
 					<div className="flex min-w-0 flex-col group-data-[collapsible=icon]:sr-only">
-						<span className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
-							Sara Building
+						<span className="truncate font-body text-sm font-medium text-sidebar-foreground">
+							{session.user.firstName} {session.user.lastName}
 						</span>
-						<span className="font-display text-lg font-semibold tracking-tight text-sidebar-foreground">
-							Block Center
+						<span className="truncate font-body text-xs capitalize text-muted-foreground">
+							{session.user.role}
 						</span>
 					</div>
 				</div>
