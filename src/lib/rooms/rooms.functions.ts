@@ -111,7 +111,7 @@ export const updateRoom = createServerFn({ method: "POST" })
 
 export const updateRoomStatus = createServerFn({ method: "POST" })
 	.middleware([sessionMiddleware()])
-	.inputValidator(updateRoomStatusSchema)
+	.validator(updateRoomStatusSchema)
 	.handler(async ({ data }) => {
 		const current = await db.query.rooms.findFirst({
 			where: eq(rooms.id, data.id),
