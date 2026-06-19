@@ -21,7 +21,7 @@ import {
 	syncBookingPaymentStatus,
 } from "@/lib/ledger/ledger.helpers";
 import { buildCreateBookingLedgerLines } from "./create-booking-ledger";
-
+import { computeLateFee, type LateFeePreview } from "./late-fee";
 import {
 	bookingByIdSchema,
 	bookingStatusSchema,
@@ -827,4 +827,94 @@ export const extendBooking = createServerFn({ method: "POST" })
 		});
 
 		return { success: true, newCheckOut: newCheckOut.toISOString() };
+	});
+
+const previewLateFeeSchema = z.object({
+	bookingId: z.number().int().positive(),
+});
+
+export const previewLateFee = createServerFn({ method: "GET" })
+	.validator(previewLateFeeSchema)
+	.handler(async ({ data }): Promise<LateFeePreview | null> => {
+		const rows = await db
+			.select({
+				checkOut: bookings.checkOut,
+				status: bookings.status,
+				basePrice: rooms.basePrice,
+			})
+			.from(bookings)
+			.innerJoin(rooms, eq(rooms.id, bookings.roomId))
+			.where(and(eq(bookings.id, data.bookingId), isNull(bookings.deletedAt)))
+			.limit(1);
+
+		const row = rows[0];
+		if (row?.status !== "CHECKED_IN" || !row.checkOut) return null;
+
+		return computeLateFee({
+			checkOut: row.checkOut,
+			roomBasePrice: row.basePrice,
+		});
+	});
+
+const applyLateFeeSchema = z.object({
+	bookingId: z.number().int().positive(),
+});
+
+export const applyLateFee = createServerFn({ method: "POST" })
+	.validator(applyLateFeeSchema)
+	.handler(async ({ data }) => {
+		const rows = await db
+			.select({
+				id: bookings.id,
+				checkOut: bookings.checkOut,
+				status: bookings.status,
+				basePrice: rooms.basePrice,
+			})
+			.from(bookings)
+			.innerJoin(rooms, eq(rooms.id, bookings.roomId))
+			.where(and(eq(bookings.id, data.bookingId), isNull(bookings.deletedAt)))
+			.limit(1);
+
+		const row = rows[0];
+		if (row?.status !== "CHECKED_IN" || !row.checkOut) {
+			throw new Error("Booking is not checked in or has been deleted");
+		}
+
+		const fee = computeLateFee({
+			checkOut: row.checkOut,
+			roomBasePrice: row.basePrice,
+		});
+		if (!fee) {
+			return { applied: false as const };
+		}
+
+		const existing = await db
+			.select({ id: ledgerTransactions.id })
+			.from(ledgerTransactions)
+			.where(
+				and(
+					eq(ledgerTransactions.bookingId, row.id),
+					eq(ledgerTransactions.category, "LATE_FEE"),
+					eq(ledgerTransactions.isPaid, false),
+				),
+			)
+			.limit(1);
+
+		if (existing[0]) {
+			return { applied: true as const, fee, reused: true };
+		}
+
+		await db.transaction(async (tx) => {
+			await tx.insert(ledgerTransactions).values({
+				bookingId: row.id,
+				category: "LATE_FEE",
+				amount: fee.amount.toFixed(4),
+				isPaid: false,
+				description: fee.description,
+			});
+
+			await syncBookingPaymentStatus(row.id, tx);
+		});
+
+		return { applied: true as const, fee, reused: false };
 	});
