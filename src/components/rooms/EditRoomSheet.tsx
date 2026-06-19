@@ -9,6 +9,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { roomStatusValues } from "@/db/schema/enums";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { updateRoomSchema } from "@/lib/rooms/schemas";
@@ -35,6 +36,7 @@ export function EditRoomSheet({
 		capacity: room?.capacity ?? 0,
 		basePrice: Number(room?.basePrice ?? 0),
 		monthlyPrice: Number(room?.monthlyPrice ?? 0),
+		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
 	};
 
 	const form = useAppForm({
@@ -61,6 +63,7 @@ export function EditRoomSheet({
 			form.setFieldValue("capacity", room.capacity);
 			form.setFieldValue("basePrice", Number(room.basePrice));
 			form.setFieldValue("monthlyPrice", Number(room.monthlyPrice ?? 0));
+			form.setFieldValue("status", room.status);
 		}
 	}, [room, open, form.setFieldValue]);
 
@@ -134,6 +137,18 @@ export function EditRoomSheet({
 									label="Monthly price"
 									placeholder="15000"
 									description="Price per month in PHP (optional, leave 0 if not applicable)"
+								/>
+							)}
+						</form.AppField>
+
+						<form.AppField name="status">
+							{(field) => (
+								<field.SelectField
+									label="Status"
+									options={roomStatusValues.map((s) => ({
+										value: s,
+										label: s.replace(/_/g, " "),
+									}))}
 								/>
 							)}
 						</form.AppField>
