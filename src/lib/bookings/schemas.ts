@@ -9,6 +9,7 @@ import {
 	ledgerPaymentFieldsShape,
 	paymentMethodSchema,
 	paymentReferenceRefine,
+	utilityExpenseItemsSchema,
 } from "@/lib/ledger/schemas";
 
 export { paymentMethodSchema };
@@ -311,6 +312,7 @@ export const extendBookingSchema = z
 		bookingRef: z.string().min(1, "Booking reference is required"),
 		withCashAdvance: z.boolean(),
 		...ledgerPaymentFieldsShape,
+		utilities: utilityExpenseItemsSchema.optional().default([]),
 	})
 	.superRefine((data, ctx) => {
 		paymentReferenceRefine(

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { computeBookingDisplayStatus } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { isSameManilaDayOrAfter } from "@/lib/date/manila";
 
 const statusColorMap: Record<
 	string,
@@ -23,13 +24,10 @@ const isNonRefundable = (depositPctSnapshot: string) =>
 
 const canCancel = (status: string) => ["RESERVED"].includes(status);
 
-const canCheckIn = (status: string, checkIn: string) => {
+const canCheckIn = (status: string, checkIn: string | null) => {
 	if (status !== "RESERVED") return false;
-	const checkInDate = new Date(checkIn);
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-	checkInDate.setHours(0, 0, 0, 0);
-	return today >= checkInDate;
+	if (!checkIn) return false;
+	return isSameManilaDayOrAfter(checkIn);
 };
 
 const canCheckOut = (status: string) => ["CHECKED_IN"].includes(status);
