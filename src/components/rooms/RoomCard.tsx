@@ -47,11 +47,19 @@ export function RoomCard({ room, onStatusClick }: RoomCardProps) {
 					<span className="text-foreground">{room.capacity} pax</span>
 				</div>
 				<div className="flex justify-between">
-					<span className="text-muted-foreground">Price</span>
+					<span className="text-muted-foreground">Daily</span>
 					<span className="font-medium text-foreground">
 						₱{Number(room.basePrice).toLocaleString()}/night
 					</span>
 				</div>
+				{room.monthlyPrice ? (
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">Monthly</span>
+						<span className="font-medium text-foreground">
+							₱{Number(room.monthlyPrice).toLocaleString()}/mo
+						</span>
+					</div>
+				) : null}
 			</div>
 			<div className="border-t border-border pt-2">
 				<Button

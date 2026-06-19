@@ -26,8 +26,6 @@ export function DeleteRoomDialog({
 
 	if (!room) return null;
 
-	const isOccupied = room.status === "OCCUPIED";
-
 	return (
 		<DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
 			<DialogPrimitive.Portal>
@@ -37,23 +35,11 @@ export function DeleteRoomDialog({
 						Delete room
 					</DialogPrimitive.Title>
 					<DialogPrimitive.Description className="mt-1 text-sm text-muted-foreground">
-						{isOccupied ? (
-							<span>
-								Room{" "}
-								<span className="font-medium text-foreground">
-									{room.roomNumber}
-								</span>{" "}
-								is currently occupied and cannot be deleted.
-							</span>
-						) : (
-							<span>
-								Are you sure you want to delete room{" "}
-								<span className="font-medium text-foreground">
-									{room.roomNumber}
-								</span>
-								? This action cannot be undone.
-							</span>
-						)}
+						Are you sure you want to delete room{" "}
+						<span className="font-medium text-foreground">
+							{room.roomNumber}
+						</span>
+						? This action cannot be undone.
 					</DialogPrimitive.Description>
 					<div className="mt-6 flex justify-end gap-2">
 						<DialogPrimitive.Close render={<Button variant="outline" />}>
@@ -64,7 +50,7 @@ export function DeleteRoomDialog({
 							onClick={() => {
 								void handleDelete();
 							}}
-							disabled={deleteRoom.isPending || isOccupied}
+							disabled={deleteRoom.isPending}
 						>
 							{deleteRoom.isPending ? "Deleting..." : "Delete"}
 						</Button>

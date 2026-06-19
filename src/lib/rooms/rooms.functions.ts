@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq, inArray, isNull, ne, not, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, ne, not, sql } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/db/index";
 import { bookings, rooms } from "@/db/schema";
@@ -57,7 +57,6 @@ export const createRoom = createServerFn({ method: "POST" })
 				basePrice: data.basePrice.toString(),
 				monthlyPrice:
 					data.monthlyPrice > 0 ? data.monthlyPrice.toString() : null,
-				status: data.status,
 			})
 			.returning();
 		return room;
@@ -137,19 +136,6 @@ export const deleteRoom = createServerFn({ method: "POST" })
 		});
 		if (!current) {
 			throw new Error("Room not found");
-		}
-		if (current.status === "OCCUPIED") {
-			throw new Error("Cannot delete an occupied room");
-		}
-
-		const [result] = await db
-			.select({ bookingCount: count() })
-			.from(bookings)
-			.where(and(eq(bookings.roomId, data.id), isNull(bookings.deletedAt)));
-		if (result.bookingCount > 0) {
-			throw new Error(
-				"Cannot delete a room with existing booking records. Consider disabling the room instead.",
-			);
 		}
 
 		await db
