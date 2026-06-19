@@ -86,13 +86,13 @@ export function AppSidebar({ session }: AppSidebarProps) {
 				<Button
 					type="button"
 					variant="ghost"
-					className="w-full justify-start"
+					className="w-full justify-start group-data-[collapsible=icon]:justify-center"
 					onClick={() => {
 						void handleLogout();
 					}}
 				>
-					<SignOutIcon data-icon="inline-start" />
-					<span>Log out</span>
+					<SignOutIcon />
+					<span className="group-data-[collapsible=icon]:sr-only">Log out</span>
 				</Button>
 			</SidebarFooter>
 			<SidebarRail />
