@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
+import { NotFoundPage } from "../components/layout/NotFoundPage";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
@@ -17,13 +18,7 @@ interface MyRouterContext {
 const THEME_INIT_SCRIPT = `(function(){try{var w=typeof window!=='undefined'?window:null;var d=w&&typeof document!=='undefined'?document:null;var root=d&&d.documentElement;if(!root)return;var stored=null;try{stored=w.localStorage.getItem('theme');}catch(e){if(w.console&&w.console.error)w.console.error('Theme init: localStorage read failed',e);}var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=false;try{prefersDark=w.matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){if(w.console&&w.console.error)w.console.error('Theme init: matchMedia failed',e);}var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme');}else{root.setAttribute('data-theme',mode);}root.style.colorScheme=resolved;}catch(e){if(typeof window!=='undefined'&&window.console&&window.console.error){window.console.error('Theme init failed',e);}}})();`;
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-	notFoundComponent: () => (
-		<main className="page-wrap px-4 py-6 pb-8">
-			<div className="text-center py-20">
-				<p className="text-muted-foreground">Page not found.</p>
-			</div>
-		</main>
-	),
+	notFoundComponent: () => <NotFoundPage />,
 	head: () => ({
 		meta: [
 			{

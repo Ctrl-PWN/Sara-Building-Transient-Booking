@@ -1,1 +1,0 @@
-ALTER TYPE "public"."ledger_transaction_category" ADD VALUE 'LATE_FEE';
