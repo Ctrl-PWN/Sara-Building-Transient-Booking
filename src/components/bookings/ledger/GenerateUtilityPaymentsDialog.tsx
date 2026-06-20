@@ -11,7 +11,6 @@ import { paymentMethodOptions } from "@/components/bookings/create-booking/creat
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
-	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogOutsideScroll,
@@ -166,131 +165,128 @@ export function GenerateUtilityPaymentsDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogOutsideScroll className="sm:max-w-2xl">
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Generate utility payments</DialogTitle>
-					</DialogHeader>
-					<form
-						className="space-y-4 py-2"
-						onSubmit={(event) => {
-							event.preventDefault();
-							event.stopPropagation();
-							void form.handleSubmit();
-						}}
-					>
-						<form.AppForm>
-							<p className="text-sm text-muted-foreground">
-								Utility charges for the current billing period. Missing
-								utilities are pre-filled. Existing utilities are locked and
-								already paid.
-							</p>
+				<DialogHeader>
+					<DialogTitle>Generate utility payments</DialogTitle>
+				</DialogHeader>
+				<form
+					className="space-y-4 py-2"
+					onSubmit={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						void form.handleSubmit();
+					}}
+				>
+					<form.AppForm>
+						<p className="text-sm text-muted-foreground">
+							Utility charges for the current billing period. Missing utilities
+							are pre-filled. Existing utilities are locked and already paid.
+						</p>
 
-							<div className="space-y-3">
-								{form.store.state.values.items.map((item, index) => {
-									const exists = existingUtilityTypes.has(item.utilityType);
-									return (
-										<div
-											key={item.utilityType}
-											className="rounded-md border bg-card p-3 space-y-2"
-										>
-											<div className="flex items-center justify-between">
-												<span className="font-medium text-sm">
-													{UTILITY_TYPE_LABELS[item.utilityType] ??
-														item.utilityType}
+						<div className="space-y-3">
+							{form.store.state.values.items.map((item, index) => {
+								const exists = existingUtilityTypes.has(item.utilityType);
+								return (
+									<div
+										key={item.utilityType}
+										className="rounded-md border bg-card p-3 space-y-2"
+									>
+										<div className="flex items-center justify-between">
+											<span className="font-medium text-sm">
+												{UTILITY_TYPE_LABELS[item.utilityType] ??
+													item.utilityType}
+											</span>
+											{exists && (
+												<span className="text-xs text-muted-foreground">
+													Already generated
 												</span>
-												{exists && (
-													<span className="text-xs text-muted-foreground">
-														Already generated
-													</span>
-												)}
-											</div>
-
-											{exists ? (
-												<p className="text-xs text-muted-foreground">
-													Amount:{" "}
-													{formatPeso(
-														Number(
-															transactions.find(
-																(t) =>
-																	t.utilityType === item.utilityType &&
-																	t.category === "UTILITY",
-															)?.amount ?? 0,
-														),
-													)}
-												</p>
-											) : (
-												<>
-													<form.AppField name={`items[${index}].amount`}>
-														{(field) => (
-															<field.NumberField
-																label="Amount"
-																placeholder="0.00"
-																min={0}
-															/>
-														)}
-													</form.AppField>
-													<form.AppField name={`items[${index}].description`}>
-														{(field) => (
-															<field.TextField
-																label="Description"
-																placeholder="e.g. Electricity bill"
-															/>
-														)}
-													</form.AppField>
-												</>
 											)}
 										</div>
-									);
-								})}
-							</div>
 
-							<div className="space-y-3 rounded-md border p-3">
-								<p className="text-sm font-medium">Payment</p>
-								<form.AppField name="paymentMethod">
-									{(field) => (
-										<field.RadioChoiceCardField
-											label="Payment method"
-											options={[...paymentMethodOptions]}
-											onValueChange={(method: string) => {
-												if (method === "CASH") {
-													form.setFieldValue("referenceNumber", "");
-												}
-											}}
-										/>
-									)}
-								</form.AppField>
-								<form.AppField name="referenceNumber">
-									{(field) => (
-										<field.TextField
-											label="Reference number"
-											placeholder="e.g. GCash-1234567890"
-											description="Required for GCash and bank transfer"
-											disabled={paymentMethod === "CASH"}
-										/>
-									)}
-								</form.AppField>
-							</div>
+										{exists ? (
+											<p className="text-xs text-muted-foreground">
+												Amount:{" "}
+												{formatPeso(
+													Number(
+														transactions.find(
+															(t) =>
+																t.utilityType === item.utilityType &&
+																t.category === "UTILITY",
+														)?.amount ?? 0,
+													),
+												)}
+											</p>
+										) : (
+											<>
+												<form.AppField name={`items[${index}].amount`}>
+													{(field) => (
+														<field.NumberField
+															label="Amount"
+															placeholder="0.00"
+															min={0}
+														/>
+													)}
+												</form.AppField>
+												<form.AppField name={`items[${index}].description`}>
+													{(field) => (
+														<field.TextField
+															label="Description"
+															placeholder="e.g. Electricity bill"
+														/>
+													)}
+												</form.AppField>
+											</>
+										)}
+									</div>
+								);
+							})}
+						</div>
 
-							<div className="rounded-md border bg-muted/40 p-3 text-sm">
-								<div className="flex justify-between font-semibold">
-									<span>Total to be generated</span>
-									<span>{formatPeso(total)}</span>
-								</div>
-							</div>
+						<div className="space-y-3 rounded-md border p-3">
+							<p className="text-sm font-medium">Payment</p>
+							<form.AppField name="paymentMethod">
+								{(field) => (
+									<field.RadioChoiceCardField
+										label="Payment method"
+										options={[...paymentMethodOptions]}
+										onValueChange={(method: string) => {
+											if (method === "CASH") {
+												form.setFieldValue("referenceNumber", "");
+											}
+										}}
+									/>
+								)}
+							</form.AppField>
+							<form.AppField name="referenceNumber">
+								{(field) => (
+									<field.TextField
+										label="Reference number"
+										placeholder="e.g. GCash-1234567890"
+										description="Required for GCash and bank transfer"
+										disabled={paymentMethod === "CASH"}
+									/>
+								)}
+							</form.AppField>
+						</div>
 
-							<DialogFooter>
-								<Button
-									variant="outline"
-									type="button"
-									onClick={() => onOpenChange(false)}
-								>
-									Cancel
-								</Button>
-								<form.SubmitButton label="Generate payments" />
-							</DialogFooter>
-						</form.AppForm>
-					</form>
-				</DialogContent>
+						<div className="rounded-md border bg-muted/40 p-3 text-sm">
+							<div className="flex justify-between font-semibold">
+								<span>Total to be generated</span>
+								<span>{formatPeso(total)}</span>
+							</div>
+						</div>
+
+						<DialogFooter>
+							<Button
+								variant="outline"
+								type="button"
+								onClick={() => onOpenChange(false)}
+							>
+								Cancel
+							</Button>
+							<form.SubmitButton label="Generate payments" />
+						</DialogFooter>
+					</form.AppForm>
+				</form>
 			</DialogOutsideScroll>
 		</Dialog>
 	);

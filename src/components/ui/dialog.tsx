@@ -140,7 +140,7 @@ function DialogOutsideScroll({
 								ref={popupRef}
 								initialFocus={popupRef}
 								className={cn(
-									"relative mx-auto my-16 w-full max-w-lg rounded-xl border border-border bg-background p-6 shadow-lg outline-0 data-[ending-style]:fade-out data-[starting-style]:fade-in data-[ending-style]:zoom-out data-[starting-style]:zoom-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150",
+									"relative mx-auto my-16 flex max-h-[calc(100vh-8rem)] w-full max-w-lg flex-col overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-lg outline-0 data-[ending-style]:fade-out data-[starting-style]:fade-in data-[ending-style]:zoom-out data-[starting-style]:zoom-in data-[ending-style]:animate-out data-[starting-style]:animate-in data-[ending-style]:duration-150 data-[starting-style]:duration-150",
 									className,
 								)}
 								{...props}
