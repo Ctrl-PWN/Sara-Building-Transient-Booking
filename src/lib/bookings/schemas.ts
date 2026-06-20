@@ -44,13 +44,11 @@ export const createBookingFormSchema = z
 		checkOutDate: z.string(),
 		checkInTime: z.string(),
 		checkOutTime: z.string(),
-		// Daily reservation
+		// Reservation fee (used for both daily and monthly)
 		reservationFeeType: reservationFeeTypeSchema.optional(),
 		reservationFeeValue: z.number().min(0).optional(),
-		// Monthly cash advance
-		cashAdvanceType: reservationFeeTypeSchema.optional(),
-		cashAdvanceValue: z.number().min(0).optional(),
 		monthlyDuration: z.number().int().min(1).max(12).optional(),
+		hasAdvance: z.boolean().optional(),
 		// Payment
 		...ledgerPaymentFieldsShape,
 	})
@@ -128,16 +126,16 @@ export const createBookingFormSchema = z
 					path: ["checkInDate"],
 				});
 			}
-			// Validate cash advance if provided
+			// Validate reservation fee if provided
 			if (
-				data.cashAdvanceType === "PERCENT" &&
-				data.cashAdvanceValue != null &&
-				data.cashAdvanceValue > 100
+				data.reservationFeeType === "PERCENT" &&
+				data.reservationFeeValue != null &&
+				data.reservationFeeValue > 100
 			) {
 				ctx.addIssue({
 					code: "custom",
-					message: "Percentage cash advance cannot exceed 100%",
-					path: ["cashAdvanceValue"],
+					message: "Percentage reservation fee cannot exceed 100%",
+					path: ["reservationFeeValue"],
 				});
 			}
 		}
@@ -247,6 +245,8 @@ export const createBookingServerSchema = z
 		referenceNumber: z.string().optional(),
 		reservationFeeType: reservationFeeTypeSchema.optional(),
 		reservationFeeValue: z.number().min(0).optional(),
+		monthlyDuration: z.number().int().min(1).max(12).optional(),
+		hasAdvance: z.boolean().optional(),
 		depositPercentage: z.number().min(0),
 	})
 	.refine((data) => new Date(data.checkOut) > new Date(data.checkIn), {

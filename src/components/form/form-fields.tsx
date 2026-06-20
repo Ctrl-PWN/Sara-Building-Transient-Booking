@@ -670,7 +670,10 @@ function DateField({
 			</div>
 			{selectedDate && (
 				<p className="text-xs text-muted-foreground mt-1">
-					Selected: <span className="font-medium text-foreground">{selectedDate.toLocaleDateString()}</span>
+					Selected:{" "}
+					<span className="font-medium text-foreground">
+						{selectedDate.toLocaleDateString()}
+					</span>
 				</p>
 			)}
 			{description ? (

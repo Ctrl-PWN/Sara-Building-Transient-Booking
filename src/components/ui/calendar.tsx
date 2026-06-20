@@ -247,28 +247,28 @@ export function Calendar({
 									onMouseLeave={() => setHoverDate(null)}
 									disabled={isDateDisabled(day)}
 									aria-pressed={isDateSelected(day)}
-								className={cn(
-									"relative h-full w-full text-sm transition-colors duration-100 cursor-pointer",
-									"hover:bg-accent/60",
-									"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:z-10",
-									"disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent",
-									isStart &&
-										"bg-primary text-primary-foreground hover:bg-primary/90",
-									isEnd &&
-										"bg-primary text-primary-foreground hover:bg-primary/90",
-									isMiddle && "text-foreground",
-									!isStart &&
-										!isEnd &&
-										!isMiddle &&
-										isDateSelected(day) &&
-										!onRangeChange &&
-										"bg-primary text-primary-foreground hover:bg-primary/90",
-									!isStart &&
-										!isEnd &&
-										!isMiddle &&
-										(!isDateSelected(day) || !!onRangeChange) &&
-										"bg-transparent text-foreground",
-								)}
+									className={cn(
+										"relative h-full w-full text-sm transition-colors duration-100 cursor-pointer",
+										"hover:bg-accent/60",
+										"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:z-10",
+										"disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent",
+										isStart &&
+											"bg-primary text-primary-foreground hover:bg-primary/90",
+										isEnd &&
+											"bg-primary text-primary-foreground hover:bg-primary/90",
+										isMiddle && "text-foreground",
+										!isStart &&
+											!isEnd &&
+											!isMiddle &&
+											isDateSelected(day) &&
+											!onRangeChange &&
+											"bg-primary text-primary-foreground hover:bg-primary/90",
+										!isStart &&
+											!isEnd &&
+											!isMiddle &&
+											(!isDateSelected(day) || !!onRangeChange) &&
+											"bg-transparent text-foreground",
+									)}
 								>
 									{showLeftBand && !isStart ? (
 										<span className="pointer-events-none absolute inset-y-0 left-0 right-1/2 bg-secondary/30" />

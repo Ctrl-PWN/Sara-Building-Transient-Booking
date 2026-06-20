@@ -17,6 +17,7 @@ export type DbClient =
 
 export {
 	isProtectedLedgerTransaction,
+	RESERVATION_ADVANCE_DESCRIPTION,
 	RESERVATION_BALANCE_DESCRIPTION,
 	WALK_IN_ROOM_CHARGE_DESCRIPTION,
 } from "./ledger.constants";

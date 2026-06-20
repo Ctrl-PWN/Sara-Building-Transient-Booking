@@ -38,12 +38,16 @@ type CreateBookingDialogProps = {
 	onError: (error: string) => void;
 };
 
-const STEPS = ["Room", "Dates", "Details"] as const;
-
-function StepIndicator({ currentStep }: { currentStep: number }) {
+function StepIndicator({
+	currentStep,
+	steps,
+}: {
+	currentStep: number;
+	steps: readonly string[];
+}) {
 	return (
 		<div className="flex items-center gap-2 text-xs">
-			{STEPS.map((label, i) => {
+			{steps.map((label, i) => {
 				const stepNum = i + 1;
 				const isActive = stepNum === currentStep;
 				const isComplete = stepNum < currentStep;
@@ -130,30 +134,25 @@ export function CreateBookingDialog({
 			let depositPercentage = 0;
 
 			if (isMonthly) {
-				if (value.walkIn) {
-					checkIn = `${value.checkInDate}T${value.checkInTime}`;
-					checkOut = `${value.checkOutDate}T${value.checkOutTime}`;
-				} else {
-					const dates = computeMonthlyDates(
-						value.checkInDate,
-						value.checkInTime,
-						value.monthlyDuration || 1,
-					);
-					checkIn = dates.checkIn;
-					checkOut = dates.checkOut;
-				}
+				const dates = computeMonthlyDates(
+					value.checkInDate,
+					value.checkInTime,
+					value.monthlyDuration || 1,
+				);
+				checkIn = dates.checkIn;
+				checkOut = dates.checkOut;
 
-				feeType = value.cashAdvanceType ?? "PERCENT";
-				feeValue = value.cashAdvanceValue ?? 0;
+				feeType = value.reservationFeeType ?? "PERCENT";
+				feeValue = value.reservationFeeValue ?? 0;
 
 				const selectedRoom = rooms.find(
 					(r) => r.id.toString() === value.roomId,
 				);
 				const monthlyPrice = Number(selectedRoom?.monthlyPrice) || 0;
-				const subtotal = monthlyPrice;
 				const depositAmount =
-					feeType === "PERCENT" ? (subtotal * feeValue) / 100 : feeValue;
-				depositPercentage = subtotal > 0 ? (depositAmount / subtotal) * 100 : 0;
+					feeType === "PERCENT" ? (monthlyPrice * feeValue) / 100 : feeValue;
+				depositPercentage =
+					monthlyPrice > 0 ? (depositAmount / monthlyPrice) * 100 : 0;
 			} else {
 				checkIn = `${value.checkInDate}T${value.checkInTime}`;
 				checkOut = `${value.checkOutDate}T${value.checkOutTime}`;
@@ -186,6 +185,10 @@ export function CreateBookingDialog({
 						: value.referenceNumber.trim() || undefined,
 				reservationFeeType: feeType,
 				reservationFeeValue: feeValue,
+				monthlyDuration: isMonthly ? (value.monthlyDuration ?? 1) : undefined,
+				hasAdvance: isMonthly
+					? !walkIn && (value.monthlyDuration ?? 1) > 1
+					: undefined,
 				depositPercentage,
 			});
 		},
@@ -246,11 +249,25 @@ export function CreateBookingDialog({
 	);
 
 	const isMonthly = bookingType === "MONTHLY";
+	const isWalkInMonthly = walkIn && isMonthly;
 	const hasCheckInDate = !!formCheckInDate;
+
+	const displaySteps = isWalkInMonthly
+		? (["Room", "Details"] as const)
+		: (["Room", "Dates", "Details"] as const);
+
+	const displayStep = isWalkInMonthly
+		? step === 1
+			? 1
+			: step === 3
+				? 2
+				: 1
+		: step;
 
 	const canProceed =
 		(step === 1 && !!selectedRoomId) ||
 		(step === 2 &&
+			!isWalkInMonthly &&
 			(isMonthly
 				? hasCheckInDate && (walkIn ? !!formCheckOutDate : true)
 				: hasCheckInDate && !!formCheckOutDate));
@@ -260,7 +277,11 @@ export function CreateBookingDialog({
 			if (walkIn) {
 				form.setFieldValue("checkInDate", todayIsoDate());
 			}
-			setStep(2);
+			if (isWalkInMonthly) {
+				setStep(3);
+			} else {
+				setStep(2);
+			}
 		} else if (step === 2) {
 			if (isMonthly) {
 				if (formCheckInDate && (walkIn ? !!formCheckOutDate : true)) {
@@ -276,7 +297,7 @@ export function CreateBookingDialog({
 		if (step === 2) {
 			setStep(1);
 		} else if (step === 3) {
-			setStep(2);
+			setStep(isWalkInMonthly ? 1 : 2);
 		}
 	};
 
@@ -345,7 +366,7 @@ export function CreateBookingDialog({
 								<DialogTitle>
 									{walkIn ? "Walk-in Booking" : "New Reservation"}
 								</DialogTitle>
-								<StepIndicator currentStep={step} />
+								<StepIndicator currentStep={displayStep} steps={displaySteps} />
 							</div>
 						</DialogHeader>
 						<div className="grid gap-4 py-4">

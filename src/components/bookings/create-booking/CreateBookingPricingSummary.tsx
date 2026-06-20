@@ -1,6 +1,5 @@
 import type { rooms } from "@/db/schema";
 import {
-	calculateMonthlyPricing,
 	calculateReservationFee,
 	calculateStayPricing,
 	formatPeso,
@@ -30,10 +29,10 @@ export function CreateBookingPricingSummary({
 				checkOutDate: state.values.checkOutDate,
 				checkInTime: state.values.checkInTime,
 				checkOutTime: state.values.checkOutTime,
-				cashAdvanceType: state.values.cashAdvanceType,
 				reservationFeeType: state.values.reservationFeeType,
 				reservationFeeValue: state.values.reservationFeeValue,
 				monthlyDuration: state.values.monthlyDuration,
+				hasAdvance: state.values.hasAdvance,
 			})}
 		>
 			{({
@@ -43,10 +42,10 @@ export function CreateBookingPricingSummary({
 				checkOutDate: end,
 				checkInTime,
 				checkOutTime,
-				cashAdvanceType,
 				reservationFeeType,
 				reservationFeeValue,
 				monthlyDuration,
+				hasAdvance,
 			}) => {
 				const selectedRoom = rooms.find(
 					(room) => room.id.toString() === roomId,
@@ -62,47 +61,91 @@ export function CreateBookingPricingSummary({
 					if (monthlyPrice <= 0) return null;
 
 					const duration = monthlyDuration || 1;
-					const { subtotal } = calculateMonthlyPricing({
-						monthlyPrice,
-						durationMonths: duration,
-					});
+					const reservationFee =
+						reservationFeeType != null
+							? calculateReservationFee({
+									total: monthlyPrice,
+									feeType: reservationFeeType,
+									feeValue: reservationFeeValue ?? 0,
+								})
+							: 0;
+					const firstMonthBalance = Math.max(0, monthlyPrice - reservationFee);
+					const advanceAmount = hasAdvance ? monthlyPrice : 0;
+					const totalStay = monthlyPrice * duration;
 
-					const hasCashAdvance = !!cashAdvanceType;
+					if (walkIn) {
+						return (
+							<div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										{duration} month{duration === 1 ? "" : "s"} rent
+									</span>
+									<span className="font-medium">{formatPeso(totalStay)}</span>
+								</div>
+								{reservationFee > 0 && (
+									<div className="flex justify-between">
+										<span className="text-muted-foreground">
+											Reservation fee (due now)
+										</span>
+										<span className="font-medium">
+											{formatPeso(reservationFee)}
+										</span>
+									</div>
+								)}
+								<div className="mt-2 flex justify-between border-t pt-2 font-semibold">
+									<span>Amount due now</span>
+									<span>{formatPeso(totalStay)}</span>
+								</div>
+							</div>
+						);
+					}
 
 					return (
 						<div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">
-									Monthly rent ({formatPeso(monthlyPrice)}/mo × {duration} month{duration === 1 ? "" : "s"})
+									Stay total ({duration} month{duration === 1 ? "" : "s"})
 								</span>
-								<span className="font-medium">{formatPeso(subtotal)}</span>
+								<span className="font-medium">{formatPeso(totalStay)}</span>
 							</div>
-							{hasCashAdvance && (
+							{reservationFee > 0 && (
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">
-										Advance deposit (due now)
+										Reservation fee (due now)
 									</span>
-									<span className="font-medium">{formatPeso(monthlyPrice)}</span>
+									<span className="font-medium">
+										{formatPeso(reservationFee)}
+									</span>
 								</div>
 							)}
-							<div className="flex justify-between border-t pt-2 font-semibold">
-								{hasCashAdvance ? (
-									<>
-										<span>Amount due now</span>
-										<span>{formatPeso(monthlyPrice)}</span>
-									</>
-								) : (
-									<>
-										<span>Balance due at check-in</span>
-										<span>{formatPeso(subtotal)}</span>
-									</>
-								)}
+							{firstMonthBalance > 0 && (
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										1st month balance (due at check-in)
+									</span>
+									<span className="font-medium">
+										{formatPeso(firstMonthBalance)}
+									</span>
+								</div>
+							)}
+							{advanceAmount > 0 && (
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										2nd month advance (due at check-in)
+									</span>
+									<span className="font-medium">
+										{formatPeso(advanceAmount)}
+									</span>
+								</div>
+							)}
+							<div className="mt-2 flex justify-between border-t pt-2 font-semibold">
+								<span>Amount due now</span>
+								<span>{formatPeso(reservationFee)}</span>
 							</div>
 						</div>
 					);
 				}
 
-				// Daily pricing
 				if (!start || !end) return null;
 
 				const { nights, subtotal } = calculateStayPricing({

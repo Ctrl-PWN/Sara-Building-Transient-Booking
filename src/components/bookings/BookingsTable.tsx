@@ -1,4 +1,8 @@
-import { MagnifyingGlassIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import {
+	CaretLeftIcon,
+	CaretRightIcon,
+	MagnifyingGlassIcon,
+} from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";

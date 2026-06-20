@@ -45,7 +45,10 @@ function computeDefaultCheckOut(currentCheckOut: string): string {
 	return `${y}-${m}-${dd}`;
 }
 
-function computeMonthsBetween(currentCheckOut: string, newCheckOut: string): number {
+function computeMonthsBetween(
+	currentCheckOut: string,
+	newCheckOut: string,
+): number {
 	const current = new Date(currentCheckOut);
 	const target = new Date(newCheckOut);
 	const diffMs = target.getTime() - current.getTime();
@@ -75,7 +78,11 @@ export function ExtendBookingDialog({
 		defaultValues,
 		validators: { onSubmit: extendFormSchema },
 		onSubmit: async ({ value }) => {
-			await onConfirm(value.newCheckOutDate, value.paymentMethod, value.referenceNumber);
+			await onConfirm(
+				value.newCheckOutDate,
+				value.paymentMethod,
+				value.referenceNumber,
+			);
 		},
 	});
 
@@ -138,7 +145,9 @@ export function ExtendBookingDialog({
 
 							<div className="flex items-center justify-between rounded-lg border p-3">
 								<div className="flex flex-col gap-0.5">
-									<span className="font-medium text-sm">Change checkout date</span>
+									<span className="font-medium text-sm">
+										Change checkout date
+									</span>
 									<span className="text-xs text-muted-foreground">
 										Pick a custom checkout date
 									</span>
@@ -214,6 +223,6 @@ export function ExtendBookingDialog({
 					</form.AppForm>
 				</form>
 			</DialogOutsideScroll>
-			</Dialog>
+		</Dialog>
 	);
 }

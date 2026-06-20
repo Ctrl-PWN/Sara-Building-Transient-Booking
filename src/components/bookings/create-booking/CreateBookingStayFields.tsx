@@ -65,6 +65,10 @@ export function CreateBookingStayFields({
 	const checkInDate = useSelector(form.store, (s) => s.values.checkInDate);
 	const checkOutDate = useSelector(form.store, (s) => s.values.checkOutDate);
 	const checkInTime = useSelector(form.store, (s) => s.values.checkInTime);
+	const monthlyDuration = useSelector(
+		form.store,
+		(s) => s.values.monthlyDuration,
+	);
 	const roomIdNum = selectedRoomId ? Number(selectedRoomId) : 0;
 
 	const earliestCheckIn =
@@ -89,7 +93,11 @@ export function CreateBookingStayFields({
 								options={[...bookingTypeOptions]}
 								onValueChange={(value) => {
 									if (value === "MONTHLY") {
+										form.setFieldValue("monthlyDuration", 1);
+										form.setFieldValue("hasAdvance", false);
 										form.setFieldValue("checkOutDate", "");
+										form.setFieldValue("reservationFeeType", undefined);
+										form.setFieldValue("reservationFeeValue", undefined);
 										if (!form.getFieldValue("checkInDate")) {
 											const today = new Date();
 											const y = today.getFullYear();
@@ -214,87 +222,122 @@ export function CreateBookingStayFields({
 			)}
 
 			{step === 2 && isMonthly && !walkIn && (
-			<>
-				<form.AppField name="checkInDate">
-					{(field) => (
-						<field.DateField
-							label="Check-in Date"
-							minDate={new Date()}
-							disabledDates={isDateDisabled}
-							onValueChange={(dateStr) => {
-								if (dateStr) {
-									const dur = form.getFieldValue("monthlyDuration") || 1;
-									form.setFieldValue("checkOutDate", computeMonthlyCheckOut(dateStr, dur));
-								}
-							}}
-						/>
-					)}
-				</form.AppField>
+				<>
+					<form.AppField name="checkInDate">
+						{(field) => (
+							<field.DateField
+								label="Check-in Date"
+								minDate={new Date()}
+								disabledDates={isDateDisabled}
+								onValueChange={(dateStr) => {
+									if (dateStr) {
+										const dur = form.getFieldValue("monthlyDuration") || 1;
+										form.setFieldValue(
+											"checkOutDate",
+											computeMonthlyCheckOut(dateStr, dur),
+										);
+									}
+								}}
+							/>
+						)}
+					</form.AppField>
 
-				<form.AppField name="checkInTime">
-					{(field) => <field.TimeField label="Check-in Time" />}
-				</form.AppField>
+					<form.AppField name="checkInTime">
+						{(field) => <field.TimeField label="Check-in Time" />}
+					</form.AppField>
 
-			{checkInDate && (() => {
-				const dur = form.getFieldValue("monthlyDuration") || 1;
-				return (
-					<p className="text-xs text-muted-foreground">
-						Check-out:{" "}
-						<span className="font-medium text-foreground">
-							{formatDateDisplay(computeMonthlyCheckOut(checkInDate, dur))}
-						</span>{" "}
-						({dur} month{dur === 1 ? "" : "s"})
-					</p>
-				);
-			})()}
-			</>
-		)}
+					{checkInDate &&
+						(() => {
+							const dur = form.getFieldValue("monthlyDuration") || 1;
+							return (
+								<p className="text-xs text-muted-foreground">
+									Check-out:{" "}
+									<span className="font-medium text-foreground">
+										{formatDateDisplay(
+											computeMonthlyCheckOut(checkInDate, dur),
+										)}
+									</span>{" "}
+									({dur} month{dur === 1 ? "" : "s"})
+								</p>
+							);
+						})()}
+				</>
+			)}
 
 			{step === 2 && isMonthly && walkIn && (
-			<>
+				<>
+					<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
+						<div className="flex justify-between">
+							<span className="text-muted-foreground">Check-in date</span>
+							<span className="font-medium">
+								{checkInDate ? formatDateDisplay(checkInDate) : "—"}
+							</span>
+						</div>
+						<div className="flex justify-between">
+							<span className="text-muted-foreground">Check-in time</span>
+							<span className="font-medium">
+								{checkInTime ? formatTime12h(checkInTime) : "—"}
+							</span>
+						</div>
+					</div>
+
+					<form.AppField name="checkOutDate">
+						{(field) => (
+							<field.DateField
+								label="Check-out Date"
+								minDate={new Date()}
+								disabledDates={isDateDisabled}
+							/>
+						)}
+					</form.AppField>
+
+					<form.AppField name="checkOutTime">
+						{(field) => <field.TimeField label="Check-out Time" />}
+					</form.AppField>
+
+					{checkOutDate &&
+						checkInDate &&
+						(() => {
+							const diffMs =
+								new Date(checkOutDate).getTime() -
+								new Date(checkInDate).getTime();
+							const months = Math.max(
+								1,
+								Math.round(diffMs / (30 * 24 * 60 * 60 * 1000)),
+							);
+							return (
+								<p className="text-xs text-muted-foreground">
+									Duration:{" "}
+									<span className="font-medium text-foreground">
+										{months} month{months === 1 ? "" : "s"}
+									</span>
+								</p>
+							);
+						})()}
+				</>
+			)}
+
+			{step === 3 && walkIn && isMonthly && checkInDate && (
 				<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
 					<div className="flex justify-between">
-						<span className="text-muted-foreground">Check-in date</span>
+						<span className="text-muted-foreground">Check-in</span>
 						<span className="font-medium">
-							{checkInDate ? formatDateDisplay(checkInDate) : "—"}
+							{formatDateDisplay(checkInDate)}
+							{checkInTime ? ` at ${formatTime12h(checkInTime)}` : ""}
 						</span>
 					</div>
 					<div className="flex justify-between">
-						<span className="text-muted-foreground">Check-in time</span>
+						<span className="text-muted-foreground">Check-out</span>
 						<span className="font-medium">
-							{checkInTime ? formatTime12h(checkInTime) : "—"}
+							{formatDateDisplay(
+								computeMonthlyCheckOut(checkInDate, monthlyDuration ?? 1),
+							)}{" "}
+							at 12:00 PM ({monthlyDuration ?? 1} month
+							{(monthlyDuration ?? 1) === 1 ? "" : "s"})
 						</span>
 					</div>
 				</div>
-
-				<form.AppField name="checkOutDate">
-					{(field) => (
-						<field.DateField
-							label="Check-out Date"
-							minDate={new Date()}
-							disabledDates={isDateDisabled}
-						/>
-					)}
-				</form.AppField>
-
-				<form.AppField name="checkOutTime">
-					{(field) => <field.TimeField label="Check-out Time" />}
-				</form.AppField>
-
-				{checkOutDate && checkInDate && (() => {
-					const diffMs = new Date(checkOutDate).getTime() - new Date(checkInDate).getTime();
-					const months = Math.max(1, Math.round(diffMs / (30 * 24 * 60 * 60 * 1000)));
-					return (
-						<p className="text-xs text-muted-foreground">
-							Duration:{" "}
-							<span className="font-medium text-foreground">
-								{months} month{months === 1 ? "" : "s"}
-							</span>
-						</p>
-					);
-				})()}
-			</>
-		)}
+			)}
 
 			{step === 3 && (
 				<>

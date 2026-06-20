@@ -17,6 +17,7 @@ import { bookings, ledgerTransactions, rooms } from "@/db/schema";
 import {
 	computeRemainingBalance,
 	normalizeReferenceNumber,
+	RESERVATION_ADVANCE_DESCRIPTION,
 	RESERVATION_BALANCE_DESCRIPTION,
 	syncBookingPaymentStatus,
 } from "@/lib/ledger/ledger.helpers";
@@ -281,10 +282,7 @@ export const createBooking = createServerFn({ method: "POST" })
 
 		let stayTotal: number;
 		if (isMonthly) {
-			const durationMonths = Math.ceil(
-				(new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime()) /
-					(30 * 24 * 60 * 60 * 1000),
-			);
+			const durationMonths = data.monthlyDuration ?? 1;
 			const { subtotal } = calculateMonthlyPricing({
 				monthlyPrice: room.monthlyPrice ?? 0,
 				durationMonths: Math.max(1, durationMonths),
@@ -307,6 +305,12 @@ export const createBooking = createServerFn({ method: "POST" })
 				referenceNumber: data.referenceNumber,
 				reservationFeeType: data.reservationFeeType,
 				reservationFeeValue: data.reservationFeeValue,
+				monthlyPrice: isMonthly
+					? room.monthlyPrice
+						? Number(room.monthlyPrice)
+						: undefined
+					: undefined,
+				hasAdvance: isMonthly ? data.hasAdvance : undefined,
 			},
 			stayTotal,
 		);
@@ -360,6 +364,8 @@ export const createBooking = createServerFn({ method: "POST" })
 						: null,
 				})),
 			);
+
+			await syncBookingPaymentStatus(row.id, tx);
 
 			if (data.walkIn) {
 				await tx
@@ -465,24 +471,33 @@ export const checkInBooking = createServerFn({ method: "POST" })
 			throw new Error("Cannot check in before the scheduled check-in date");
 		}
 
-		const unpaidRoomCharges = await db
+		const unpaidLines = await db
 			.select()
 			.from(ledgerTransactions)
 			.where(
 				and(
 					eq(ledgerTransactions.bookingId, booking.id),
-					eq(ledgerTransactions.category, "ROOM_CHARGE"),
 					eq(ledgerTransactions.isPaid, false),
+					or(
+						eq(ledgerTransactions.category, "ROOM_CHARGE"),
+						eq(ledgerTransactions.category, "ADVANCE"),
+					),
 				),
 			);
 
-		if (unpaidRoomCharges.length !== 1) {
-			throw new Error("Expected exactly one unpaid room balance to settle");
+		if (unpaidLines.length === 0) {
+			throw new Error("No unpaid balance to settle at check-in");
 		}
 
-		const roomBalance = unpaidRoomCharges[0];
-		if (roomBalance.description !== RESERVATION_BALANCE_DESCRIPTION) {
-			throw new Error("Unpaid room balance does not match reservation ledger");
+		const invalidLine = unpaidLines.find(
+			(line) =>
+				line.description !== RESERVATION_BALANCE_DESCRIPTION &&
+				line.description !== RESERVATION_ADVANCE_DESCRIPTION,
+		);
+		if (invalidLine) {
+			throw new Error(
+				"Unpaid balance does not match reservation ledger expectations",
+			);
 		}
 
 		const referenceNumber = normalizeReferenceNumber(
@@ -498,7 +513,16 @@ export const checkInBooking = createServerFn({ method: "POST" })
 					paymentMethod: data.paymentMethod,
 					referenceNumber,
 				})
-				.where(eq(ledgerTransactions.id, roomBalance.id));
+				.where(
+					and(
+						eq(ledgerTransactions.bookingId, booking.id),
+						eq(ledgerTransactions.isPaid, false),
+						or(
+							eq(ledgerTransactions.category, "ROOM_CHARGE"),
+							eq(ledgerTransactions.category, "ADVANCE"),
+						),
+					),
+				);
 
 			await tx
 				.update(bookings)
@@ -739,7 +763,9 @@ export const extendBooking = createServerFn({ method: "POST" })
 		const newCheckOut = new Date(data.newCheckOutDate);
 
 		if (newCheckOut <= currentCheckOut) {
-			throw new Error("New checkout date must be after the current checkout date");
+			throw new Error(
+				"New checkout date must be after the current checkout date",
+			);
 		}
 
 		const conflicts = await db

@@ -42,6 +42,7 @@ export const ledgerPaymentFieldsSchema = z
 export const createBookingLedgerCategorySchema = z.enum([
 	"ROOM_CHARGE",
 	"DEPOSIT",
+	"ADVANCE",
 ]);
 
 export const createBookingLedgerLineSchema = z

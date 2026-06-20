@@ -24,7 +24,6 @@ import {
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
-import { RESERVATION_BALANCE_DESCRIPTION } from "@/lib/ledger/ledger.constants";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 import { ledgerPaymentFieldsSchema } from "@/lib/ledger/schemas";
 
@@ -48,11 +47,10 @@ export function CheckInBookingDialog({
 		ledgerQueries.transactions(bookingId),
 	);
 
-	const roomBalance = transactions.find(
+	const unpaidBalances = transactions.filter(
 		(row) =>
 			!row.isPaid &&
-			row.category === "ROOM_CHARGE" &&
-			row.description === RESERVATION_BALANCE_DESCRIPTION,
+			(row.category === "ROOM_CHARGE" || row.category === "ADVANCE"),
 	);
 
 	const mutation = useMutation(
@@ -88,7 +86,10 @@ export function CheckInBookingDialog({
 		}
 	}, [open, form]);
 
-	const balanceAmount = roomBalance ? Number(roomBalance.amount) : 0;
+	const balanceAmount = unpaidBalances.reduce(
+		(sum, row) => sum + Number(row.amount),
+		0,
+	);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,8 +121,21 @@ export function CheckInBookingDialog({
 									–{" "}
 									{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
 								</p>
-								<p className="font-medium pt-1">
-									Room balance due: {formatPeso(balanceAmount)}
+								{unpaidBalances.length > 0 && (
+									<div className="pt-1 space-y-1">
+										{unpaidBalances.map((row) => (
+											<p
+												key={row.id}
+												className="flex justify-between text-muted-foreground"
+											>
+												<span>{row.description ?? row.category}</span>
+												<span>{formatPeso(Number(row.amount))}</span>
+											</p>
+										))}
+									</div>
+								)}
+								<p className="font-medium pt-1 border-t">
+									Total balance due: {formatPeso(balanceAmount)}
 								</p>
 							</div>
 
