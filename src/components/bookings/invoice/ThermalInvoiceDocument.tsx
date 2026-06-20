@@ -8,18 +8,31 @@ import {
 	Text,
 	View,
 } from "@react-pdf/renderer";
-import { format } from "date-fns";
 
-import { formatPeso } from "@/lib/bookings/stay-pricing";
-import type { BookingWithRoom } from "@/lib/bookings/types";
-import { formatGuestName } from "@/lib/bookings/types";
-import type { LedgerTransactionListItem } from "@/lib/ledger/types";
+import {
+	buildLedgerReceiptModel,
+	formatReceiptAmount,
+	type ReceiptModel,
+} from "./receipt-model";
 
 Font.registerHyphenationCallback((word) => [word]);
 
-const PAGE_WIDTH_PT = 80 * (72 / 25.4);
-const PAGE_HEIGHT_PT = 600;
-const SAFE_WIDTH_PT = PAGE_WIDTH_PT - 16;
+export const THERMAL_PAGE_WIDTH_PT = 72 * (72 / 25.4);
+const SAFE_WIDTH_PT = THERMAL_PAGE_WIDTH_PT - 16;
+// Height estimates are intentionally generous: react-pdf cannot auto-size a
+// page to its content, so the page must be at least as tall as everything that
+// renders or the tail (totals + footer) spills onto a second page. Over-
+// estimating only leaves a little trailing whitespace, which is harmless on a
+// continuous thermal roll, whereas under-estimating breaks the receipt in two.
+const PAGE_PADDING_PT = 32; // paddingTop + paddingBottom
+const HEADER_HEIGHT_PT = 110; // brand block + thick rule + doc title + rule
+const CHARGES_HEADER_PT = 42; // rule + CHARGES label + rule
+const KV_ROW_HEIGHT_PT = 16;
+const LINE_ITEM_HEIGHT_PT = 52; // title + meta + amount row + divider (allows wrap)
+const TOTALS_ROW_HEIGHT_PT = 14;
+const BALANCE_HEIGHT_PT = 26;
+const FOOTER_HEIGHT_PT = 48;
+const BOTTOM_BUFFER_PT = 28;
 
 const COLORS = {
 	ink: "#000000",
@@ -28,8 +41,7 @@ const COLORS = {
 
 const styles = StyleSheet.create({
 	page: {
-		width: PAGE_WIDTH_PT,
-		height: PAGE_HEIGHT_PT,
+		width: THERMAL_PAGE_WIDTH_PT,
 		paddingTop: 16,
 		paddingBottom: 16,
 		paddingHorizontal: 8,
@@ -141,57 +153,43 @@ const styles = StyleSheet.create({
 		color: COLORS.label,
 		textAlign: "center",
 	},
-	pageNumber: {
-		position: "absolute",
-		bottom: 8,
-		left: 0,
-		right: 0,
-		fontSize: 7,
-		color: COLORS.label,
-		textAlign: "center",
-	},
 });
 
-function formatCategory(category: string): string {
-	return category
-		.split("_")
-		.map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-		.join(" ");
+export function estimateThermalPageHeight(receipt: ReceiptModel): number {
+	const itemCount = Math.max(receipt.lineItems.length, 1);
+	const totalsRows =
+		(receipt.totals.totalCharges !== undefined ? 1 : 0) +
+		(receipt.totals.totalPaid !== undefined ? 1 : 0);
+
+	return (
+		PAGE_PADDING_PT +
+		HEADER_HEIGHT_PT +
+		receipt.kvRows.length * KV_ROW_HEIGHT_PT +
+		CHARGES_HEADER_PT +
+		itemCount * LINE_ITEM_HEIGHT_PT +
+		totalsRows * TOTALS_ROW_HEIGHT_PT +
+		BALANCE_HEIGHT_PT +
+		(receipt.footerText ? FOOTER_HEIGHT_PT : 0) +
+		BOTTOM_BUFFER_PT
+	);
 }
 
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "—";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
-
-type ThermalInvoiceDocumentProps = {
-	booking: BookingWithRoom;
-	issuedBy: string;
-	transactions: LedgerTransactionListItem[];
-	total: number;
-	payments: number;
-	remainingBalance: number;
+type ThermalReceiptDocumentProps = {
+	receipt: ReceiptModel;
 };
 
-export function ThermalInvoiceDocument({
-	booking,
-	transactions,
-	issuedBy,
-	total,
-	payments,
-	remainingBalance,
-}: ThermalInvoiceDocumentProps) {
-	const invoiceRef = `INV-${booking.bookingRef}`;
-	const issuedDate = format(new Date(), "MMM d, yyyy h:mm a");
+export function ThermalReceiptDocument({
+	receipt,
+}: ThermalReceiptDocumentProps) {
+	const pageHeight = estimateThermalPageHeight(receipt);
 
 	return (
 		<Document
-			title={`Receipt ${invoiceRef}`}
+			title={`${receipt.documentTitle} ${receipt.documentRef}`}
 			author="Sara Building Transient"
-			subject={`Receipt for ${formatGuestName(booking)}`}
+			subject={`Receipt for ${receipt.guestName}`}
 		>
-			<Page size={[PAGE_WIDTH_PT, PAGE_HEIGHT_PT]} style={styles.page} wrap>
+			<Page size={[THERMAL_PAGE_WIDTH_PT, pageHeight]} style={styles.page} wrap>
 				<View style={styles.brandBlock}>
 					<Text style={[styles.brand, styles.center]}>SARA BUILDING</Text>
 					<Text style={[styles.brand, styles.center]}>TRANSIENT</Text>
@@ -201,58 +199,18 @@ export function ThermalInvoiceDocument({
 				</View>
 
 				<View style={styles.ruleThick} />
-				<Text style={styles.docTitle}>RECEIPT {invoiceRef}</Text>
+				<Text style={styles.docTitle}>
+					{receipt.documentTitle} {receipt.documentRef}
+				</Text>
 				<View style={styles.rule} />
 
 				<View>
-					<View>
-						<View style={styles.kvRow}>
-							<Text style={styles.kvLabel}>Guest</Text>
-							<Text style={styles.kvValue}>{formatGuestName(booking)}</Text>
+					{receipt.kvRows.map((row) => (
+						<View key={`${row.label}-${row.value}`} style={styles.kvRow}>
+							<Text style={styles.kvLabel}>{row.label}</Text>
+							<Text style={styles.kvValue}>{row.value}</Text>
 						</View>
-						{booking.contactNumber ? (
-							<View style={styles.kvRow}>
-								<Text style={styles.kvLabel}>Contact</Text>
-								<Text style={styles.kvValue}>{booking.contactNumber}</Text>
-							</View>
-						) : null}
-						<View style={styles.kvRow}>
-							<Text style={styles.kvLabel}>Booking</Text>
-							<Text style={styles.kvValue}>{booking.bookingRef}</Text>
-						</View>
-					</View>
-
-					<View style={[styles.rule, { marginVertical: 3 }]} />
-
-					<View>
-						{booking.checkIn ? (
-							<View style={styles.kvRow}>
-								<Text style={styles.kvLabel}>Check-in</Text>
-								<Text style={styles.kvValue}>
-									{format(new Date(booking.checkIn), "MMM d, h:mm a")}
-								</Text>
-							</View>
-						) : null}
-						<View style={styles.kvRow}>
-							<Text style={styles.kvLabel}>Check-out</Text>
-							<Text style={styles.kvValue}>
-								{format(new Date(booking.checkOut), "MMM d, h:mm a")}
-							</Text>
-						</View>
-					</View>
-
-					<View style={[styles.rule, { marginVertical: 5 }]} />
-
-					<View>
-						<View style={styles.kvRow}>
-							<Text style={styles.kvLabel}>Issued</Text>
-							<Text style={styles.kvValue}>{issuedDate}</Text>
-						</View>
-						<View style={styles.kvRow}>
-							<Text style={styles.kvLabel}>Issued by</Text>
-							<Text style={styles.kvValue}>{issuedBy}</Text>
-						</View>
-					</View>
+					))}
 				</View>
 
 				<View style={styles.rule} />
@@ -261,35 +219,29 @@ export function ThermalInvoiceDocument({
 				</Text>
 				<View style={styles.rule} />
 
-				{transactions.length === 0 ? (
-					<Text style={[styles.subtitle, styles.center]}>
-						No ledger transactions yet.
-					</Text>
+				{receipt.lineItems.length === 0 ? (
+					<Text style={[styles.subtitle, styles.center]}>No charges.</Text>
 				) : (
-					transactions.map((tx, idx) => (
-						<View key={tx.id} style={styles.itemBlock} wrap={false}>
-							{idx > 0 ? (
+					receipt.lineItems.map((item, index) => (
+						<View key={item.id} style={styles.itemBlock} wrap={false}>
+							{index > 0 ? (
 								<View style={[styles.rule, { marginVertical: 2 }]} />
 							) : null}
-							<Text style={styles.itemTitle}>
-								{tx.description ?? formatCategory(tx.category)}
-							</Text>
-							<Text style={styles.itemMeta}>
-								{format(new Date(tx.createdAt), "MMM d, h:mm a")}
-								{tx.paymentMethod
-									? ` · ${formatPaymentMethod(tx.paymentMethod)}`
-									: ""}
-								{tx.referenceNumber ? ` · ${tx.referenceNumber}` : ""}
-							</Text>
+							<Text style={styles.itemTitle}>{item.label}</Text>
+							{item.meta ? (
+								<Text style={styles.itemMeta}>{item.meta}</Text>
+							) : null}
 							<View style={styles.itemAmountRow}>
 								<Text style={styles.itemAmount}>
-									{formatPeso(Number(tx.amount))}
+									{formatReceiptAmount(item.amount)}
 								</Text>
-								{tx.isPaid ? (
-									<Text style={styles.paidPill}>PAID</Text>
-								) : (
-									<Text style={styles.unpaidPill}>UNPAID</Text>
-								)}
+								{item.isPaid !== undefined ? (
+									item.isPaid ? (
+										<Text style={styles.paidPill}>PAID</Text>
+									) : (
+										<Text style={styles.unpaidPill}>UNPAID</Text>
+									)
+								) : null}
 							</View>
 						</View>
 					))
@@ -298,33 +250,52 @@ export function ThermalInvoiceDocument({
 				<View style={styles.ruleThick} />
 
 				<View style={styles.totalsBlock} wrap={false}>
-					<View style={styles.totalsRow}>
-						<Text style={styles.totalsLabel}>Total charges</Text>
-						<Text style={styles.totalsValue}>{formatPeso(total)}</Text>
-					</View>
-					<View style={styles.totalsRow}>
-						<Text style={styles.totalsLabel}>Total paid</Text>
-						<Text style={styles.totalsValue}>{formatPeso(payments)}</Text>
-					</View>
+					{receipt.totals.totalCharges !== undefined ? (
+						<View style={styles.totalsRow}>
+							<Text style={styles.totalsLabel}>Total charges</Text>
+							<Text style={styles.totalsValue}>
+								{formatReceiptAmount(receipt.totals.totalCharges)}
+							</Text>
+						</View>
+					) : null}
+					{receipt.totals.totalPaid !== undefined ? (
+						<View style={styles.totalsRow}>
+							<Text style={styles.totalsLabel}>Total paid</Text>
+							<Text style={styles.totalsValue}>
+								{formatReceiptAmount(receipt.totals.totalPaid)}
+							</Text>
+						</View>
+					) : null}
 					<View style={[styles.totalsRow, { marginTop: 4 }]}>
-						<Text style={styles.balanceLabel}>BALANCE</Text>
+						<Text style={styles.balanceLabel}>
+							{receipt.totals.balanceLabel ?? "TOTAL DUE"}
+						</Text>
 						<Text style={styles.balanceValue}>
-							{formatPeso(remainingBalance)}
+							{formatReceiptAmount(receipt.totals.totalDue)}
 						</Text>
 					</View>
 				</View>
 
-				<View style={styles.rule} />
-				<Text style={styles.footer}>Thank you for your stay.</Text>
-
-				<Text
-					style={styles.pageNumber}
-					render={({ pageNumber, totalPages }) =>
-						totalPages > 1 ? `${pageNumber}/${totalPages}` : ""
-					}
-					fixed
-				/>
+				{receipt.footerText ? (
+					<>
+						<View style={styles.rule} />
+						<Text style={styles.footer}>{receipt.footerText}</Text>
+					</>
+				) : null}
 			</Page>
 		</Document>
 	);
+}
+
+/** Backward-compatible wrapper for ledger receipts. */
+export function ThermalInvoiceDocument(props: {
+	booking: import("@/lib/bookings/types").BookingWithRoom;
+	issuedBy: string;
+	transactions: import("@/lib/ledger/types").LedgerTransactionListItem[];
+	total: number;
+	payments: number;
+	remainingBalance: number;
+}) {
+	const receipt = buildLedgerReceiptModel(props);
+	return <ThermalReceiptDocument receipt={receipt} />;
 }

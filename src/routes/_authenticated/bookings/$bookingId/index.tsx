@@ -51,7 +51,8 @@ export const Route = createFileRoute("/_authenticated/bookings/$bookingId/")({
 				context.queryClient.ensureQueryData(ledgerQueries.details(id)),
 				context.queryClient.ensureQueryData(roomQueries.list()),
 			]);
-		} catch {
+		} catch (error) {
+			console.error(error);
 			throw notFound();
 		}
 	},
@@ -181,6 +182,9 @@ function BookingDetailPage() {
 				<BookingLedgerView
 					bookingId={numericBookingId}
 					bookingStatus={booking.status}
+					bookingType={booking.bookingType}
+					checkIn={booking.checkIn}
+					checkOut={booking.checkOut}
 				/>
 
 				<CancelBookingDialog
