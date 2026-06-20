@@ -5,17 +5,12 @@ import {
 	formOptions,
 	useAppForm,
 } from "@/integrations/tanstack-form";
-import {
-	type UtilityExpenseItem,
-	utilityExpenseItemsSchema,
-} from "@/lib/ledger/schemas";
 
 export const fullExtendSchema = z.object({
 	newCheckOutDate: z.string().min(1, "Checkout date is required"),
 	withCashAdvance: z.boolean(),
 	paymentMethod: z.enum(["CASH", "GCASH", "BANK_TRANSFER"]),
 	referenceNumber: z.string(),
-	utilities: utilityExpenseItemsSchema,
 });
 
 const extendFormOptions = formOptions({
@@ -24,7 +19,6 @@ const extendFormOptions = formOptions({
 		withCashAdvance: true,
 		paymentMethod: "CASH" as PaymentMethod,
 		referenceNumber: "",
-		utilities: [] as Array<z.infer<typeof utilityExpenseItemsSchema>[number]>,
 	},
 });
 
@@ -33,7 +27,6 @@ export type ExtendBookingFormValues = {
 	withCashAdvance: boolean;
 	paymentMethod: "CASH" | "GCASH" | "BANK_TRANSFER";
 	referenceNumber: string;
-	utilities: UtilityExpenseItem[];
 };
 
 type UseExtendBookingFormOpts = {
@@ -50,7 +43,6 @@ export function useExtendBookingForm({ onSubmit }: UseExtendBookingFormOpts) {
 				withCashAdvance: value.withCashAdvance,
 				paymentMethod: value.paymentMethod,
 				referenceNumber: value.referenceNumber,
-				utilities: value.utilities,
 			});
 		},
 	});

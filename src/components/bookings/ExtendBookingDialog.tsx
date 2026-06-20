@@ -1,4 +1,3 @@
-import { PlusIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "@tanstack/react-store";
 import { format } from "date-fns";
@@ -17,7 +16,6 @@ import { bookingQueries } from "@/lib/bookings/bookings.queries";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 
-import { UtilityRow } from "./extend/UtilityRow";
 import {
 	type ExtendBookingFormValues,
 	useExtendBookingForm,
@@ -247,102 +245,32 @@ export function ExtendBookingDialog({
 								)}
 							</form.AppField>
 
-							<div className="rounded-lg border p-4 space-y-3">
-								<div className="flex items-center justify-between">
-									<div>
-										<FieldLabel className="text-base">
-											Utility charges
-										</FieldLabel>
+							<form.Subscribe
+								selector={(state) => state.values.withCashAdvance}
+							>
+								{(withCashAdvance) => (
+									<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
+										<div className="flex justify-between">
+											<span className="text-muted-foreground">
+												Monthly rate
+											</span>
+											<span className="font-medium">
+												{formatPeso(monthlyPrice)}
+											</span>
+										</div>
+										<div className="flex justify-between border-t pt-2 font-semibold">
+											<span>Total due now</span>
+											<span>
+												{formatPeso(withCashAdvance ? 0 : monthlyPrice)}
+											</span>
+										</div>
 										<p className="text-xs text-muted-foreground">
-											For the new month ({periodLabel})
+											{withCashAdvance
+												? "Cash advance collected now; remaining rent due at check-in."
+												: `Extension for ${periodLabel}.`}
 										</p>
 									</div>
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										onClick={() =>
-											form.pushFieldValue("utilities", {
-												utilityType: "ELECTRICITY",
-												amount: 0,
-												description: "Electricity bill",
-												isPaid: false,
-											})
-										}
-									>
-										<PlusIcon data-icon="inline-start" />
-										Add utility
-									</Button>
-								</div>
-
-								<form.Field name="utilities" mode="array">
-									{(field) => {
-										if (field.state.value.length === 0) {
-											return (
-												<p className="text-xs text-muted-foreground">
-													No utility charges added. The new month will only
-													include the room rate.
-												</p>
-											);
-										}
-										return (
-											<div className="space-y-3">
-												{field.state.value.map((_, index) => (
-													<UtilityRow
-														// biome-ignore lint/suspicious/noArrayIndexKey: tanstack-form array field, items have no stable id
-														key={index}
-														form={form}
-														index={index}
-														onRemove={() => field.removeValue(index)}
-													/>
-												))}
-											</div>
-										);
-									}}
-								</form.Field>
-							</div>
-
-							<form.Subscribe
-								selector={(state) => ({
-									withCashAdvance: state.values.withCashAdvance,
-									utilitiesTotal: state.values.utilities.reduce(
-										(sum, u) =>
-											sum + (Number.isFinite(u.amount) ? u.amount : 0),
-										0,
-									),
-								})}
-							>
-								{({ withCashAdvance, utilitiesTotal }) => {
-									const total = withCashAdvance
-										? utilitiesTotal
-										: monthlyPrice + utilitiesTotal;
-									return (
-										<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
-											<div className="flex justify-between">
-												<span className="text-muted-foreground">
-													Monthly rate
-												</span>
-												<span className="font-medium">
-													{formatPeso(monthlyPrice)}
-												</span>
-											</div>
-											{utilitiesTotal > 0 && (
-												<div className="flex justify-between">
-													<span className="text-muted-foreground">
-														Utilities
-													</span>
-													<span className="font-medium">
-														{formatPeso(utilitiesTotal)}
-													</span>
-												</div>
-											)}
-											<div className="flex justify-between border-t pt-2 font-semibold">
-												<span>Total due now</span>
-												<span>{formatPeso(total)}</span>
-											</div>
-										</div>
-									);
-								}}
+								)}
 							</form.Subscribe>
 						</div>
 

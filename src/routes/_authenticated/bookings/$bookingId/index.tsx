@@ -15,6 +15,7 @@ import { CheckInBookingDialog } from "@/components/bookings/CheckInBookingDialog
 import { CheckOutBookingDialog } from "@/components/bookings/CheckOutBookingDialog";
 import { EvictBookingDialog } from "@/components/bookings/EvictBookingDialog";
 import { ExtendBookingDialog } from "@/components/bookings/ExtendBookingDialog";
+import { GenerateUtilityPaymentsDialog } from "@/components/bookings/ledger/GenerateUtilityPaymentsDialog";
 import { TransferBookingDialog } from "@/components/bookings/TransferBookingDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
@@ -90,6 +91,7 @@ function BookingDetailPage() {
 	const [checkOutOpen, setCheckOutOpen] = useState(false);
 	const [transferOpen, setTransferOpen] = useState(false);
 	const [extendOpen, setExtendOpen] = useState(false);
+	const [utilitiesOpen, setUtilitiesOpen] = useState(false);
 
 	const updateStatus = useMutation(bookingMutations.updateStatus(queryClient));
 	const transferMutation = useMutation(
@@ -135,14 +137,6 @@ function BookingDetailPage() {
 		withCashAdvance: boolean;
 		paymentMethod: string;
 		referenceNumber: string;
-		utilities: Array<{
-			utilityType: "ELECTRICITY" | "WATER" | "INTERNET" | "OTHER";
-			amount: number;
-			description: string;
-			isPaid: boolean;
-			paymentMethod?: "CASH" | "GCASH" | "BANK_TRANSFER";
-			referenceNumber?: string;
-		}>;
 	}) => {
 		try {
 			await extendMutation.mutateAsync({
@@ -154,7 +148,6 @@ function BookingDetailPage() {
 					| "GCASH"
 					| "BANK_TRANSFER",
 				referenceNumber: values.referenceNumber,
-				utilities: values.utilities,
 			});
 			setExtendOpen(false);
 		} catch (error) {
@@ -175,6 +168,7 @@ function BookingDetailPage() {
 					onCheckOut={() => setCheckOutOpen(true)}
 					onTransferClick={() => setTransferOpen(true)}
 					onExtendClick={() => setExtendOpen(true)}
+					onUtilitiesClick={() => setUtilitiesOpen(true)}
 				/>
 
 				<BookingInfoCards booking={booking} />
@@ -230,6 +224,12 @@ function BookingDetailPage() {
 					onOpenChange={setExtendOpen}
 					booking={booking}
 					onConfirm={handleExtend}
+				/>
+
+				<GenerateUtilityPaymentsDialog
+					open={utilitiesOpen}
+					onOpenChange={setUtilitiesOpen}
+					bookingId={numericBookingId}
 				/>
 			</div>
 		</main>

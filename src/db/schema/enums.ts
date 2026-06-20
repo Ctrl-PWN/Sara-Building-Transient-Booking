@@ -24,7 +24,15 @@ export const roomStatusEnum = pgEnum("room_status", [
 
 export const ledgerTransactionCategoryEnum = pgEnum(
 	"ledger_transaction_category",
-	["ROOM_CHARGE", "DEPOSIT", "PAYMENT", "REFUND", "ADVANCE", "LATE_FEE"],
+	[
+		"ROOM_CHARGE",
+		"DEPOSIT",
+		"PAYMENT",
+		"REFUND",
+		"ADVANCE",
+		"LATE_FEE",
+		"UTILITY",
+	],
 );
 
 export const paymentMethodEnum = pgEnum("payment_method", [

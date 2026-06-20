@@ -5,9 +5,7 @@ import {
 	eq,
 	gte,
 	inArray,
-	isNotNull,
 	isNull,
-	lt,
 	lte,
 	ne,
 	or,
@@ -840,49 +838,6 @@ export const extendBooking = createServerFn({ method: "POST" })
 				paymentMethod,
 				referenceNumber: referenceNumber?.trim() || null,
 			});
-
-			if (data.utilities && data.utilities.length > 0) {
-				const requestedTypes = data.utilities.map((u) => u.utilityType);
-				const dupes = await tx
-					.select({ utilityType: ledgerTransactions.utilityType })
-					.from(ledgerTransactions)
-					.where(
-						and(
-							eq(ledgerTransactions.bookingId, booking.id),
-							isNotNull(ledgerTransactions.utilityType),
-							inArray(ledgerTransactions.utilityType, requestedTypes),
-							gte(ledgerTransactions.createdAt, currentCheckOut.toISOString()),
-							lt(ledgerTransactions.createdAt, newCheckOut.toISOString()),
-						),
-					);
-
-				if (dupes.length > 0) {
-					const types = Array.from(
-						new Set(
-							dupes
-								.map((d) => d.utilityType)
-								.filter((t): t is NonNullable<typeof t> => t !== null),
-						),
-					);
-					throw new Error(
-						`Utility charges already exist for this period: ${types.join(", ")}`,
-					);
-				}
-
-				await tx.insert(ledgerTransactions).values(
-					data.utilities.map((u) => ({
-						bookingId: booking.id,
-						category: "ROOM_CHARGE" as const,
-						amount: u.amount.toFixed(4),
-						isPaid: u.isPaid,
-						description: u.description.trim(),
-						utilityType: u.utilityType,
-						paymentMethod: u.isPaid ? u.paymentMethod : null,
-						referenceNumber:
-							u.isPaid && u.referenceNumber ? u.referenceNumber.trim() : null,
-					})),
-				);
-			}
 
 			await syncBookingPaymentStatus(booking.id, tx);
 		});

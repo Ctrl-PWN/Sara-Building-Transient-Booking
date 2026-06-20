@@ -5,6 +5,7 @@ import { bookingKeys } from "@/lib/bookings/bookings.queries";
 import {
 	createExpense,
 	deleteLedgerTransaction,
+	generateUtilityPayments,
 	payExpense,
 	payExpenses,
 	payExpensesBulk,
@@ -12,6 +13,7 @@ import {
 import { ledgerKeys } from "./ledger.queries";
 import type {
 	createExpenseSchema,
+	generateUtilityPaymentsSchema,
 	payExpensesBulkSchema,
 	payExpensesSchema,
 } from "./schemas";
@@ -34,6 +36,15 @@ export const ledgerMutations = {
 				createExpense({ data: input }),
 			onSuccess: (row: LedgerTransactionRow) => {
 				invalidateLedger(queryClient, row.bookingId);
+			},
+		}),
+
+	generateUtilityPayments: (queryClient: QueryClient, bookingId: number) =>
+		mutationOptions({
+			mutationFn: (input: z.infer<typeof generateUtilityPaymentsSchema>) =>
+				generateUtilityPayments({ data: input }),
+			onSuccess: () => {
+				invalidateLedger(queryClient, bookingId);
 			},
 		}),
 
