@@ -1,4 +1,8 @@
-import { FileTextIcon, PlusIcon } from "@phosphor-icons/react";
+import {
+	CalendarBlankIcon,
+	FileTextIcon,
+	PlusIcon,
+} from "@phosphor-icons/react";
 import {
 	useMutation,
 	useQueryClient,
@@ -9,6 +13,10 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	getLatestPeriodIndex,
+	listMonthlyBillingPeriods,
+} from "@/lib/bookings/monthly-billing-periods";
 import { ledgerMutations } from "@/lib/ledger/ledger.mutations";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
@@ -21,11 +29,17 @@ import { PayExpenseDialog } from "./ledger/PayExpenseDialog";
 type BookingLedgerViewProps = {
 	bookingId: number;
 	bookingStatus: string;
+	bookingType?: string;
+	checkIn?: string;
+	checkOut?: string;
 };
 
 export function BookingLedgerView({
 	bookingId,
 	bookingStatus,
+	bookingType,
+	checkIn,
+	checkOut,
 }: BookingLedgerViewProps) {
 	const queryClient = useQueryClient();
 	const { data: details } = useSuspenseQuery(ledgerQueries.details(bookingId));
@@ -44,6 +58,12 @@ export function BookingLedgerView({
 	);
 
 	const canAddCharge = bookingStatus === "CHECKED_IN";
+	const isMonthly = bookingType === "MONTHLY";
+	const monthlyPeriods =
+		isMonthly && checkIn && checkOut
+			? listMonthlyBillingPeriods(checkIn, checkOut)
+			: [];
+	const latestPeriodIndex = getLatestPeriodIndex(monthlyPeriods);
 
 	const handlePay = (transaction: LedgerTransactionListItem) => {
 		setPayTarget(transaction);
@@ -78,6 +98,18 @@ export function BookingLedgerView({
 								View invoice
 							</Button>
 						</Link>
+						{isMonthly && monthlyPeriods.length > 0 ? (
+							<Link
+								to="/bookings/$bookingId/monthly-invoice"
+								params={{ bookingId: String(bookingId) }}
+								search={{ period: latestPeriodIndex }}
+							>
+								<Button type="button" variant="outline" size="sm">
+									<CalendarBlankIcon data-icon="inline-start" size={16} />
+									Monthly invoice
+								</Button>
+							</Link>
+						) : null}
 						{canAddCharge ? (
 							<Button type="button" size="sm" onClick={() => setAddOpen(true)}>
 								<PlusIcon data-icon="inline-start" size={16} />
