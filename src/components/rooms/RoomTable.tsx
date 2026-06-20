@@ -63,6 +63,9 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 							Base price
 						</th>
 						<th className="px-4 py-3 font-medium text-muted-foreground">
+							Monthly price
+						</th>
+						<th className="px-4 py-3 font-medium text-muted-foreground">
 							Status
 						</th>
 						<th className="px-4 py-3 font-medium text-muted-foreground">
@@ -85,6 +88,11 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 							</td>
 							<td className="px-4 py-3 text-muted-foreground">
 								₱{Number(room.basePrice).toLocaleString()}
+							</td>
+							<td className="px-4 py-3">
+								{room.monthlyPrice
+									? `₱${Number(room.monthlyPrice).toLocaleString()}`
+									: "N/A"}
 							</td>
 							<td className="px-4 py-3">
 								<Badge variant={statusVariants[room.status] ?? "default"}>

@@ -1,8 +1,4 @@
-import {
-	CalendarBlankIcon,
-	FileTextIcon,
-	PlusIcon,
-} from "@phosphor-icons/react";
+import { FileTextIcon, LightningIcon, PlusIcon } from "@phosphor-icons/react";
 import {
 	useMutation,
 	useQueryClient,
@@ -59,6 +55,7 @@ export function BookingLedgerView({
 
 	const canAddCharge = bookingStatus === "CHECKED_IN";
 	const isMonthly = bookingType === "MONTHLY";
+	const canManageUtilities = isMonthly && bookingStatus === "CHECKED_IN";
 	const monthlyPeriods =
 		isMonthly && checkIn && checkOut
 			? listMonthlyBillingPeriods(checkIn, checkOut)
@@ -98,15 +95,15 @@ export function BookingLedgerView({
 								View invoice
 							</Button>
 						</Link>
-						{isMonthly && monthlyPeriods.length > 0 ? (
+						{canManageUtilities && monthlyPeriods.length > 0 ? (
 							<Link
-								to="/bookings/$bookingId/monthly-invoice"
+								to="/bookings/$bookingId/monthly-utilities"
 								params={{ bookingId: String(bookingId) }}
 								search={{ period: latestPeriodIndex }}
 							>
 								<Button type="button" variant="outline" size="sm">
-									<CalendarBlankIcon data-icon="inline-start" size={16} />
-									Monthly invoice
+									<LightningIcon data-icon="inline-start" size={16} />
+									Monthly utilities
 								</Button>
 							</Link>
 						) : null}

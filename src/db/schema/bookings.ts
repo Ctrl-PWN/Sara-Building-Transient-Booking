@@ -46,7 +46,12 @@ export const bookings = pgTable("bookings", {
 		withTimezone: true,
 		mode: "string",
 	}),
-	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", {
+		withTimezone: true,
+		mode: "string",
+	})
+		.defaultNow()
+		.notNull(),
 	deletedAt: timestamp("deleted_at", {
 		withTimezone: true,
 		mode: "string",

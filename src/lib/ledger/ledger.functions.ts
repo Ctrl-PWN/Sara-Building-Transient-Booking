@@ -1,8 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
+import {
+	isWithinPeriod,
+	listMonthlyBillingPeriods,
+} from "@/lib/bookings/monthly-billing-periods";
 import {
 	getBookingForLedger,
 	getLedgerTransactionWithBooking,
@@ -68,51 +72,67 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			);
 		}
 
-		const validItems = data.items.filter((i) => i.amount > 0);
-		if (validItems.length === 0) {
+		const payableItems = data.items.filter((i) => i.amount > 0);
+		if (payableItems.length === 0) {
 			throw new Error(
 				"At least one utility with an amount greater than zero is required",
 			);
 		}
 
-		const referenceNumber = normalizeReferenceNumber(
-			data.paymentMethod,
-			data.referenceNumber,
-		);
-
 		const result = await db.transaction(async (tx) => {
 			const bookingRow = await tx
-				.select({ id: bookings.id, checkIn: bookings.checkIn })
+				.select({
+					checkIn: bookings.checkIn,
+					checkOut: bookings.checkOut,
+				})
 				.from(bookings)
 				.where(eq(bookings.id, data.bookingId))
 				.limit(1);
-			const anchor = bookingRow[0]?.checkIn ?? new Date();
-			const periodStart = new Date(anchor);
-			const periodEnd = new Date();
 
-			const requestedTypes = validItems.map((i) => i.utilityType);
+			const checkIn = bookingRow[0]?.checkIn;
+			const checkOut = bookingRow[0]?.checkOut;
+			if (!checkIn || !checkOut) {
+				throw new Error("Booking dates are required for utility payments");
+			}
+
+			const periods = listMonthlyBillingPeriods(checkIn, checkOut);
+			const period = periods[data.periodIndex];
+			if (!period) {
+				throw new Error("Invalid billing period");
+			}
+
 			const existing = await tx
-				.select({ utilityType: ledgerTransactions.utilityType })
+				.select({
+					utilityType: ledgerTransactions.utilityType,
+					createdAt: ledgerTransactions.createdAt,
+				})
 				.from(ledgerTransactions)
 				.where(
 					and(
 						eq(ledgerTransactions.bookingId, data.bookingId),
 						eq(ledgerTransactions.category, "UTILITY"),
-						inArray(ledgerTransactions.utilityType, requestedTypes),
 					),
 				);
-			const existingTypes = new Set(
+
+			const existingMainTypesInPeriod = new Set(
 				existing
-					.map((e) => e.utilityType)
-					.filter((t): t is NonNullable<typeof t> => t !== null),
+					.filter(
+						(row) => row.createdAt && isWithinPeriod(row.createdAt, period),
+					)
+					.map((row) => row.utilityType)
+					.filter(
+						(type): type is "ELECTRICITY" | "WATER" | "INTERNET" =>
+							type === "ELECTRICITY" || type === "WATER" || type === "INTERNET",
+					),
 			);
 
-			const toInsert = validItems.filter(
-				(i) => !existingTypes.has(i.utilityType),
-			);
+			const toInsert = payableItems.filter((item) => {
+				if (item.utilityType === "OTHER") return true;
+				return !existingMainTypesInPeriod.has(item.utilityType);
+			});
 
 			if (toInsert.length === 0) {
-				return { inserted: 0, skipped: validItems.length };
+				return { inserted: 0, skipped: payableItems.length };
 			}
 
 			const inserted = await tx
@@ -125,18 +145,18 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 						description: u.description.trim(),
 						isPaid: true,
 						paymentMethod: data.paymentMethod,
-						referenceNumber,
+						referenceNumber: normalizeReferenceNumber(
+							data.paymentMethod,
+							data.referenceNumber,
+						),
 						utilityType: u.utilityType,
 					})),
 				)
 				.returning();
 
-			void periodStart;
-			void periodEnd;
-
 			return {
 				inserted: inserted.length,
-				skipped: validItems.length - inserted.length,
+				skipped: payableItems.length - inserted.length,
 			};
 		});
 

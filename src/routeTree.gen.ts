@@ -21,6 +21,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedBookingsBookingIdIndexRouteImport } from './routes/_authenticated/bookings/$bookingId/index'
 import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from './routes/_authenticated/_admin/user-management/index'
 import { Route as AuthenticatedAdminRoomManagementIndexRouteImport } from './routes/_authenticated/_admin/room-management/index'
+import { Route as AuthenticatedBookingsBookingIdMonthlyUtilitiesRouteImport } from './routes/_authenticated/bookings/$bookingId/monthly-utilities'
 import { Route as AuthenticatedBookingsBookingIdMonthlyInvoiceRouteImport } from './routes/_authenticated/bookings/$bookingId/monthly-invoice'
 import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from './routes/_authenticated/bookings/$bookingId/invoice'
 
@@ -88,6 +89,12 @@ const AuthenticatedAdminRoomManagementIndexRoute =
     path: '/room-management/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute =
+  AuthenticatedBookingsBookingIdMonthlyUtilitiesRouteImport.update({
+    id: '/bookings/$bookingId/monthly-utilities',
+    path: '/bookings/$bookingId/monthly-utilities',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBookingsBookingIdMonthlyInvoiceRoute =
   AuthenticatedBookingsBookingIdMonthlyInvoiceRouteImport.update({
     id: '/bookings/$bookingId/monthly-invoice',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/bookings/$bookingId/monthly-invoice': typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute
+  '/bookings/$bookingId/monthly-utilities': typeof AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute
   '/room-management/': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/bookings/$bookingId/': typeof AuthenticatedBookingsBookingIdIndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/timeline': typeof AuthenticatedTimelineIndexRoute
   '/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/bookings/$bookingId/monthly-invoice': typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute
+  '/bookings/$bookingId/monthly-utilities': typeof AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute
   '/room-management': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/user-management': typeof AuthenticatedAdminUserManagementIndexRoute
   '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdIndexRoute
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/timeline/': typeof AuthenticatedTimelineIndexRoute
   '/_authenticated/bookings/$bookingId/invoice': typeof AuthenticatedBookingsBookingIdInvoiceRoute
   '/_authenticated/bookings/$bookingId/monthly-invoice': typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute
+  '/_authenticated/bookings/$bookingId/monthly-utilities': typeof AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute
   '/_authenticated/_admin/room-management/': typeof AuthenticatedAdminRoomManagementIndexRoute
   '/_authenticated/_admin/user-management/': typeof AuthenticatedAdminUserManagementIndexRoute
   '/_authenticated/bookings/$bookingId/': typeof AuthenticatedBookingsBookingIdIndexRoute
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/timeline/'
     | '/bookings/$bookingId/invoice'
     | '/bookings/$bookingId/monthly-invoice'
+    | '/bookings/$bookingId/monthly-utilities'
     | '/room-management/'
     | '/user-management/'
     | '/bookings/$bookingId/'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/bookings/$bookingId/invoice'
     | '/bookings/$bookingId/monthly-invoice'
+    | '/bookings/$bookingId/monthly-utilities'
     | '/room-management'
     | '/user-management'
     | '/bookings/$bookingId'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timeline/'
     | '/_authenticated/bookings/$bookingId/invoice'
     | '/_authenticated/bookings/$bookingId/monthly-invoice'
+    | '/_authenticated/bookings/$bookingId/monthly-utilities'
     | '/_authenticated/_admin/room-management/'
     | '/_authenticated/_admin/user-management/'
     | '/_authenticated/bookings/$bookingId/'
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRoomManagementIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/bookings/$bookingId/monthly-utilities': {
+      id: '/_authenticated/bookings/$bookingId/monthly-utilities'
+      path: '/bookings/$bookingId/monthly-utilities'
+      fullPath: '/bookings/$bookingId/monthly-utilities'
+      preLoaderRoute: typeof AuthenticatedBookingsBookingIdMonthlyUtilitiesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/bookings/$bookingId/monthly-invoice': {
       id: '/_authenticated/bookings/$bookingId/monthly-invoice'
       path: '/bookings/$bookingId/monthly-invoice'
@@ -326,6 +346,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTimelineIndexRoute: typeof AuthenticatedTimelineIndexRoute
   AuthenticatedBookingsBookingIdInvoiceRoute: typeof AuthenticatedBookingsBookingIdInvoiceRoute
   AuthenticatedBookingsBookingIdMonthlyInvoiceRoute: typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute
+  AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute: typeof AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute
   AuthenticatedBookingsBookingIdIndexRoute: typeof AuthenticatedBookingsBookingIdIndexRoute
 }
 
@@ -340,6 +361,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedBookingsBookingIdInvoiceRoute,
   AuthenticatedBookingsBookingIdMonthlyInvoiceRoute:
     AuthenticatedBookingsBookingIdMonthlyInvoiceRoute,
+  AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute:
+    AuthenticatedBookingsBookingIdMonthlyUtilitiesRoute,
   AuthenticatedBookingsBookingIdIndexRoute:
     AuthenticatedBookingsBookingIdIndexRoute,
 }

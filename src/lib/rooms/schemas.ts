@@ -1,6 +1,20 @@
 import { z } from "zod";
 import { roomStatusValues } from "@/db/schema/enums";
 
+export const editableRoomStatusValues = roomStatusValues.filter(
+	(s) => s !== "OCCUPIED",
+) as [
+	Exclude<(typeof roomStatusValues)[number], "OCCUPIED">,
+	...Exclude<(typeof roomStatusValues)[number], "OCCUPIED">[],
+];
+
+const editableRoomStatusSchema = z.enum(editableRoomStatusValues);
+
+export const editableRoomStatusOptions = editableRoomStatusValues.map((s) => ({
+	value: s,
+	label: s.replace(/_/g, " "),
+}));
+
 export const createRoomSchema = z.object({
 	roomNumber: z
 		.string()
@@ -20,7 +34,6 @@ export const createRoomSchema = z.object({
 		.positive("Base price must be a positive number")
 		.max(9999999, "Base price is too large"),
 	monthlyPrice: z.number().min(0, "Monthly price must be 0 or greater"),
-	status: z.enum(roomStatusValues),
 });
 
 export const updateRoomSchema = z.object({
@@ -50,7 +63,7 @@ export const updateRoomSchema = z.object({
 		.number()
 		.min(0, "Monthly price must be 0 or greater")
 		.optional(),
-	status: z.enum(roomStatusValues).optional(),
+	status: editableRoomStatusSchema.optional(),
 });
 
 export const updateRoomStatusSchema = z.object({
