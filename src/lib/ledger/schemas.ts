@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
 	ledgerTransactionCategoryEnum,
 	paymentMethodEnum,
+	utilityTypeEnum,
 } from "@/db/schema/enums";
 
 export const ledgerTransactionCategorySchema = z.enum(
@@ -131,6 +132,23 @@ export const createExpenseSchema = z
 		referenceNumber: z.string().optional(),
 	})
 	.superRefine(chargeWithPaymentRefine);
+
+export const utilityTypeSchema = z.enum(utilityTypeEnum.enumValues);
+
+export const utilityExpenseItemSchema = z
+	.object({
+		utilityType: utilityTypeSchema,
+		amount: z.number().positive("Amount must be greater than zero"),
+		description: z.string().min(1, "Description is required"),
+		isPaid: z.boolean(),
+		paymentMethod: paymentMethodSchema.optional(),
+		referenceNumber: z.string().optional(),
+	})
+	.superRefine(chargeWithPaymentRefine);
+
+export type UtilityExpenseItem = z.infer<typeof utilityExpenseItemSchema>;
+
+export const utilityExpenseItemsSchema = z.array(utilityExpenseItemSchema);
 
 const payExpenseItemSchema = z
 	.object({

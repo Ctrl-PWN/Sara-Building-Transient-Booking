@@ -37,6 +37,13 @@ export const userRoleEnum = pgEnum("user_role", ["admin", "staff"]);
 
 export const bookingTypeEnum = pgEnum("booking_type", ["DAILY", "MONTHLY"]);
 
+export const utilityTypeEnum = pgEnum("utility_type", [
+	"ELECTRICITY",
+	"WATER",
+	"INTERNET",
+	"OTHER",
+]);
+
 export const bookingStatusValues = bookingStatusEnum.enumValues;
 export const bookingPaymentStatusValues = bookingPaymentStatusEnum.enumValues;
 export const roomStatusValues = roomStatusEnum.enumValues;
@@ -45,6 +52,7 @@ export const ledgerTransactionCategoryValues =
 export const paymentMethodValues = paymentMethodEnum.enumValues;
 export const userRoleValues = userRoleEnum.enumValues;
 export const bookingTypeValues = bookingTypeEnum.enumValues;
+export const utilityTypeValues = utilityTypeEnum.enumValues;
 
 export type BookingStatus = (typeof bookingStatusEnum.enumValues)[number];
 export type BookingPaymentStatus =
@@ -55,3 +63,4 @@ export type LedgerTransactionCategory =
 export type PaymentMethod = (typeof paymentMethodEnum.enumValues)[number];
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export type BookingType = (typeof bookingTypeEnum.enumValues)[number];
+export type UtilityType = (typeof utilityTypeEnum.enumValues)[number];
