@@ -128,16 +128,25 @@ function BookingDetailPage() {
 		setTransferOpen(false);
 	};
 
-	const handleExtend = (
-		withCashAdvance: boolean,
-		paymentMethod: string,
-		referenceNumber: string,
-	) => {
+	const handleExtend = (values: {
+		withCashAdvance: boolean;
+		paymentMethod: string;
+		referenceNumber: string;
+		utilities: Array<{
+			utilityType: "ELECTRICITY" | "WATER" | "INTERNET" | "OTHER";
+			amount: number;
+			description: string;
+			isPaid: boolean;
+			paymentMethod?: "CASH" | "GCASH" | "BANK_TRANSFER";
+			referenceNumber?: string;
+		}>;
+	}) => {
 		extendMutation.mutate({
 			bookingRef: booking.bookingRef,
-			withCashAdvance,
-			paymentMethod: paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
-			referenceNumber,
+			withCashAdvance: values.withCashAdvance,
+			paymentMethod: values.paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
+			referenceNumber: values.referenceNumber,
+			utilities: values.utilities,
 		});
 		setExtendOpen(false);
 	};

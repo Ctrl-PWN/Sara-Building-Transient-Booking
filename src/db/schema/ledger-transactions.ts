@@ -9,7 +9,11 @@ import {
 	varchar,
 } from "drizzle-orm/pg-core";
 import { bookings } from "./bookings";
-import { ledgerTransactionCategoryEnum, paymentMethodEnum } from "./enums";
+import {
+	ledgerTransactionCategoryEnum,
+	paymentMethodEnum,
+	utilityTypeEnum,
+} from "./enums";
 
 export const ledgerTransactions = pgTable("ledger_transactions", {
 	id: serial("id").primaryKey(),
@@ -22,5 +26,6 @@ export const ledgerTransactions = pgTable("ledger_transactions", {
 	description: text("description"),
 	paymentMethod: paymentMethodEnum("payment_method"),
 	referenceNumber: varchar("reference_number"),
+	utilityType: utilityTypeEnum("utility_type"),
 	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });

@@ -56,7 +56,16 @@ export function BookingLedgerTable({
 		{
 			accessorKey: "description",
 			header: "Description",
-			cell: ({ row }) => row.original.description ?? "—",
+			cell: ({ row }) => (
+				<div className="flex flex-col gap-1">
+					{row.original.utilityType ? (
+						<Badge variant="secondary" className="w-fit">
+							{row.original.utilityType}
+						</Badge>
+					) : null}
+					<span>{row.original.description ?? "—"}</span>
+				</div>
+			),
 		},
 		{
 			accessorKey: "amount",

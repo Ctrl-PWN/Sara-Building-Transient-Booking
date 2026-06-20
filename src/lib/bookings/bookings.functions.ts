@@ -5,7 +5,9 @@ import {
 	eq,
 	gte,
 	inArray,
+	isNotNull,
 	isNull,
+	lt,
 	lte,
 	ne,
 	or,
@@ -14,6 +16,7 @@ import {
 import { z } from "zod";
 import { db } from "@/db/index";
 import { bookings, ledgerTransactions, rooms } from "@/db/schema";
+import { isSameManilaDayOrAfter } from "@/lib/date/manila";
 import {
 	computeRemainingBalance,
 	normalizeReferenceNumber,
@@ -463,11 +466,11 @@ export const checkInBooking = createServerFn({ method: "POST" })
 			throw new Error("Only reserved bookings can be checked in");
 		}
 
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		const checkInDate = new Date(booking.checkIn ?? new Date());
-		checkInDate.setHours(0, 0, 0, 0);
-		if (today < checkInDate) {
+		if (!booking.checkIn) {
+			throw new Error("Booking has no scheduled check-in date");
+		}
+
+		if (!isSameManilaDayOrAfter(booking.checkIn)) {
 			throw new Error("Cannot check in before the scheduled check-in date");
 		}
 
@@ -822,6 +825,49 @@ export const extendBooking = createServerFn({ method: "POST" })
 				paymentMethod,
 				referenceNumber: referenceNumber?.trim() || null,
 			});
+
+			if (data.utilities && data.utilities.length > 0) {
+				const requestedTypes = data.utilities.map((u) => u.utilityType);
+				const dupes = await tx
+					.select({ utilityType: ledgerTransactions.utilityType })
+					.from(ledgerTransactions)
+					.where(
+						and(
+							eq(ledgerTransactions.bookingId, booking.id),
+							isNotNull(ledgerTransactions.utilityType),
+							inArray(ledgerTransactions.utilityType, requestedTypes),
+							gte(ledgerTransactions.createdAt, currentCheckOut.toISOString()),
+							lt(ledgerTransactions.createdAt, newCheckOut.toISOString()),
+						),
+					);
+
+				if (dupes.length > 0) {
+					const types = Array.from(
+						new Set(
+							dupes
+								.map((d) => d.utilityType)
+								.filter((t): t is NonNullable<typeof t> => t !== null),
+						),
+					);
+					throw new Error(
+						`Utility charges already exist for this period: ${types.join(", ")}`,
+					);
+				}
+
+				await tx.insert(ledgerTransactions).values(
+					data.utilities.map((u) => ({
+						bookingId: booking.id,
+						category: "ROOM_CHARGE" as const,
+						amount: u.amount.toFixed(4),
+						isPaid: u.isPaid,
+						description: u.description.trim(),
+						utilityType: u.utilityType,
+						paymentMethod: u.isPaid ? u.paymentMethod : null,
+						referenceNumber:
+							u.isPaid && u.referenceNumber ? u.referenceNumber.trim() : null,
+					})),
+				);
+			}
 
 			await syncBookingPaymentStatus(booking.id, tx);
 		});

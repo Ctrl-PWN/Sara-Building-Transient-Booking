@@ -40,3 +40,19 @@ function toManilaTzDate(date: Date | string | number): TZDate {
 export function formatManilaDisplayDate(date: Date | string | number): string {
 	return formatManilaDate(date, "EEEE, MMMM d, yyyy");
 }
+
+/**
+ * Returns true if `iso` falls on the same Manila calendar day as
+ * `referenceDate` (default: now), or any earlier day. Uses Asia/Manila so
+ * the property's local "today" is the source of truth, not the server's tz.
+ */
+export function isSameManilaDayOrAfter(
+	iso: string,
+	referenceDate: Date = new Date(),
+): boolean {
+	const today = new TZDate(referenceDate, MANILA_TZ);
+	today.setHours(0, 0, 0, 0);
+	const other = new TZDate(iso, MANILA_TZ);
+	other.setHours(0, 0, 0, 0);
+	return today.getTime() >= other.getTime();
+}
