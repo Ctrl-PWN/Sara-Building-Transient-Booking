@@ -1,11 +1,16 @@
 import {
 	isProtectedLedgerTransaction,
+	RESERVATION_ADVANCE_DESCRIPTION,
 	RESERVATION_BALANCE_DESCRIPTION,
 	WALK_IN_ROOM_CHARGE_DESCRIPTION,
 } from "@/lib/ledger/ledger.constants";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
-export { RESERVATION_BALANCE_DESCRIPTION, WALK_IN_ROOM_CHARGE_DESCRIPTION };
+export {
+	RESERVATION_ADVANCE_DESCRIPTION,
+	RESERVATION_BALANCE_DESCRIPTION,
+	WALK_IN_ROOM_CHARGE_DESCRIPTION,
+};
 
 export function canDeleteLedgerTransaction(
 	transaction: LedgerTransactionListItem,

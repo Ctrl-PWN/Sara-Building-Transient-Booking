@@ -56,7 +56,16 @@ export function BookingLedgerTable({
 		{
 			accessorKey: "description",
 			header: "Description",
-			cell: ({ row }) => row.original.description ?? "—",
+			cell: ({ row }) => (
+				<div className="flex flex-col gap-1">
+					{row.original.utilityType ? (
+						<Badge variant="secondary" className="w-fit">
+							{row.original.utilityType}
+						</Badge>
+					) : null}
+					<span>{row.original.description ?? "—"}</span>
+				</div>
+			),
 		},
 		{
 			accessorKey: "amount",
@@ -64,7 +73,9 @@ export function BookingLedgerTable({
 			cell: ({ row }) => {
 				const amount = Number(row.original.amount);
 				return (
-					<span className={amount < 0 ? "text-destructive" : undefined}>
+					<span
+						className={`whitespace-nowrap ${amount < 0 ? "text-destructive" : undefined}`}
+					>
 						{formatPeso(amount)}
 					</span>
 				);
@@ -75,9 +86,13 @@ export function BookingLedgerTable({
 			header: "Status",
 			cell: ({ row }) =>
 				row.original.isPaid ? (
-					<Badge variant="secondary">Paid</Badge>
+					<Badge variant="secondary" className="whitespace-nowrap">
+						Paid
+					</Badge>
 				) : (
-					<Badge variant="outline">Unpaid</Badge>
+					<Badge variant="outline" className="whitespace-nowrap">
+						Unpaid
+					</Badge>
 				),
 		},
 		{
@@ -130,5 +145,7 @@ export function BookingLedgerTable({
 		});
 	}
 
-	return <DataTable columns={columns} data={transactions} />;
+	return (
+		<DataTable columns={columns} data={transactions} className="text-xs" />
+	);
 }

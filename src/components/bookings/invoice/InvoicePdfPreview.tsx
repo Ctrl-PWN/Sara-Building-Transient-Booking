@@ -15,6 +15,8 @@ import { formatGuestName } from "@/lib/bookings/types";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 import { InvoiceDocument } from "./InvoiceDocument";
+import { buildLedgerReceiptModel } from "./receipt-model";
+import { ThermalReceiptDocument } from "./ThermalInvoiceDocument";
 import { ThermalPrintPreview } from "./ThermalPrintPreview";
 
 const PDFViewer = lazy(() =>
@@ -47,6 +49,8 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
 	const [opening, setOpening] = useState(false);
 	const [viewerHeight, setViewerHeight] = useState(800);
 	const [thermalOpen, setThermalOpen] = useState(false);
+
+	const receipt = buildLedgerReceiptModel(props);
 
 	useEffect(() => {
 		setViewerHeight(window.innerHeight - 180);
@@ -153,12 +157,9 @@ export function InvoicePdfPreview(props: InvoicePdfPreviewProps) {
 			<ThermalPrintPreview
 				open={thermalOpen}
 				onOpenChange={setThermalOpen}
-				booking={booking}
-				transactions={props.transactions}
-				total={props.total}
-				payments={props.payments}
-				remainingBalance={props.remainingBalance}
-				issuedBy={props.issuedBy}
+				receipt={receipt}
+				pdfDocument={<ThermalReceiptDocument receipt={receipt} />}
+				rollLabel={`72mm roll · ${booking.bookingRef}`}
 			/>
 		</main>
 	);

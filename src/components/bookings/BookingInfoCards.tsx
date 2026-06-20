@@ -42,6 +42,18 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 						<p className="text-sm text-muted-foreground">Occupants</p>
 						<p className="font-medium mt-1">{booking.occupantsCount} Pax</p>
 					</div>
+					{booking.cancellationReason && (
+						<div>
+							<p className="text-sm text-muted-foreground">
+								{booking.status === "EVICTED"
+									? "Eviction Reason"
+									: booking.status === "TRANSFERRED"
+										? "Transfer Reason"
+										: "Cancellation Reason"}
+							</p>
+							<p className="font-medium mt-1">{booking.cancellationReason}</p>
+						</div>
+					)}
 				</CardContent>
 			</Card>
 

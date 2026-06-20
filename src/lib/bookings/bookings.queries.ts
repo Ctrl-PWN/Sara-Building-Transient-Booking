@@ -4,6 +4,7 @@ import {
 	getBookingById,
 	getBookingHistory,
 	getBookings,
+	previewLateFee,
 } from "./bookings.functions";
 
 export const bookingKeys = {
@@ -12,6 +13,7 @@ export const bookingKeys = {
 	history: () => [...bookingKeys.all, "history"] as const,
 	details: () => [...bookingKeys.all, "detail"] as const,
 	detail: (id: number) => [...bookingKeys.details(), id] as const,
+	lateFee: (id: number) => [...bookingKeys.detail(id), "lateFee"] as const,
 };
 
 export const bookingQueries = {
@@ -29,5 +31,11 @@ export const bookingQueries = {
 		queryOptions({
 			queryKey: bookingKeys.detail(id),
 			queryFn: () => getBookingById({ data: { id } }),
+		}),
+	lateFee: (id: number) =>
+		queryOptions({
+			queryKey: bookingKeys.lateFee(id),
+			queryFn: () => previewLateFee({ data: { bookingId: id } }),
+			enabled: id > 0,
 		}),
 };

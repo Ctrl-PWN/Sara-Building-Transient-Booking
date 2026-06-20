@@ -18,6 +18,7 @@ import {
 	useAppForm,
 } from "@/integrations/tanstack-form";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
+import { bookingQueries } from "@/lib/bookings/bookings.queries";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { ledgerMutations } from "@/lib/ledger/ledger.mutations";
@@ -171,6 +172,10 @@ export function CheckOutBookingDialog({
 		...ledgerQueries.transactions(bookingId),
 		enabled: open,
 	});
+	const { data: lateFee, isPending: isLateFeePending } = useQuery({
+		...bookingQueries.lateFee(bookingId),
+		enabled: open,
+	});
 
 	const unpaid = useMemo(
 		() => transactions.filter((row) => !row.isPaid),
@@ -190,6 +195,9 @@ export function CheckOutBookingDialog({
 	);
 	const checkOutMutation = useMutation(
 		bookingMutations.checkOut(queryClient, bookingId),
+	);
+	const applyLateFeeMutation = useMutation(
+		bookingMutations.applyLateFee(queryClient, bookingId),
 	);
 
 	const unifiedForm = useAppForm({
@@ -267,6 +275,9 @@ export function CheckOutBookingDialog({
 	const handleCheckOut = async () => {
 		setSettleError(null);
 		try {
+			if (lateFee) {
+				await applyLateFeeMutation.mutateAsync();
+			}
 			await checkOutMutation.mutateAsync({ bookingRef: booking.bookingRef });
 			onOpenChange(false);
 		} catch (error) {
@@ -283,6 +294,7 @@ export function CheckOutBookingDialog({
 	};
 	const remainingBalance = ledgerDetails.remainingBalance;
 	const isSettling = bulkMutation.isPending || separateMutation.isPending;
+	const isApplyingLateFee = applyLateFeeMutation.isPending;
 	const canCheckOut = remainingBalance === 0;
 
 	return (
@@ -298,6 +310,21 @@ export function CheckOutBookingDialog({
 							<span className="text-muted-foreground">Guest:</span>{" "}
 							{booking.firstName} {booking.lastName}
 						</p>
+						{lateFee ? (
+							<div
+								role="alert"
+								className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm"
+							>
+								<p className="font-medium text-destructive">
+									Overdue by {lateFee.daysOverdue} day
+									{lateFee.daysOverdue === 1 ? "" : "s"}
+								</p>
+								<p className="text-muted-foreground">
+									Late fee: {formatPeso(lateFee.amount)} ({lateFee.daysOverdue}{" "}
+									× {formatPeso(lateFee.rate)}/day)
+								</p>
+							</div>
+						) : null}
 						<LedgerBalanceSummary details={ledgerDetails} />
 					</div>
 
@@ -391,9 +418,14 @@ export function CheckOutBookingDialog({
 					<Button
 						type="button"
 						onClick={() => void handleCheckOut()}
-						disabled={!canCheckOut || checkOutMutation.isPending}
+						disabled={
+							!canCheckOut ||
+							checkOutMutation.isPending ||
+							isApplyingLateFee ||
+							isLateFeePending
+						}
 					>
-						{checkOutMutation.isPending
+						{checkOutMutation.isPending || isApplyingLateFee
 							? "Checking out…"
 							: "Complete check-out"}
 					</Button>

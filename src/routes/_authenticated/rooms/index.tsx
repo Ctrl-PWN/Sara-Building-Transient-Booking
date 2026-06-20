@@ -33,8 +33,8 @@ function RoomsRoute() {
 						title="Rooms"
 						description="Room inventory, status, and operational details."
 					/>
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{Array.from({ length: 6 }, (_, i) => i + 1).map((n) => (
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+						{Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
 							<Skeleton key={n} className="h-40 w-full rounded-xl" />
 						))}
 					</div>
@@ -73,7 +73,7 @@ function RoomsListPage() {
 					</Empty>
 				</section>
 			) : (
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
 					{rooms.map((room: Room) => (
 						<RoomCard
 							key={room.id}

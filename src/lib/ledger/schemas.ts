@@ -3,12 +3,15 @@ import { z } from "zod";
 import {
 	ledgerTransactionCategoryEnum,
 	paymentMethodEnum,
+	utilityTypeEnum,
 } from "@/db/schema/enums";
 
 export const ledgerTransactionCategorySchema = z.enum(
 	ledgerTransactionCategoryEnum.enumValues,
 );
 export const paymentMethodSchema = z.enum(paymentMethodEnum.enumValues);
+
+export const utilityTypeSchema = z.enum(utilityTypeEnum.enumValues);
 
 export const paymentReferenceRefine = (
 	data: {
@@ -42,6 +45,7 @@ export const ledgerPaymentFieldsSchema = z
 export const createBookingLedgerCategorySchema = z.enum([
 	"ROOM_CHARGE",
 	"DEPOSIT",
+	"ADVANCE",
 ]);
 
 export const createBookingLedgerLineSchema = z
@@ -115,10 +119,21 @@ export const addExpenseFormSchema = z
 		amount: z.number().positive("Amount must be greater than zero"),
 		description: z.string().min(1, "Description is required"),
 		isPaid: z.boolean(),
+		category: z.enum(["ROOM_CHARGE", "UTILITY"]),
+		utilityType: utilityTypeSchema.optional(),
 		paymentMethod: paymentMethodSchema.optional(),
 		referenceNumber: z.string().optional(),
 	})
-	.superRefine(chargeWithPaymentRefine);
+	.superRefine((data, ctx) => {
+		if (data.category === "UTILITY" && !data.utilityType) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Utility type is required for utility charges",
+				path: ["utilityType"],
+			});
+		}
+		chargeWithPaymentRefine(data, ctx);
+	});
 
 export const createExpenseSchema = z
 	.object({
@@ -126,10 +141,49 @@ export const createExpenseSchema = z
 		amount: z.number().positive("Amount must be greater than zero"),
 		description: z.string().min(1, "Description is required"),
 		isPaid: z.boolean().optional(),
+		category: z.enum(["ROOM_CHARGE", "UTILITY"]).default("ROOM_CHARGE"),
+		utilityType: utilityTypeSchema.optional(),
 		paymentMethod: paymentMethodSchema.optional(),
 		referenceNumber: z.string().optional(),
 	})
-	.superRefine(chargeWithPaymentRefine);
+	.superRefine((data, ctx) => {
+		if (data.category === "UTILITY" && !data.utilityType) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Utility type is required for utility charges",
+				path: ["utilityType"],
+			});
+		}
+		chargeWithPaymentRefine(data, ctx);
+	});
+
+export const utilityExpenseItemSchema = z.object({
+	utilityType: utilityTypeSchema,
+	amount: z.number().positive("Amount must be greater than zero"),
+	description: z.string().min(1, "Description is required"),
+});
+
+export type UtilityExpenseItem = z.infer<typeof utilityExpenseItemSchema>;
+
+export const utilityExpenseItemsSchema = z.array(utilityExpenseItemSchema);
+
+export const generateUtilityPaymentItemSchema = z.object({
+	utilityType: utilityTypeSchema,
+	amount: z.number().min(0, "Amount cannot be negative"),
+	description: z.string().min(1, "Description is required"),
+});
+
+export const generateUtilityPaymentItemsSchema = z.array(
+	generateUtilityPaymentItemSchema,
+);
+
+export const generateUtilityPaymentsSchema = z
+	.object({
+		bookingId: z.number().int().positive(),
+		items: generateUtilityPaymentItemsSchema,
+		...ledgerPaymentFieldsShape,
+	})
+	.superRefine(paymentReferenceRefine);
 
 const payExpenseItemSchema = z
 	.object({

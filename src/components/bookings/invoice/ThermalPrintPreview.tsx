@@ -4,7 +4,8 @@ import {
 	ReceiptIcon,
 	XIcon,
 } from "@phosphor-icons/react";
-import { lazy, Suspense, useState } from "react";
+import type { DocumentProps } from "@react-pdf/renderer";
+import { type ReactElement, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,66 +17,47 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import type { BookingWithRoom } from "@/lib/bookings/types";
-import type { LedgerTransactionListItem } from "@/lib/ledger/types";
-
-import { ThermalInvoiceDocument } from "./ThermalInvoiceDocument";
+import { ReceiptPreview } from "./ReceiptPreview";
+import type { ReceiptModel } from "./receipt-model";
 import { useThermalPrint } from "./useThermalPrint";
 
-const PDFViewer = lazy(() =>
-	import("@react-pdf/renderer").then((m) => ({ default: m.PDFViewer })),
-);
+type PrintableDocument = ReactElement<DocumentProps>;
 
 type ThermalPrintPreviewProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	booking: BookingWithRoom;
-	transactions: LedgerTransactionListItem[];
-	total: number;
-	payments: number;
-	remainingBalance: number;
-	issuedBy: string;
+	receipt: ReceiptModel;
+	pdfDocument?: PrintableDocument;
+	rollLabel?: string;
 };
 
-export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
-	const {
-		open,
-		onOpenChange,
-		booking,
-		transactions,
-		total,
-		payments,
-		remainingBalance,
-		issuedBy,
-	} = props;
-
-	const { status, error, print, reset } = useThermalPrint();
+export function ThermalPrintPreview({
+	open,
+	onOpenChange,
+	receipt,
+	pdfDocument,
+	rollLabel,
+}: ThermalPrintPreviewProps) {
+	const pdfPrint = useThermalPrint();
 	const [showPreview, setShowPreview] = useState(true);
 
-	const documentElement = (
-		<ThermalInvoiceDocument
-			booking={booking}
-			transactions={transactions}
-			total={total}
-			payments={payments}
-			remainingBalance={remainingBalance}
-			issuedBy={issuedBy}
-		/>
-	);
-
-	function handlePrint() {
-		void print(documentElement);
-	}
+	const isBusy =
+		pdfPrint.status === "preparing" || pdfPrint.status === "printing";
 
 	function handleOpenChange(next: boolean) {
 		if (!next) {
-			reset();
+			pdfPrint.reset();
 			setShowPreview(true);
 		}
 		onOpenChange(next);
 	}
 
-	const printing = status === "preparing" || status === "printing";
+	async function handlePrint() {
+		if (!pdfDocument) {
+			throw new Error("No print method available.");
+		}
+		await pdfPrint.print(pdfDocument);
+	}
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -88,7 +70,7 @@ export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
 								Thermal Receipt
 							</DialogTitle>
 							<DialogDescription>
-								80mm roll · {booking.bookingRef}
+								{rollLabel ?? "72mm roll"} · {receipt.documentRef}
 							</DialogDescription>
 						</div>
 						<DialogClose
@@ -108,33 +90,13 @@ export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
 
 				{showPreview ? (
 					<div className="mt-2 flex max-h-[55vh] justify-center overflow-auto rounded-lg border border-border bg-muted/40 p-4">
-						<div className="w-[226px] shrink-0 overflow-hidden rounded-sm border border-border bg-white shadow-sm">
-							<Suspense
-								fallback={
-									<div className="flex h-64 items-center justify-center">
-										<CircleNotchIcon
-											className="animate-spin text-muted-foreground"
-											size={18}
-										/>
-									</div>
-								}
-							>
-								<PDFViewer
-									width="100%"
-									height={420}
-									showToolbar={false}
-									style={{ width: "100%", height: 420, border: "none" }}
-								>
-									{documentElement}
-								</PDFViewer>
-							</Suspense>
-						</div>
+						<ReceiptPreview receipt={receipt} />
 					</div>
 				) : null}
 
-				{error ? (
+				{pdfPrint.error ? (
 					<p className="text-sm text-destructive" role="alert">
-						{error}
+						{pdfPrint.error}
 					</p>
 				) : null}
 
@@ -143,7 +105,7 @@ export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
 						type="button"
 						variant="ghost"
 						size="sm"
-						onClick={() => setShowPreview((v) => !v)}
+						onClick={() => setShowPreview((value) => !value)}
 					>
 						{showPreview ? "Hide preview" : "Show preview"}
 					</Button>
@@ -158,10 +120,10 @@ export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
 						<Button
 							type="button"
 							size="sm"
-							onClick={handlePrint}
-							disabled={printing}
+							onClick={() => void handlePrint()}
+							disabled={isBusy}
 						>
-							{printing ? (
+							{isBusy ? (
 								<CircleNotchIcon
 									className="animate-spin"
 									data-icon="inline-start"
@@ -170,17 +132,17 @@ export function ThermalPrintPreview(props: ThermalPrintPreviewProps) {
 							) : (
 								<PrinterIcon data-icon="inline-start" size={16} />
 							)}
-							{status === "preparing"
-								? "Preparing…"
-								: status === "printing"
-									? "Printing…"
+							{pdfPrint.status === "printing"
+								? "Printing…"
+								: pdfPrint.status === "preparing"
+									? "Preparing…"
 									: "Print"}
 						</Button>
 					</div>
 				</DialogFooter>
 
 				<p className="text-xs text-muted-foreground">
-					Choose your 80mm thermal printer in the system print dialog.
+					Choose your 72mm thermal printer in the system print dialog.
 				</p>
 			</DialogContent>
 		</Dialog>

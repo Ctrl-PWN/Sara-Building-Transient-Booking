@@ -15,6 +15,7 @@ import { Route as AuthenticatedAdminRoomManagementIndexRouteImport } from "./rou
 import { Route as AuthenticatedAdminUserManagementIndexRouteImport } from "./routes/_authenticated/_admin/user-management/index";
 import { Route as AuthenticatedBookingsBookingIdIndexRouteImport } from "./routes/_authenticated/bookings/$bookingId/index";
 import { Route as AuthenticatedBookingsBookingIdInvoiceRouteImport } from "./routes/_authenticated/bookings/$bookingId/invoice";
+import { Route as AuthenticatedBookingsBookingIdMonthlyInvoiceRouteImport } from "./routes/_authenticated/bookings/$bookingId/monthly-invoice";
 import { Route as AuthenticatedBookingsIndexRouteImport } from "./routes/_authenticated/bookings/index";
 import { Route as AuthenticatedDashboardIndexRouteImport } from "./routes/_authenticated/dashboard/index";
 import { Route as AuthenticatedIndexRouteImport } from "./routes/_authenticated/index";
@@ -87,6 +88,12 @@ const AuthenticatedAdminRoomManagementIndexRoute =
 		path: "/room-management/",
 		getParentRoute: () => AuthenticatedAdminRoute,
 	} as any);
+const AuthenticatedBookingsBookingIdMonthlyInvoiceRoute =
+	AuthenticatedBookingsBookingIdMonthlyInvoiceRouteImport.update({
+		id: "/bookings/$bookingId/monthly-invoice",
+		path: "/bookings/$bookingId/monthly-invoice",
+		getParentRoute: () => AuthenticatedRoute,
+	} as any);
 const AuthenticatedBookingsBookingIdInvoiceRoute =
 	AuthenticatedBookingsBookingIdInvoiceRouteImport.update({
 		id: "/bookings/$bookingId/invoice",
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
 	"/rooms/": typeof AuthenticatedRoomsIndexRoute;
 	"/timeline/": typeof AuthenticatedTimelineIndexRoute;
 	"/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
+	"/bookings/$bookingId/monthly-invoice": typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute;
 	"/room-management/": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/user-management/": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/bookings/$bookingId/": typeof AuthenticatedBookingsBookingIdIndexRoute;
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
 	"/rooms": typeof AuthenticatedRoomsIndexRoute;
 	"/timeline": typeof AuthenticatedTimelineIndexRoute;
 	"/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
+	"/bookings/$bookingId/monthly-invoice": typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute;
 	"/room-management": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/user-management": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/bookings/$bookingId": typeof AuthenticatedBookingsBookingIdIndexRoute;
@@ -132,6 +141,7 @@ export interface FileRoutesById {
 	"/_authenticated/rooms/": typeof AuthenticatedRoomsIndexRoute;
 	"/_authenticated/timeline/": typeof AuthenticatedTimelineIndexRoute;
 	"/_authenticated/bookings/$bookingId/invoice": typeof AuthenticatedBookingsBookingIdInvoiceRoute;
+	"/_authenticated/bookings/$bookingId/monthly-invoice": typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute;
 	"/_authenticated/_admin/room-management/": typeof AuthenticatedAdminRoomManagementIndexRoute;
 	"/_authenticated/_admin/user-management/": typeof AuthenticatedAdminUserManagementIndexRoute;
 	"/_authenticated/bookings/$bookingId/": typeof AuthenticatedBookingsBookingIdIndexRoute;
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
 		| "/rooms/"
 		| "/timeline/"
 		| "/bookings/$bookingId/invoice"
+		| "/bookings/$bookingId/monthly-invoice"
 		| "/room-management/"
 		| "/user-management/"
 		| "/bookings/$bookingId/";
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
 		| "/rooms"
 		| "/timeline"
 		| "/bookings/$bookingId/invoice"
+		| "/bookings/$bookingId/monthly-invoice"
 		| "/room-management"
 		| "/user-management"
 		| "/bookings/$bookingId";
@@ -175,6 +187,7 @@ export interface FileRouteTypes {
 		| "/_authenticated/rooms/"
 		| "/_authenticated/timeline/"
 		| "/_authenticated/bookings/$bookingId/invoice"
+		| "/_authenticated/bookings/$bookingId/monthly-invoice"
 		| "/_authenticated/_admin/room-management/"
 		| "/_authenticated/_admin/user-management/"
 		| "/_authenticated/bookings/$bookingId/";
@@ -272,6 +285,13 @@ declare module "@tanstack/react-router" {
 			preLoaderRoute: typeof AuthenticatedAdminRoomManagementIndexRouteImport;
 			parentRoute: typeof AuthenticatedAdminRoute;
 		};
+		"/_authenticated/bookings/$bookingId/monthly-invoice": {
+			id: "/_authenticated/bookings/$bookingId/monthly-invoice";
+			path: "/bookings/$bookingId/monthly-invoice";
+			fullPath: "/bookings/$bookingId/monthly-invoice";
+			preLoaderRoute: typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRouteImport;
+			parentRoute: typeof AuthenticatedRoute;
+		};
 		"/_authenticated/bookings/$bookingId/invoice": {
 			id: "/_authenticated/bookings/$bookingId/invoice";
 			path: "/bookings/$bookingId/invoice";
@@ -305,6 +325,7 @@ interface AuthenticatedRouteChildren {
 	AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute;
 	AuthenticatedTimelineIndexRoute: typeof AuthenticatedTimelineIndexRoute;
 	AuthenticatedBookingsBookingIdInvoiceRoute: typeof AuthenticatedBookingsBookingIdInvoiceRoute;
+	AuthenticatedBookingsBookingIdMonthlyInvoiceRoute: typeof AuthenticatedBookingsBookingIdMonthlyInvoiceRoute;
 	AuthenticatedBookingsBookingIdIndexRoute: typeof AuthenticatedBookingsBookingIdIndexRoute;
 }
 
@@ -317,6 +338,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
 	AuthenticatedTimelineIndexRoute: AuthenticatedTimelineIndexRoute,
 	AuthenticatedBookingsBookingIdInvoiceRoute:
 		AuthenticatedBookingsBookingIdInvoiceRoute,
+	AuthenticatedBookingsBookingIdMonthlyInvoiceRoute:
+		AuthenticatedBookingsBookingIdMonthlyInvoiceRoute,
 	AuthenticatedBookingsBookingIdIndexRoute:
 		AuthenticatedBookingsBookingIdIndexRoute,
 };
