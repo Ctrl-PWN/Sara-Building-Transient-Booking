@@ -1,3 +1,4 @@
+import { nowInManila, parseManilaDate } from "@/lib/date/manila";
 import type { TimelineLegendStatus } from "./types";
 
 export type BookingStatusPresentation = {
@@ -60,9 +61,11 @@ export function computeBookingDisplayStatus(
 	checkOut: string | Date,
 ): DerivedBookingStatus {
 	if (status === "CHECKED_IN") {
-		const checkout = new Date(checkOut);
-		const now = new Date();
-		if (now > checkout) return "OVERDUE";
+		const checkout = parseManilaDate(
+			typeof checkOut === "string" ? checkOut : checkOut.toISOString(),
+		);
+		const now = nowInManila();
+		if (now.getTime() > checkout.getTime()) return "OVERDUE";
 	}
 	if (
 		status === "CHECKED_IN" ||

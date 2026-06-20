@@ -5,6 +5,7 @@ import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { ledgerKeys } from "@/lib/ledger/ledger.queries";
 import { roomKeys } from "@/lib/rooms/rooms.queries";
 import {
+	applyLateFee,
 	checkInBooking,
 	checkOutBooking,
 	createBooking,
@@ -102,6 +103,22 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof extendBookingSchema>) =>
 				extendBooking({ data: input }),
 			onSuccess: () => {
+				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+				void queryClient.invalidateQueries({
+					queryKey: ledgerKeys.byBooking(bookingId),
+				});
+			},
+		}),
+
+	applyLateFee: (queryClient: QueryClient, bookingId: number) =>
+		mutationOptions({
+			mutationFn: () => applyLateFee({ data: { bookingId } }),
+			onSuccess: () => {
+				void queryClient.invalidateQueries({
+					queryKey: bookingKeys.detail(bookingId),
+				});
 				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
 				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });

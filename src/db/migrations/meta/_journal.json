@@ -27,7 +27,14 @@
 			"idx": 3,
 			"version": "7",
 			"when": 1780136000000,
-			"tag": "0003_ledger_is_paid",
+			"tag": "0003_omniscient_wraith",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1780137000000,
+			"tag": "0004_late_fee_enum",
 			"breakpoints": true
 		}
 	]
