@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { BookingDetailHeader } from "@/components/bookings/BookingDetailHeader";
 import { BookingInfoCards } from "@/components/bookings/BookingInfoCards";
 import { BookingLedgerView } from "@/components/bookings/BookingLedgerView";
@@ -128,8 +129,7 @@ function BookingDetailPage() {
 		setTransferOpen(false);
 	};
 
-	const handleExtend = (values: {
-		newCheckOutDate: string;
+	const handleExtend = async (values: {
 		withCashAdvance: boolean;
 		paymentMethod: string;
 		referenceNumber: string;
@@ -142,14 +142,23 @@ function BookingDetailPage() {
 			referenceNumber?: string;
 		}>;
 	}) => {
-		extendMutation.mutate({
-			bookingRef: booking.bookingRef,
-			newCheckOutDate: values.newCheckOutDate,
-			paymentMethod: values.paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
-			referenceNumber: values.referenceNumber,
-			utilities: values.utilities,
-		});
-		setExtendOpen(false);
+		try {
+			await extendMutation.mutateAsync({
+				bookingRef: booking.bookingRef,
+				withCashAdvance: values.withCashAdvance,
+				paymentMethod:
+					values.paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
+				referenceNumber: values.referenceNumber,
+				utilities: values.utilities,
+			});
+			setExtendOpen(false);
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: "Failed to extend booking";
+			toast.error("Cannot extend booking", { description: message });
+		}
 	};
 
 	return (

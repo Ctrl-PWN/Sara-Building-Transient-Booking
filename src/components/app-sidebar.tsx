@@ -40,14 +40,20 @@ export function AppSidebar({ session }: AppSidebarProps) {
 
 	return (
 		<Sidebar collapsible="icon">
-			<SidebarHeader className="border-b border-sidebar-border">
-				<div className="flex flex-col gap-0.5 px-2 py-1 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
-					<span className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground group-data-[collapsible=icon]:sr-only">
-						Sara Building
-					</span>
-					<span className="font-display text-lg font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:sr-only">
-						Block Center
-					</span>
+			<SidebarHeader className="h-14 border-b border-sidebar-border px-4">
+				<div className="flex items-center gap-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:px-0">
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">
+						{session.user.firstName?.[0] ?? "U"}
+						{session.user.lastName?.[0] ?? ""}
+					</div>
+					<div className="flex min-w-0 flex-col group-data-[collapsible=icon]:sr-only">
+						<span className="truncate font-body text-sm font-medium text-sidebar-foreground">
+							{session.user.firstName} {session.user.lastName}
+						</span>
+						<span className="truncate font-body text-xs capitalize text-muted-foreground">
+							{session.user.role}
+						</span>
+					</div>
 				</div>
 			</SidebarHeader>
 			<SidebarContent>
@@ -80,13 +86,13 @@ export function AppSidebar({ session }: AppSidebarProps) {
 				<Button
 					type="button"
 					variant="ghost"
-					className="w-full justify-start"
+					className="w-full justify-start group-data-[collapsible=icon]:justify-center"
 					onClick={() => {
 						void handleLogout();
 					}}
 				>
-					<SignOutIcon data-icon="inline-start" />
-					<span>Log out</span>
+					<SignOutIcon />
+					<span className="group-data-[collapsible=icon]:sr-only">Log out</span>
 				</Button>
 			</SidebarFooter>
 			<SidebarRail />

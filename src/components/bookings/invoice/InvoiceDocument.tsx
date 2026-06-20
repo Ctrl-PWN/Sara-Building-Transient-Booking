@@ -12,11 +12,11 @@ const COLORS = {
 	text: "#1a1c1b",
 	muted: "#6b7280",
 	border: "#e5e7eb",
-	emerald: "#059669",
-	amber: "#d97706",
 	paidBg: "#f5dcbe",
 	paidFg: "#725f48",
 	unpaidBorder: "#d1d5db",
+	emerald: "#047857",
+	amber: "#b45309",
 };
 
 const styles = StyleSheet.create({
@@ -90,6 +90,12 @@ const styles = StyleSheet.create({
 	tableSection: {
 		paddingVertical: 20,
 	},
+	empty: {
+		paddingVertical: 16,
+		fontSize: 10,
+		color: COLORS.muted,
+		textAlign: "center",
+	},
 	tableHeader: {
 		flexDirection: "row",
 		paddingBottom: 8,
@@ -127,12 +133,6 @@ const styles = StyleSheet.create({
 	descMeta: { fontSize: 8, color: COLORS.muted, marginTop: 2 },
 	cellMuted: { fontSize: 10, color: COLORS.muted },
 	cellText: { fontSize: 10, color: COLORS.text },
-	empty: {
-		paddingVertical: 40,
-		textAlign: "center",
-		fontSize: 10,
-		color: COLORS.muted,
-	},
 	paidPill: {
 		backgroundColor: COLORS.paidBg,
 		color: COLORS.paidFg,
@@ -221,7 +221,7 @@ export function InvoiceDocument({
 			author="Sara Building Transient"
 			subject={`Invoice for ${formatGuestName(booking)}`}
 		>
-			<Page size="A4" style={styles.page}>
+			<Page size="A4" style={styles.page} wrap={false}>
 				<View style={styles.header} fixed>
 					<View>
 						<Text style={styles.title}>Invoice</Text>
@@ -244,15 +244,14 @@ export function InvoiceDocument({
 						{booking.contactNumber ? (
 							<Text style={styles.sectionSub}>{booking.contactNumber}</Text>
 						) : null}
+						<Text style={styles.sectionLabel}>Check-out:</Text>
+						<Text style={styles.sectionValue}>
+							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
+						</Text>
 					</View>
 					<View style={styles.gridColRight}>
 						<Text style={styles.sectionLabel}>Booking</Text>
 						<Text style={styles.sectionValue}>{booking.bookingRef}</Text>
-						<Text style={styles.sectionSub}>
-							Room {booking.roomNumber} ·{" "}
-							{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")} —{" "}
-							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
-						</Text>
 					</View>
 				</View>
 
@@ -261,16 +260,13 @@ export function InvoiceDocument({
 						<Text style={[styles.tableHeaderCell, styles.thDescription]}>
 							Description
 						</Text>
-
 						<Text style={[styles.tableHeaderCell, styles.thPayment]}>
 							Payment
 						</Text>
 						<Text style={[styles.tableHeaderCell, styles.thReference]}>
 							Reference
 						</Text>
-						<Text style={[styles.tableHeaderCell, styles.thAmount]}>
-							Amount
-						</Text>
+						<Text style={[styles.tableHeaderCell, styles.thAmount]}>Price</Text>
 						<Text style={[styles.tableHeaderCell, styles.thStatus]}>
 							Status
 						</Text>

@@ -57,7 +57,7 @@ Feature domains live under `src/lib/{domain}/`:
 ```
 src/lib/{domain}/
   types.ts              # Shared TS types
-  schemas.ts            # Zod validators (server fn inputs, route search)
+  schemas.ts            # Zod validators (server fn inputs, route search, form validators)
   status.ts             # Domain helpers (when applicable)
   {domain}.functions.ts # Drizzle queries + createServerFn exports
   {domain}.queries.ts   # queryKeys + queryOptions (TanStack Query)
@@ -70,7 +70,7 @@ Timeline pure utils (no server): `week.ts`, `positioning.ts`.
 
 ### Data fetching
 
-- **Server:** `createServerFn` in `*.functions.ts` with Zod `inputValidator`; Drizzle helpers stay private in the same file
+- **Server:** `createServerFn` in `*.functions.ts` with Zod `validator`; Drizzle helpers stay private in the same file
 - **Client:** `queryOptions` factories in `*.queries.ts` import server functions from `*.functions.ts` (not `*.server.ts` — import protection blocks that)
 - **Route loaders:** `context.queryClient.ensureQueryData(...)` for SSR prefetch
 - **SSR:** TanStack Query wired in `src/router.tsx` via `setupRouterSsrQueryIntegration` — no standalone `<QueryClientProvider>` wrapper
@@ -94,7 +94,7 @@ src/integrations/
 
 ### Forms
 
-Domain Zod schemas live in `src/lib/{domain}/schemas.ts` — shared by server fn `inputValidator` and form validators.
+Domain Zod schemas live in `src/lib/{domain}/schemas.ts` — shared by server fn `validator` and form validators.
 
 **Simple forms** (`onSubmit` only — static rules):
 
@@ -127,9 +127,9 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 ```tsx
 <form
   onSubmit={(e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    form.handleSubmit()
+    e.preventDefault();
+    e.stopPropagation();
+    form.handleSubmit();
   }}
 >
   <form.AppForm>
@@ -153,13 +153,13 @@ Use `.superRefine()`, `.refine()`, or `z.discriminatedUnion()` in schemas for co
 
 ### Mutations
 
-| Layer           | File                    | Responsibility                                                           |
-| --------------- | ----------------------- | ------------------------------------------------------------------------ |
-| Input schema    | `{domain}.schemas.ts`   | Zod — shared by server fn + form validators                              |
-| Server write    | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).inputValidator(schema).handler(...)` |
-| Cache keys      | `{domain}.queries.ts`   | `queryKeys` factories                                                    |
-| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient`                      |
-| Route/component | form `onSubmit`         | `useMutation(domainMutations.x(queryClient))` + `mutateAsync`            |
+| Layer           | File                    | Responsibility                                                      |
+| --------------- | ----------------------- | ------------------------------------------------------------------- |
+| Input schema    | `{domain}.schemas.ts`   | Zod — shared by server fn + form validators                         |
+| Server write    | `{domain}.functions.ts` | `createServerFn({ method: 'POST' }).validator(schema).handler(...)` |
+| Cache keys      | `{domain}.queries.ts`   | `queryKeys` factories                                               |
+| Mutation config | `{domain}.mutations.ts` | `mutationOptions` factories accepting `QueryClient`                 |
+| Route/component | form `onSubmit`         | `useMutation(domainMutations.x(queryClient))` + `mutateAsync`       |
 
 ```ts
 // bookings.mutations.ts
@@ -168,26 +168,28 @@ export const bookingMutations = {
     mutationOptions({
       mutationFn: (input) => updateBookingStatus({ data: input }),
       onSuccess: (_data, { id }) => {
-        void queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) })
-        void queryClient.invalidateQueries({ queryKey: bookingKeys.all })
-        void queryClient.invalidateQueries({ queryKey: timelineKeys.all })
+        void queryClient.invalidateQueries({
+          queryKey: bookingKeys.detail(id),
+        });
+        void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+        void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       },
     }),
-}
+};
 ```
 
 ```tsx
-const queryClient = useQueryClient()
-const mutation = useMutation(bookingMutations.updateStatus(queryClient))
+const queryClient = useQueryClient();
+const mutation = useMutation(bookingMutations.updateStatus(queryClient));
 
 const form = useAppForm({
-  defaultValues: { id, status: 'CONFIRMED' },
+  defaultValues: { id, status: "CONFIRMED" },
   validators: { onSubmit: updateStatusSchema },
   onSubmit: async ({ value }) => {
-    await mutation.mutateAsync(value)
-    form.reset()
+    await mutation.mutateAsync(value);
+    form.reset();
   },
-})
+});
 ```
 
 Map server errors in `onSubmit` (try/catch) or mutation `onError`; use `form.setFieldMeta` for server-side field errors when needed.

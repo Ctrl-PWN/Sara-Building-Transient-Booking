@@ -11,9 +11,9 @@ export function AppShell() {
 		<TooltipProvider>
 			<SidebarProvider>
 				<AppSidebar session={session} />
-				<SidebarInset className="min-w-0 overflow-x-hidden">
+				<SidebarInset className="min-w-0 max-h-svh overflow-y-auto">
 					<AppHeader />
-					<div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
+					<div className="flex min-w-0 flex-1 flex-col">
 						<Outlet />
 					</div>
 				</SidebarInset>

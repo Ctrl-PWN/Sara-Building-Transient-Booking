@@ -1,7 +1,5 @@
 import { PlusIcon } from "@phosphor-icons/react";
-import { useSelector } from "@tanstack/react-store";
 import { format } from "date-fns";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -28,28 +26,13 @@ type ExtendBookingDialogProps = {
 	onConfirm: (values: ExtendBookingFormValues) => void;
 };
 
-function computeDefaultCheckOut(currentCheckOut: string): string {
+function computeNewCheckOut(currentCheckOut: string): Date {
 	const current = new Date(currentCheckOut);
 	const targetMonth = current.getMonth() + 1;
 	const targetYear = current.getFullYear();
 	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
 	const day = Math.min(current.getDate(), lastDayOfMonth);
-	const d = new Date(targetYear, targetMonth, day, 12, 0, 0);
-	const y = d.getFullYear();
-	const m = String(d.getMonth() + 1).padStart(2, "0");
-	const dd = String(d.getDate()).padStart(2, "0");
-	return `${y}-${m}-${dd}`;
-}
-
-function computeMonthsBetween(
-	currentCheckOut: string,
-	newCheckOut: string,
-): number {
-	const current = new Date(currentCheckOut);
-	const target = new Date(newCheckOut);
-	const diffMs = target.getTime() - current.getTime();
-	const months = Math.round(diffMs / (30 * 24 * 60 * 60 * 1000));
-	return Math.max(1, months);
+	return new Date(targetYear, targetMonth, day, 12, 0, 0);
 }
 
 export function ExtendBookingDialog({
@@ -59,39 +42,14 @@ export function ExtendBookingDialog({
 	onConfirm,
 }: ExtendBookingDialogProps) {
 	const monthlyPrice = Number(booking.roomMonthlyPrice) || 0;
-	const defaultCheckOut = computeDefaultCheckOut(booking.checkOut);
+	const newCheckOut = computeNewCheckOut(booking.checkOut);
 	const currentCheckOutDate = new Date(booking.checkOut);
-
-	const [useCustomDate, setUseCustomDate] = useState(false);
+	const periodLabel = `${format(currentCheckOutDate, "MMM d")} – ${format(
+		newCheckOut,
+		"MMM d, yyyy",
+	)}`;
 
 	const form = useExtendBookingForm({ onSubmit: onConfirm });
-
-	const newCheckOutDate = useSelector(
-		form.store,
-		(state) => state.values.newCheckOutDate,
-	);
-
-	useEffect(() => {
-		form.setFieldValue("newCheckOutDate", defaultCheckOut);
-	}, [defaultCheckOut, form]);
-
-	useEffect(() => {
-		if (!useCustomDate) {
-			form.setFieldValue("newCheckOutDate", defaultCheckOut);
-		}
-	}, [useCustomDate, defaultCheckOut, form]);
-
-	const periodLabel = newCheckOutDate
-		? `${format(currentCheckOutDate, "MMM d")} – ${format(
-				new Date(newCheckOutDate),
-				"MMM d, yyyy",
-			)}`
-		: `${format(currentCheckOutDate, "MMM d")} – —`;
-
-	const months = newCheckOutDate
-		? computeMonthsBetween(booking.checkOut, newCheckOutDate)
-		: 1;
-	const monthlyTotal = monthlyPrice * months;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,9 +79,7 @@ export function ExtendBookingDialog({
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">New checkout</span>
 									<span className="font-medium">
-										{newCheckOutDate
-											? format(new Date(newCheckOutDate), "MMM d, yyyy")
-											: "—"}
+										{format(newCheckOut, "MMM d, yyyy")}
 									</span>
 								</div>
 								<div className="flex justify-between">
@@ -139,33 +95,6 @@ export function ExtendBookingDialog({
 									</span>
 								</div>
 							</div>
-
-							<div className="flex items-center justify-between rounded-lg border p-3">
-								<div className="flex flex-col gap-0.5">
-									<span className="font-medium text-sm">
-										Change checkout date
-									</span>
-									<span className="text-xs text-muted-foreground">
-										Pick a custom checkout date
-									</span>
-								</div>
-								<Switch
-									checked={useCustomDate}
-									onCheckedChange={setUseCustomDate}
-								/>
-							</div>
-
-							{useCustomDate && (
-								<form.AppField name="newCheckOutDate">
-									{(field) => (
-										<field.DateField
-											label="New checkout date"
-											description="Select the new checkout date"
-											minDate={new Date(booking.checkOut)}
-										/>
-									)}
-								</form.AppField>
-							)}
 
 							<form.Subscribe
 								selector={(state) => state.values.withCashAdvance}
@@ -280,14 +209,15 @@ export function ExtendBookingDialog({
 								{({ withCashAdvance, utilitiesTotal }) => {
 									const total = withCashAdvance
 										? utilitiesTotal
-										: monthlyTotal + utilitiesTotal;
+										: monthlyPrice + utilitiesTotal;
 									return (
 										<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
 											<div className="flex justify-between">
-												<span className="text-muted-foreground">Extension</span>
+												<span className="text-muted-foreground">
+													Monthly rate
+												</span>
 												<span className="font-medium">
-													{months} month{months > 1 ? "s" : ""} (
-													{formatPeso(monthlyPrice)} × {months})
+													{formatPeso(monthlyPrice)}
 												</span>
 											</div>
 											{utilitiesTotal > 0 && (
