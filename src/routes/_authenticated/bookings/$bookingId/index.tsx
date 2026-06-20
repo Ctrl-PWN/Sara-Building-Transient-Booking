@@ -128,18 +128,22 @@ function BookingDetailPage() {
 		setTransferOpen(false);
 	};
 
-	const handleExtend = (
+	const handleExtend = async (
 		newCheckOutDate: string,
 		paymentMethod: string,
 		referenceNumber: string,
 	) => {
-		extendMutation.mutate({
-			bookingRef: booking.bookingRef,
-			newCheckOutDate,
-			paymentMethod: paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
-			referenceNumber,
-		});
-		setExtendOpen(false);
+		try {
+			await extendMutation.mutateAsync({
+				bookingRef: booking.bookingRef,
+				newCheckOutDate,
+				paymentMethod: paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
+				referenceNumber,
+			});
+			setExtendOpen(false);
+		} catch {
+			// Error handled by mutation
+		}
 	};
 
 	return (

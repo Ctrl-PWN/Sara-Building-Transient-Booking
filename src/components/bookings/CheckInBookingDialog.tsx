@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -65,13 +66,19 @@ export function CheckInBookingDialog({
 		},
 		...dynamicSchemaValidators(ledgerPaymentFieldsSchema),
 		onSubmit: async ({ value }) => {
-			await mutation.mutateAsync({
-				bookingRef: booking.bookingRef,
-				paymentMethod: value.paymentMethod,
-				referenceNumber: value.referenceNumber,
-			});
-			form.reset();
-			onOpenChange(false);
+			try {
+				await mutation.mutateAsync({
+					bookingRef: booking.bookingRef,
+					paymentMethod: value.paymentMethod,
+					referenceNumber: value.referenceNumber,
+				});
+				form.reset();
+				onOpenChange(false);
+			} catch (error) {
+				const message =
+					error instanceof Error ? error.message : "Failed to check in guest";
+				toast.error("Check-in failed", { description: message });
+			}
 		},
 	});
 

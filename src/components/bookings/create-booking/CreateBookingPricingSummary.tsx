@@ -73,7 +73,7 @@ export function CreateBookingPricingSummary({
 						<div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">
-									Monthly total ({duration} month{duration === 1 ? "" : "s"} × {formatPeso(monthlyPrice)})
+									Monthly rent ({formatPeso(monthlyPrice)}/mo × {duration} month{duration === 1 ? "" : "s"})
 								</span>
 								<span className="font-medium">{formatPeso(subtotal)}</span>
 							</div>
@@ -82,14 +82,14 @@ export function CreateBookingPricingSummary({
 									<span className="text-muted-foreground">
 										Advance deposit (due now)
 									</span>
-									<span className="font-medium">{formatPeso(subtotal)}</span>
+									<span className="font-medium">{formatPeso(monthlyPrice)}</span>
 								</div>
 							)}
 							<div className="flex justify-between border-t pt-2 font-semibold">
 								{hasCashAdvance ? (
 									<>
 										<span>Amount due now</span>
-										<span>{formatPeso(subtotal)}</span>
+										<span>{formatPeso(monthlyPrice)}</span>
 									</>
 								) : (
 									<>

@@ -140,7 +140,7 @@ export function buildCreateBookingLedgerLines(
 	}
 
 	// Monthly reservation with advance deposit (2 months)
-	// Deposit can exceed stayTotal (1 month) — overpayment stays as credit
+	// Deposit = 1 month rent, balance = remaining month(s) due at check-in
 	if (values.bookingType === "MONTHLY" && deposit > 0) {
 		const balance = Math.max(0, stayTotal - deposit);
 		const lines: CreateBookingLedgerLine[] = [
@@ -148,7 +148,7 @@ export function buildCreateBookingLedgerLines(
 				category: "DEPOSIT",
 				amount: toDecimalString(deposit),
 				isPaid: true,
-				description: "Monthly advance deposit (2 months)",
+				description: "Monthly advance deposit (1 month)",
 				...paymentFields,
 			},
 		];

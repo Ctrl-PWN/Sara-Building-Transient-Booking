@@ -1,6 +1,7 @@
 import { useSelector } from "@tanstack/react-store";
 import { FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { formatPeso } from "@/lib/bookings/stay-pricing";
 import { reservationFeeTypeOptions } from "./create-booking-form.constants";
 import type { CreateBookingFormSectionProps } from "./create-booking-form.types";
 
@@ -42,7 +43,7 @@ export function CreateBookingReservationSection({
 							if (value === "extended") {
 								form.setFieldValue("monthlyDuration", 2);
 								form.setFieldValue("cashAdvanceType", "FIXED");
-								form.setFieldValue("cashAdvanceValue", monthlyPrice * 2);
+								form.setFieldValue("cashAdvanceValue", monthlyPrice);
 							} else {
 								form.setFieldValue("monthlyDuration", 1);
 								form.setFieldValue("cashAdvanceType", undefined);
@@ -70,7 +71,7 @@ export function CreateBookingReservationSection({
 									</span>
 									<span className="text-xs text-muted-foreground">
 										{monthlyPrice > 0
-											? `₱${(monthlyPrice * 2).toLocaleString()} due now, checkout moves to 2 months`
+											? `${formatPeso(monthlyPrice)} due now, checkout moves to 2 months`
 											: "2 months due now"}
 									</span>
 								</div>

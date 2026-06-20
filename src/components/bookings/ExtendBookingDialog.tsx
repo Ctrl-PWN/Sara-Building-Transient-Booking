@@ -29,7 +29,7 @@ type ExtendBookingDialogProps = {
 		newCheckOutDate: string,
 		paymentMethod: string,
 		referenceNumber: string,
-	) => void;
+	) => void | Promise<void>;
 };
 
 function computeDefaultCheckOut(currentCheckOut: string): string {
@@ -75,7 +75,7 @@ export function ExtendBookingDialog({
 		defaultValues,
 		validators: { onSubmit: extendFormSchema },
 		onSubmit: async ({ value }) => {
-			onConfirm(value.newCheckOutDate, value.paymentMethod, value.referenceNumber);
+			await onConfirm(value.newCheckOutDate, value.paymentMethod, value.referenceNumber);
 		},
 	});
 
