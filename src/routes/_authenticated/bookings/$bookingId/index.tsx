@@ -130,6 +130,7 @@ function BookingDetailPage() {
 	};
 
 	const handleExtend = async (values: {
+		newCheckOutDate: string;
 		withCashAdvance: boolean;
 		paymentMethod: string;
 		referenceNumber: string;
@@ -145,18 +146,19 @@ function BookingDetailPage() {
 		try {
 			await extendMutation.mutateAsync({
 				bookingRef: booking.bookingRef,
+				newCheckOutDate: values.newCheckOutDate,
 				withCashAdvance: values.withCashAdvance,
-				paymentMethod:
-					values.paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
+				paymentMethod: values.paymentMethod as
+					| "CASH"
+					| "GCASH"
+					| "BANK_TRANSFER",
 				referenceNumber: values.referenceNumber,
 				utilities: values.utilities,
 			});
 			setExtendOpen(false);
 		} catch (error) {
 			const message =
-				error instanceof Error
-					? error.message
-					: "Failed to extend booking";
+				error instanceof Error ? error.message : "Failed to extend booking";
 			toast.error("Cannot extend booking", { description: message });
 		}
 	};

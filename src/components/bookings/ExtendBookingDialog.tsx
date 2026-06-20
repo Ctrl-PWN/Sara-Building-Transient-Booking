@@ -1,5 +1,8 @@
 import { PlusIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -10,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
+import { bookingQueries } from "@/lib/bookings/bookings.queries";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 
@@ -35,6 +39,13 @@ function computeNewCheckOut(currentCheckOut: string): Date {
 	return new Date(targetYear, targetMonth, day, 12, 0, 0);
 }
 
+function toIsoDateString(date: Date): string {
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}-${m}-${d}`;
+}
+
 export function ExtendBookingDialog({
 	open,
 	onOpenChange,
@@ -42,14 +53,79 @@ export function ExtendBookingDialog({
 	onConfirm,
 }: ExtendBookingDialogProps) {
 	const monthlyPrice = Number(booking.roomMonthlyPrice) || 0;
-	const newCheckOut = computeNewCheckOut(booking.checkOut);
+	const defaultNewCheckOut = computeNewCheckOut(booking.checkOut);
 	const currentCheckOutDate = new Date(booking.checkOut);
+
+	const { data: allBookings = [] } = useQuery(bookingQueries.list());
+
+	const [useCustomDate, setUseCustomDate] = useState(false);
+
+	const form = useExtendBookingForm({ onSubmit: onConfirm });
+
+	const newCheckOutDate = useSelector(
+		form.store,
+		(state) => state.values.newCheckOutDate,
+	);
+
+	useEffect(() => {
+		if (open) {
+			form.setFieldValue(
+				"newCheckOutDate",
+				toIsoDateString(defaultNewCheckOut),
+			);
+			setUseCustomDate(false);
+		}
+	}, [open, defaultNewCheckOut, form]);
+
+	useEffect(() => {
+		if (!useCustomDate) {
+			form.setFieldValue(
+				"newCheckOutDate",
+				toIsoDateString(defaultNewCheckOut),
+			);
+		}
+	}, [useCustomDate, defaultNewCheckOut, form]);
+
+	const effectiveNewCheckOut = newCheckOutDate
+		? new Date(newCheckOutDate)
+		: defaultNewCheckOut;
+
 	const periodLabel = `${format(currentCheckOutDate, "MMM d")} – ${format(
-		newCheckOut,
+		effectiveNewCheckOut,
 		"MMM d, yyyy",
 	)}`;
 
-	const form = useExtendBookingForm({ onSubmit: onConfirm });
+	const currentCheckOutKey = (() => {
+		const d = new Date(booking.checkOut);
+		d.setHours(0, 0, 0, 0);
+		return d.getTime();
+	})();
+
+	const bookedDays = new Set<number>();
+	for (const b of allBookings) {
+		if (b.id === booking.id) continue;
+		if (b.roomId !== booking.roomId) continue;
+		if (b.status !== "RESERVED" && b.status !== "CHECKED_IN") continue;
+		const bStart = new Date(b.checkIn);
+		bStart.setHours(0, 0, 0, 0);
+		const bEnd = new Date(b.checkOut);
+		bEnd.setHours(0, 0, 0, 0);
+		if (bStart.getTime() === bEnd.getTime()) {
+			bookedDays.add(bStart.getTime());
+		} else {
+			for (let t = bStart.getTime(); t < bEnd.getTime(); t += 86_400_000) {
+				bookedDays.add(t);
+			}
+		}
+	}
+
+	const isDateDisabled = (date: Date) => {
+		const d = new Date(date);
+		d.setHours(0, 0, 0, 0);
+		const key = d.getTime();
+		if (key <= currentCheckOutKey) return true;
+		return bookedDays.has(key);
+	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,7 +155,7 @@ export function ExtendBookingDialog({
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">New checkout</span>
 									<span className="font-medium">
-										{format(newCheckOut, "MMM d, yyyy")}
+										{format(effectiveNewCheckOut, "MMM d, yyyy")}
 									</span>
 								</div>
 								<div className="flex justify-between">
@@ -95,6 +171,34 @@ export function ExtendBookingDialog({
 									</span>
 								</div>
 							</div>
+
+							<div className="flex items-center justify-between rounded-lg border p-3">
+								<div className="flex flex-col gap-0.5">
+									<span className="font-medium text-sm">
+										Change checkout date
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Pick a custom checkout date (booked dates are disabled)
+									</span>
+								</div>
+								<Switch
+									checked={useCustomDate}
+									onCheckedChange={setUseCustomDate}
+								/>
+							</div>
+
+							{useCustomDate && (
+								<form.AppField name="newCheckOutDate">
+									{(field) => (
+										<field.DateField
+											label="New checkout date"
+											description="Select the new checkout date"
+											minDate={new Date(booking.checkOut)}
+											disabledDates={isDateDisabled}
+										/>
+									)}
+								</form.AppField>
+							)}
 
 							<form.Subscribe
 								selector={(state) => state.values.withCashAdvance}

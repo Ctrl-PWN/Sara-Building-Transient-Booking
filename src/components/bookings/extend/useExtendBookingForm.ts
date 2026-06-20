@@ -11,6 +11,7 @@ import {
 } from "@/lib/ledger/schemas";
 
 export const fullExtendSchema = z.object({
+	newCheckOutDate: z.string().min(1, "Checkout date is required"),
 	withCashAdvance: z.boolean(),
 	paymentMethod: z.enum(["CASH", "GCASH", "BANK_TRANSFER"]),
 	referenceNumber: z.string(),
@@ -19,6 +20,7 @@ export const fullExtendSchema = z.object({
 
 const extendFormOptions = formOptions({
 	defaultValues: {
+		newCheckOutDate: "",
 		withCashAdvance: true,
 		paymentMethod: "CASH" as PaymentMethod,
 		referenceNumber: "",
@@ -27,6 +29,7 @@ const extendFormOptions = formOptions({
 });
 
 export type ExtendBookingFormValues = {
+	newCheckOutDate: string;
 	withCashAdvance: boolean;
 	paymentMethod: "CASH" | "GCASH" | "BANK_TRANSFER";
 	referenceNumber: string;
@@ -43,6 +46,7 @@ export function useExtendBookingForm({ onSubmit }: UseExtendBookingFormOpts) {
 		...dynamicSchemaValidators(fullExtendSchema),
 		onSubmit: async ({ value }) => {
 			onSubmit({
+				newCheckOutDate: value.newCheckOutDate,
 				withCashAdvance: value.withCashAdvance,
 				paymentMethod: value.paymentMethod,
 				referenceNumber: value.referenceNumber,

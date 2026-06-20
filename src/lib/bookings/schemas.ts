@@ -312,6 +312,7 @@ export const extendBookingSchema = z
 	.object({
 		bookingRef: z.string().min(1, "Booking reference is required"),
 		newCheckOutDate: z.string().min(1, "Checkout date is required"),
+		withCashAdvance: z.boolean(),
 		...ledgerPaymentFieldsShape,
 		utilities: utilityExpenseItemsSchema.optional().default([]),
 	})
