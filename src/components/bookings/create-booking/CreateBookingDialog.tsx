@@ -130,13 +130,18 @@ export function CreateBookingDialog({
 			let depositPercentage = 0;
 
 			if (isMonthly) {
-				const dates = computeMonthlyDates(
-					value.checkInDate,
-					value.checkInTime,
-					1,
-				);
-				checkIn = dates.checkIn;
-				checkOut = dates.checkOut;
+				if (value.walkIn) {
+					checkIn = `${value.checkInDate}T${value.checkInTime}`;
+					checkOut = `${value.checkOutDate}T${value.checkOutTime}`;
+				} else {
+					const dates = computeMonthlyDates(
+						value.checkInDate,
+						value.checkInTime,
+						value.monthlyDuration || 1,
+					);
+					checkIn = dates.checkIn;
+					checkOut = dates.checkOut;
+				}
 
 				feeType = value.cashAdvanceType ?? "PERCENT";
 				feeValue = value.cashAdvanceValue ?? 0;
@@ -222,12 +227,12 @@ export function CreateBookingDialog({
 		) {
 			form.setFieldValue("checkInDate", "");
 			form.setFieldValue("checkOutDate", "");
-			if (walkIn && bookingType === "DAILY") {
+			if (walkIn) {
 				form.setFieldValue("checkInDate", todayIsoDate());
 			}
 		}
 		prevRoomIdRef.current = selectedRoomId;
-	}, [selectedRoomId, form, walkIn, bookingType]);
+	}, [selectedRoomId, form, walkIn]);
 
 	const isDateDisabled = useCallback(
 		(date: Date) => {
@@ -246,17 +251,19 @@ export function CreateBookingDialog({
 	const canProceed =
 		(step === 1 && !!selectedRoomId) ||
 		(step === 2 &&
-			(isMonthly ? hasCheckInDate : hasCheckInDate && !!formCheckOutDate));
+			(isMonthly
+				? hasCheckInDate && (walkIn ? !!formCheckOutDate : true)
+				: hasCheckInDate && !!formCheckOutDate));
 
 	const handleNext = () => {
 		if (step === 1 && selectedRoomId) {
-			if (walkIn && bookingType === "DAILY") {
+			if (walkIn) {
 				form.setFieldValue("checkInDate", todayIsoDate());
 			}
 			setStep(2);
 		} else if (step === 2) {
 			if (isMonthly) {
-				if (formCheckInDate) {
+				if (formCheckInDate && (walkIn ? !!formCheckOutDate : true)) {
 					setStep(3);
 				}
 			} else if (hasCheckInDate && formCheckOutDate) {
@@ -350,7 +357,7 @@ export function CreateBookingDialog({
 								bookings={bookings}
 							/>
 
-							{step === 3 && !walkIn && (
+							{step === 3 && (!walkIn || isMonthly) && (
 								<CreateBookingReservationSection form={form} rooms={rooms} />
 							)}
 

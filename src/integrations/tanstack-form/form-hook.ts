@@ -2,6 +2,7 @@ import { createFormHook } from "@tanstack/react-form";
 import { ResetButton, SubmitButton } from "@/components/form/form-components";
 import {
 	CheckboxField,
+	DateField,
 	DateRangeField,
 	NumberField,
 	PasswordField,
@@ -27,6 +28,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
 		NumberField,
 		RadioGroupField,
 		RadioChoiceCardField,
+		DateField,
 		DateRangeField,
 		ToggleField,
 		PasswordField,

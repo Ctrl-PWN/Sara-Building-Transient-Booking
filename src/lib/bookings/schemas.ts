@@ -36,7 +36,7 @@ export const createBookingFormSchema = z
 		lastName: z.string().min(1, "Last name is required"),
 		contactNumber: z.string(),
 		address: z.string().optional(),
-		occupantsCount: z.number().int().min(1, "At least 1 occupant required"),
+		occupantsCount: z.number().int(),
 		bookingType: z.enum(["DAILY", "MONTHLY"]),
 		walkIn: z.boolean(),
 		// Daily fields
@@ -50,6 +50,7 @@ export const createBookingFormSchema = z
 		// Monthly cash advance
 		cashAdvanceType: reservationFeeTypeSchema.optional(),
 		cashAdvanceValue: z.number().min(0).optional(),
+		monthlyDuration: z.number().int().min(1).max(12).optional(),
 		// Payment
 		...ledgerPaymentFieldsShape,
 	})
@@ -239,14 +240,14 @@ export const createBookingServerSchema = z
 		address: z.string().optional(),
 		checkIn: z.string().min(1, "Check-in date is required"),
 		checkOut: z.string().min(1, "Check-out date is required"),
-		occupantsCount: z.number().int().positive("At least 1 occupant required"),
+		occupantsCount: z.number().int(),
 		walkIn: z.boolean(),
 		bookingType: bookingTypeSchema,
 		paymentMethod: paymentMethodSchema,
 		referenceNumber: z.string().optional(),
 		reservationFeeType: reservationFeeTypeSchema.optional(),
 		reservationFeeValue: z.number().min(0).optional(),
-		depositPercentage: z.number().min(0).max(100),
+		depositPercentage: z.number().min(0),
 	})
 	.refine((data) => new Date(data.checkOut) > new Date(data.checkIn), {
 		message: "Check-out cannot be before check-in",
@@ -309,7 +310,7 @@ export const transferBookingSchema = z.object({
 export const extendBookingSchema = z
 	.object({
 		bookingRef: z.string().min(1, "Booking reference is required"),
-		withCashAdvance: z.boolean(),
+		newCheckOutDate: z.string().min(1, "Checkout date is required"),
 		...ledgerPaymentFieldsShape,
 	})
 	.superRefine((data, ctx) => {

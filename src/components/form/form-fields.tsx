@@ -626,6 +626,61 @@ function NumberField({
 	);
 }
 
+function DateField({
+	label,
+	description,
+	minDate,
+	disabledDates,
+	onValueChange,
+}: {
+	label: string;
+	description?: string;
+	minDate?: Date;
+	disabledDates?: (date: Date) => boolean;
+	onValueChange?: (dateStr: string) => void;
+}) {
+	const field = useFieldContext<string>();
+
+	const selectedDate = field.state.value ? new Date(field.state.value) : null;
+	const [month, setMonth] = useState<Date>(() => selectedDate ?? new Date());
+
+	const handleSelectDate = (date: Date) => {
+		const dateStr = toIsoDate(date);
+		field.handleChange(dateStr);
+		field.handleBlur();
+		setMonth(date);
+		onValueChange?.(dateStr);
+	};
+
+	const isInvalid =
+		field.state.meta.isTouched && field.state.meta.errors.length > 0;
+
+	return (
+		<Field data-invalid={isInvalid || undefined}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+			<div className="rounded-md border border-input bg-transparent p-1">
+				<Calendar
+					month={month}
+					onMonthChange={setMonth}
+					selectedDate={selectedDate ?? undefined}
+					onSelectDate={handleSelectDate}
+					minDate={minDate}
+					disabledDates={disabledDates}
+				/>
+			</div>
+			{selectedDate && (
+				<p className="text-xs text-muted-foreground mt-1">
+					Selected: <span className="font-medium text-foreground">{selectedDate.toLocaleDateString()}</span>
+				</p>
+			)}
+			{description ? (
+				<p className="text-sm text-muted-foreground">{description}</p>
+			) : null}
+			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+		</Field>
+	);
+}
+
 function DateRangeField({
 	endFieldName,
 	label,
@@ -707,6 +762,7 @@ function DateRangeField({
 
 export {
 	CheckboxField,
+	DateField,
 	DateRangeField,
 	NumberField,
 	PasswordField,

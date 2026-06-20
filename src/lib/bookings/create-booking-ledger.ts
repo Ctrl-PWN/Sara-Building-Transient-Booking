@@ -68,6 +68,38 @@ export function buildCreateBookingLedgerLines(
 	};
 
 	if (values.walkIn) {
+		// Walk-in monthly with advance deposit
+		if (values.bookingType === "MONTHLY") {
+			const { feeType, feeValue } = extractFeeFields(values);
+			const deposit = calculateReservationFee({
+				total: stayTotal,
+				feeType,
+				feeValue,
+			});
+
+			if (deposit > 0) {
+				const balance = Math.max(0, stayTotal - deposit);
+				const lines: CreateBookingLedgerLine[] = [
+					{
+						category: "DEPOSIT",
+						amount: toDecimalString(deposit),
+						isPaid: true,
+						description: "Monthly advance deposit (walk-in)",
+						...paymentFields,
+					},
+				];
+				if (balance > 0) {
+					lines.push({
+						category: "ROOM_CHARGE",
+						amount: toDecimalString(balance),
+						isPaid: false,
+						description: "Monthly room charge balance due at check-in",
+					});
+				}
+				return createBookingLedgerLinesSchema.parse(lines);
+			}
+		}
+
 		const lines: CreateBookingLedgerLine[] = [
 			{
 				category: "ROOM_CHARGE",
@@ -93,6 +125,44 @@ export function buildCreateBookingLedgerLines(
 		feeValue,
 	});
 
+	// Monthly reservation without advance deposit (toggle OFF)
+	// Full amount due at check-in, no deposit line
+	if (values.bookingType === "MONTHLY" && deposit <= 0) {
+		const lines: CreateBookingLedgerLine[] = [
+			{
+				category: "ROOM_CHARGE",
+				amount: toDecimalString(stayTotal),
+				isPaid: false,
+				description: "Monthly room charge due at check-in",
+			},
+		];
+		return createBookingLedgerLinesSchema.parse(lines);
+	}
+
+	// Monthly reservation with advance deposit (2 months)
+	// Deposit can exceed stayTotal (1 month) — overpayment stays as credit
+	if (values.bookingType === "MONTHLY" && deposit > 0) {
+		const balance = Math.max(0, stayTotal - deposit);
+		const lines: CreateBookingLedgerLine[] = [
+			{
+				category: "DEPOSIT",
+				amount: toDecimalString(deposit),
+				isPaid: true,
+				description: "Monthly advance deposit (2 months)",
+				...paymentFields,
+			},
+		];
+		if (balance > 0) {
+			lines.push({
+				category: "ROOM_CHARGE",
+				amount: toDecimalString(balance),
+				isPaid: false,
+				description: "Monthly room charge balance due at check-in",
+			});
+		}
+		return createBookingLedgerLinesSchema.parse(lines);
+	}
+
 	if (deposit <= 0) {
 		throw new Error("Reservation deposit must be greater than zero");
 	}
@@ -102,27 +172,20 @@ export function buildCreateBookingLedgerLines(
 	}
 
 	const balance = stayTotal - deposit;
-	const description =
-		values.bookingType === "MONTHLY"
-			? "Monthly reservation deposit (cash advance)"
-			: "Reservation deposit";
 
 	const lines: CreateBookingLedgerLine[] = [
 		{
 			category: "DEPOSIT",
 			amount: toDecimalString(deposit),
 			isPaid: true,
-			description,
+			description: "Reservation deposit",
 			...paymentFields,
 		},
 		{
 			category: "ROOM_CHARGE",
 			amount: toDecimalString(balance),
 			isPaid: false,
-			description:
-				values.bookingType === "MONTHLY"
-					? "Monthly room charge balance due at check-in"
-					: "Room charge balance due at check-in",
+			description: "Room charge balance due at check-in",
 		},
 	];
 

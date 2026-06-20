@@ -271,12 +271,6 @@ export const createBooking = createServerFn({ method: "POST" })
 
 		const room = roomRows[0];
 
-		if (data.occupantsCount > room.capacity) {
-			throw new Error(
-				`Room capacity exceeded (max ${room.capacity} occupants)`,
-			);
-		}
-
 		const isMonthly = data.bookingType === "MONTHLY";
 
 		if (isMonthly && !room.monthlyPrice) {
@@ -623,12 +617,6 @@ export const transferBooking = createServerFn({ method: "POST" })
 				throw new Error("Target room is not available");
 			}
 
-			if (booking.occupantsCount > targetRoom.capacity) {
-				throw new Error(
-					`Target room capacity exceeded (max ${targetRoom.capacity} occupants)`,
-				);
-			}
-
 			const { subtotal: stayTotal } = calculateStayPricing({
 				basePrice: targetRoom.basePrice,
 				checkIn: String(booking.checkIn),
@@ -748,11 +736,11 @@ export const extendBooking = createServerFn({ method: "POST" })
 		}
 
 		const currentCheckOut = new Date(booking.checkOut);
-		const targetMonth = currentCheckOut.getMonth() + 1;
-		const targetYear = currentCheckOut.getFullYear();
-		const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-		const day = Math.min(currentCheckOut.getDate(), lastDayOfMonth);
-		const newCheckOut = new Date(targetYear, targetMonth, day, 12, 0, 0);
+		const newCheckOut = new Date(data.newCheckOutDate);
+
+		if (newCheckOut <= currentCheckOut) {
+			throw new Error("New checkout date must be after the current checkout date");
+		}
 
 		const conflicts = await db
 			.select({ id: bookings.id })
@@ -776,7 +764,7 @@ export const extendBooking = createServerFn({ method: "POST" })
 
 		if (conflicts.length > 0) {
 			throw new Error(
-				"Room is not available for the extended period. Please choose a different duration.",
+				"Room is not available for the extended period. Please choose a different date.",
 			);
 		}
 
@@ -793,6 +781,9 @@ export const extendBooking = createServerFn({ method: "POST" })
 		}
 
 		const monthlyPrice = Number(roomRows[0].monthlyPrice);
+		const diffMs = newCheckOut.getTime() - currentCheckOut.getTime();
+		const months = Math.max(1, Math.round(diffMs / (30 * 24 * 60 * 60 * 1000)));
+		const totalAmount = monthlyPrice * months;
 
 		const paymentMethod = data.paymentMethod;
 		const referenceNumber = normalizeReferenceNumber(
@@ -814,11 +805,9 @@ export const extendBooking = createServerFn({ method: "POST" })
 			await tx.insert(ledgerTransactions).values({
 				bookingId: booking.id,
 				category: "ROOM_CHARGE",
-				amount: monthlyPrice.toFixed(4),
+				amount: totalAmount.toFixed(4),
 				isPaid: true,
-				description: data.withCashAdvance
-					? "Extension cash advance (1 month)"
-					: "Extension: 1 additional month",
+				description: `Extension: ${months} month${months > 1 ? "s" : ""}`,
 				paymentMethod,
 				referenceNumber: referenceNumber?.trim() || null,
 			});

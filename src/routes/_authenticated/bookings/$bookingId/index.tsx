@@ -129,13 +129,13 @@ function BookingDetailPage() {
 	};
 
 	const handleExtend = (
-		withCashAdvance: boolean,
+		newCheckOutDate: string,
 		paymentMethod: string,
 		referenceNumber: string,
 	) => {
 		extendMutation.mutate({
 			bookingRef: booking.bookingRef,
-			withCashAdvance,
+			newCheckOutDate,
 			paymentMethod: paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
 			referenceNumber,
 		});

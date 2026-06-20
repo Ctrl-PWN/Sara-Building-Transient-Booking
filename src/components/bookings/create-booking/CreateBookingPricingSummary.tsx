@@ -33,6 +33,7 @@ export function CreateBookingPricingSummary({
 				cashAdvanceType: state.values.cashAdvanceType,
 				reservationFeeType: state.values.reservationFeeType,
 				reservationFeeValue: state.values.reservationFeeValue,
+				monthlyDuration: state.values.monthlyDuration,
 			})}
 		>
 			{({
@@ -45,6 +46,7 @@ export function CreateBookingPricingSummary({
 				cashAdvanceType,
 				reservationFeeType,
 				reservationFeeValue,
+				monthlyDuration,
 			}) => {
 				const selectedRoom = rooms.find(
 					(room) => room.id.toString() === roomId,
@@ -59,49 +61,42 @@ export function CreateBookingPricingSummary({
 					const monthlyPrice = Number(selectedRoom.monthlyPrice) || 0;
 					if (monthlyPrice <= 0) return null;
 
+					const duration = monthlyDuration || 1;
 					const { subtotal } = calculateMonthlyPricing({
 						monthlyPrice,
-						durationMonths: 1,
+						durationMonths: duration,
 					});
 
-					if (walkIn) {
-						return (
-							<div className="rounded-lg border bg-muted/40 p-4 text-sm">
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">
-										Monthly total (1 month × {formatPeso(monthlyPrice)})
-									</span>
-									<span className="font-medium">{formatPeso(subtotal)}</span>
-								</div>
-								<div className="mt-2 flex justify-between border-t pt-2 font-semibold">
-									<span>Amount due now</span>
-									<span>{formatPeso(subtotal)}</span>
-								</div>
-							</div>
-						);
-					}
-
 					const hasCashAdvance = !!cashAdvanceType;
-					const depositAmount = hasCashAdvance ? monthlyPrice : subtotal;
-					const balanceDue = hasCashAdvance ? 0 : 0;
 
 					return (
 						<div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">
-									Monthly total (1 month × {formatPeso(monthlyPrice)})
+									Monthly total ({duration} month{duration === 1 ? "" : "s"} × {formatPeso(monthlyPrice)})
 								</span>
 								<span className="font-medium">{formatPeso(subtotal)}</span>
 							</div>
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">
-									Cash advance (due now)
-								</span>
-								<span className="font-medium">{formatPeso(depositAmount)}</span>
-							</div>
+							{hasCashAdvance && (
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										Advance deposit (due now)
+									</span>
+									<span className="font-medium">{formatPeso(subtotal)}</span>
+								</div>
+							)}
 							<div className="flex justify-between border-t pt-2 font-semibold">
-								<span>Balance due at check-in</span>
-								<span>{formatPeso(balanceDue)}</span>
+								{hasCashAdvance ? (
+									<>
+										<span>Amount due now</span>
+										<span>{formatPeso(subtotal)}</span>
+									</>
+								) : (
+									<>
+										<span>Balance due at check-in</span>
+										<span>{formatPeso(subtotal)}</span>
+									</>
+								)}
 							</div>
 						</div>
 					);
