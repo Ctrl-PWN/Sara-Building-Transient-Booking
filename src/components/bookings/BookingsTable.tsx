@@ -1,10 +1,22 @@
-import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import {
+	CaretLeftIcon,
+	CaretRightIcon,
+	MagnifyingGlassIcon,
+} from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -61,6 +73,13 @@ export function BookingsTable({
 	onBookingTypeFilterChange,
 	onSortByChange,
 }: BookingsTableProps) {
+	const [pageSize, setPageSize] = useState(10);
+	const [page, setPage] = useState(1);
+	const totalPages = Math.max(1, Math.ceil(bookings.length / pageSize));
+	const safePage = Math.min(page, totalPages);
+	const startIdx = (safePage - 1) * pageSize;
+	const pageBookings = bookings.slice(startIdx, startIdx + pageSize);
+
 	return (
 		<Card>
 			<CardHeader className="border-b border-border p-4 bg-muted/20">
@@ -95,7 +114,7 @@ export function BookingsTable({
 							<TableHead>Room</TableHead>
 							<TableHead>Type</TableHead>
 							<TableHead>Status</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
+							<TableHead className="text-center">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -109,7 +128,7 @@ export function BookingsTable({
 								</TableCell>
 							</TableRow>
 						)}
-						{bookings.map((booking) => {
+						{pageBookings.map((booking) => {
 							const displayStatus =
 								booking.status === "CHECKED_IN"
 									? computeBookingDisplayStatus(
@@ -171,7 +190,7 @@ export function BookingsTable({
 											</Badge>
 										)}
 									</TableCell>
-									<TableCell className="text-right">
+									<TableCell className="text-center">
 										<Button
 											variant="ghost"
 											size="sm"
@@ -191,6 +210,52 @@ export function BookingsTable({
 						})}
 					</TableBody>
 				</Table>
+				{bookings.length > 0 && (
+					<div className="flex items-center justify-between px-4 py-3 border-t">
+						<div className="flex items-center gap-2 text-sm text-muted-foreground">
+							<span>Showing</span>
+							<Select
+								value={String(pageSize)}
+								onValueChange={(v) => {
+									setPageSize(Number(v));
+									setPage(1);
+								}}
+							>
+								<SelectTrigger size="sm" className="w-16">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="5">5</SelectItem>
+									<SelectItem value="10">10</SelectItem>
+									<SelectItem value="25">25</SelectItem>
+									<SelectItem value="50">50</SelectItem>
+								</SelectContent>
+							</Select>
+							<span>of {bookings.length} bookings</span>
+						</div>
+						<div className="flex items-center gap-1">
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={safePage <= 1}
+								onClick={() => setPage((p) => p - 1)}
+							>
+								<CaretLeftIcon size={14} />
+							</Button>
+							<span className="text-sm px-2">
+								{safePage} / {totalPages}
+							</span>
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={safePage >= totalPages}
+								onClick={() => setPage((p) => p + 1)}
+							>
+								<CaretRightIcon size={14} />
+							</Button>
+						</div>
+					</div>
+				)}
 			</CardContent>
 		</Card>
 	);

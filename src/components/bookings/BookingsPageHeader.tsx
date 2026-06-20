@@ -14,7 +14,7 @@ export function BookingsPageHeader({
 		<div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
 			<div>
 				<h2 className="text-3xl font-serif tracking-tight text-foreground">
-					Bookings Ledger.
+					Bookings
 				</h2>
 				<p className="text-muted-foreground mt-2">
 					Manage reservations, guest details, and check-ins.

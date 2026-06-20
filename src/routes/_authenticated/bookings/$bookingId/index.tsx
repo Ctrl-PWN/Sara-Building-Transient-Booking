@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { BookingDetailHeader } from "@/components/bookings/BookingDetailHeader";
 import { BookingInfoCards } from "@/components/bookings/BookingInfoCards";
 import { BookingLedgerView } from "@/components/bookings/BookingLedgerView";
@@ -14,6 +15,7 @@ import { CheckInBookingDialog } from "@/components/bookings/CheckInBookingDialog
 import { CheckOutBookingDialog } from "@/components/bookings/CheckOutBookingDialog";
 import { EvictBookingDialog } from "@/components/bookings/EvictBookingDialog";
 import { ExtendBookingDialog } from "@/components/bookings/ExtendBookingDialog";
+import { GenerateUtilityPaymentsDialog } from "@/components/bookings/ledger/GenerateUtilityPaymentsDialog";
 import { TransferBookingDialog } from "@/components/bookings/TransferBookingDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
@@ -89,6 +91,7 @@ function BookingDetailPage() {
 	const [checkOutOpen, setCheckOutOpen] = useState(false);
 	const [transferOpen, setTransferOpen] = useState(false);
 	const [extendOpen, setExtendOpen] = useState(false);
+	const [utilitiesOpen, setUtilitiesOpen] = useState(false);
 
 	const updateStatus = useMutation(bookingMutations.updateStatus(queryClient));
 	const transferMutation = useMutation(
@@ -129,27 +132,29 @@ function BookingDetailPage() {
 		setTransferOpen(false);
 	};
 
-	const handleExtend = (values: {
+	const handleExtend = async (values: {
+		newCheckOutDate: string;
 		withCashAdvance: boolean;
 		paymentMethod: string;
 		referenceNumber: string;
-		utilities: Array<{
-			utilityType: "ELECTRICITY" | "WATER" | "INTERNET" | "OTHER";
-			amount: number;
-			description: string;
-			isPaid: boolean;
-			paymentMethod?: "CASH" | "GCASH" | "BANK_TRANSFER";
-			referenceNumber?: string;
-		}>;
 	}) => {
-		extendMutation.mutate({
-			bookingRef: booking.bookingRef,
-			withCashAdvance: values.withCashAdvance,
-			paymentMethod: values.paymentMethod as "CASH" | "GCASH" | "BANK_TRANSFER",
-			referenceNumber: values.referenceNumber,
-			utilities: values.utilities,
-		});
-		setExtendOpen(false);
+		try {
+			await extendMutation.mutateAsync({
+				bookingRef: booking.bookingRef,
+				newCheckOutDate: values.newCheckOutDate,
+				withCashAdvance: values.withCashAdvance,
+				paymentMethod: values.paymentMethod as
+					| "CASH"
+					| "GCASH"
+					| "BANK_TRANSFER",
+				referenceNumber: values.referenceNumber,
+			});
+			setExtendOpen(false);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to extend booking";
+			toast.error("Cannot extend booking", { description: message });
+		}
 	};
 
 	return (
@@ -163,6 +168,7 @@ function BookingDetailPage() {
 					onCheckOut={() => setCheckOutOpen(true)}
 					onTransferClick={() => setTransferOpen(true)}
 					onExtendClick={() => setExtendOpen(true)}
+					onUtilitiesClick={() => setUtilitiesOpen(true)}
 				/>
 
 				<BookingInfoCards booking={booking} />
@@ -218,6 +224,12 @@ function BookingDetailPage() {
 					onOpenChange={setExtendOpen}
 					booking={booking}
 					onConfirm={handleExtend}
+				/>
+
+				<GenerateUtilityPaymentsDialog
+					open={utilitiesOpen}
+					onOpenChange={setUtilitiesOpen}
+					bookingId={numericBookingId}
 				/>
 			</div>
 		</main>

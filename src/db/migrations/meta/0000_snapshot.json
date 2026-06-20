@@ -1,5 +1,5 @@
 {
-	"id": "b6d654dd-1b0b-416e-bde3-a4a7ef1ac22c",
+	"id": "b80a06d2-7222-42a7-b09b-4d6310d9775b",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -752,7 +752,15 @@
 		"public.ledger_transaction_category": {
 			"name": "ledger_transaction_category",
 			"schema": "public",
-			"values": ["ROOM_CHARGE", "DEPOSIT", "PAYMENT", "REFUND", "LATE_FEE"]
+			"values": [
+				"ROOM_CHARGE",
+				"DEPOSIT",
+				"PAYMENT",
+				"REFUND",
+				"ADVANCE",
+				"LATE_FEE",
+				"UTILITY"
+			]
 		},
 		"public.payment_method": {
 			"name": "payment_method",

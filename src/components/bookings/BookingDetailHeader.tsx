@@ -41,6 +41,10 @@ const canExtend = (bookingType: string, status: string) => {
 	return bookingType === "MONTHLY" && status === "CHECKED_IN";
 };
 
+const canGenerateUtilities = (bookingType: string, status: string) => {
+	return bookingType === "MONTHLY" && status === "CHECKED_IN";
+};
+
 type BookingDetailHeaderProps = {
 	booking: BookingWithRoom;
 	onCancelClick: () => void;
@@ -49,6 +53,7 @@ type BookingDetailHeaderProps = {
 	onCheckOut: () => void;
 	onTransferClick: () => void;
 	onExtendClick: () => void;
+	onUtilitiesClick: () => void;
 };
 
 export function BookingDetailHeader({
@@ -59,6 +64,7 @@ export function BookingDetailHeader({
 	onCheckOut,
 	onTransferClick,
 	onExtendClick,
+	onUtilitiesClick,
 }: BookingDetailHeaderProps) {
 	const displayStatus = computeBookingDisplayStatus(
 		booking.status,
@@ -130,6 +136,11 @@ export function BookingDetailHeader({
 					{canExtend(booking.bookingType, booking.status) && (
 						<Button variant="outline" onClick={onExtendClick}>
 							Extend
+						</Button>
+					)}
+					{canGenerateUtilities(booking.bookingType, booking.status) && (
+						<Button variant="outline" onClick={onUtilitiesClick}>
+							Utilities
 						</Button>
 					)}
 				</div>

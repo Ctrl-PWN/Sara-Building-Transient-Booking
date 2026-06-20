@@ -12,6 +12,7 @@ type CalendarProps = {
 	rangeEnd?: Date | null;
 	onRangeChange?: (start: Date | null, end: Date | null) => void;
 	minDate?: Date;
+	maxDate?: Date;
 	disabledDates?: (date: Date) => boolean;
 	className?: string;
 };
@@ -45,6 +46,7 @@ export function Calendar({
 	rangeEnd,
 	onRangeChange,
 	minDate,
+	maxDate,
 	disabledDates,
 	className,
 }: CalendarProps) {
@@ -116,9 +118,18 @@ export function Calendar({
 		if (minDate && startOfDay(date).getTime() < startOfDay(minDate).getTime()) {
 			return true;
 		}
+		if (maxDate && startOfDay(date).getTime() > startOfDay(maxDate).getTime()) {
+			return true;
+		}
 		if (disabledDates) return disabledDates(date);
 		return false;
 	};
+
+	const isNextMonthDisabled = (() => {
+		if (!maxDate) return false;
+		const nextMonthStart = new Date(currentYear, currentMonth + 1, 1);
+		return startOfDay(nextMonthStart).getTime() > startOfDay(maxDate).getTime();
+	})();
 
 	const isDateSelected = (day: number): boolean => {
 		if (onRangeChange) {
@@ -193,6 +204,7 @@ export function Calendar({
 					variant="ghost"
 					size="sm"
 					onClick={goToNextMonth}
+					disabled={isNextMonthDisabled}
 					className="h-8 w-8 p-0"
 				>
 					<ArrowRightIcon className="size-4" />
@@ -260,6 +272,13 @@ export function Calendar({
 										!isStart &&
 											!isEnd &&
 											!isMiddle &&
+											isDateSelected(day) &&
+											!onRangeChange &&
+											"bg-primary text-primary-foreground hover:bg-primary/90",
+										!isStart &&
+											!isEnd &&
+											!isMiddle &&
+											(!isDateSelected(day) || !!onRangeChange) &&
 											"bg-transparent text-foreground",
 									)}
 								>

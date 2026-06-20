@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { ledgerTransactions } from "@/db/schema";
+import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
 import {
 	getBookingForLedger,
@@ -13,6 +13,7 @@ import {
 import {
 	createExpenseSchema,
 	deleteLedgerTransactionSchema,
+	generateUtilityPaymentsSchema,
 	getLedgerDetailsSchema,
 	getLedgerTransactionsSchema,
 	payExpenseSchema,
@@ -43,17 +44,104 @@ export const createExpense = createServerFn({ method: "POST" })
 			.insert(ledgerTransactions)
 			.values({
 				bookingId: data.bookingId,
-				category: "ROOM_CHARGE",
+				category: data.category ?? "ROOM_CHARGE",
 				amount: String(data.amount),
 				description: data.description,
 				isPaid,
 				paymentMethod: isPaid ? data.paymentMethod : null,
 				referenceNumber,
+				utilityType: data.utilityType ?? null,
 			})
 			.returning();
 
 		await syncBookingPaymentStatus(data.bookingId, db);
 		return row;
+	});
+
+export const generateUtilityPayments = createServerFn({ method: "POST" })
+	.validator(generateUtilityPaymentsSchema)
+	.handler(async ({ data }) => {
+		const booking = await getBookingForLedger(data.bookingId, db);
+		if (booking.status !== "CHECKED_IN") {
+			throw new Error(
+				"Utility payments can only be generated while the guest is checked in",
+			);
+		}
+
+		const validItems = data.items.filter((i) => i.amount > 0);
+		if (validItems.length === 0) {
+			throw new Error(
+				"At least one utility with an amount greater than zero is required",
+			);
+		}
+
+		const referenceNumber = normalizeReferenceNumber(
+			data.paymentMethod,
+			data.referenceNumber,
+		);
+
+		const result = await db.transaction(async (tx) => {
+			const bookingRow = await tx
+				.select({ id: bookings.id, checkIn: bookings.checkIn })
+				.from(bookings)
+				.where(eq(bookings.id, data.bookingId))
+				.limit(1);
+			const anchor = bookingRow[0]?.checkIn ?? new Date();
+			const periodStart = new Date(anchor);
+			const periodEnd = new Date();
+
+			const requestedTypes = validItems.map((i) => i.utilityType);
+			const existing = await tx
+				.select({ utilityType: ledgerTransactions.utilityType })
+				.from(ledgerTransactions)
+				.where(
+					and(
+						eq(ledgerTransactions.bookingId, data.bookingId),
+						eq(ledgerTransactions.category, "UTILITY"),
+						inArray(ledgerTransactions.utilityType, requestedTypes),
+					),
+				);
+			const existingTypes = new Set(
+				existing
+					.map((e) => e.utilityType)
+					.filter((t): t is NonNullable<typeof t> => t !== null),
+			);
+
+			const toInsert = validItems.filter(
+				(i) => !existingTypes.has(i.utilityType),
+			);
+
+			if (toInsert.length === 0) {
+				return { inserted: 0, skipped: validItems.length };
+			}
+
+			const inserted = await tx
+				.insert(ledgerTransactions)
+				.values(
+					toInsert.map((u) => ({
+						bookingId: data.bookingId,
+						category: "UTILITY" as const,
+						amount: u.amount.toFixed(4),
+						description: u.description.trim(),
+						isPaid: true,
+						paymentMethod: data.paymentMethod,
+						referenceNumber,
+						utilityType: u.utilityType,
+					})),
+				)
+				.returning();
+
+			void periodStart;
+			void periodEnd;
+
+			return {
+				inserted: inserted.length,
+				skipped: validItems.length - inserted.length,
+			};
+		});
+
+		await syncBookingPaymentStatus(data.bookingId, db);
+		return result;
 	});
 
 export const payExpense = createServerFn({ method: "POST" })

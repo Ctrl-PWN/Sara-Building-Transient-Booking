@@ -171,9 +171,12 @@ export function useCreateBookingAvailability({
 		const hasActiveBooking = activeBookingRoomIds.has(room.id);
 
 		const isWalkInBlocked = roomBookings.some((b) => {
+			// CHECKED_IN rooms are always occupied
+			if (b.status === "CHECKED_IN") return true;
 			const bCheckIn = new Date(b.checkIn);
 			const bCheckOut = new Date(b.checkOut);
-			return bCheckIn <= now && bCheckOut > now;
+			const todayEnd = new Date(todayKey + 86_400_000);
+			return bCheckIn < todayEnd && bCheckOut > todayStart;
 		});
 
 		const isBookedToday = bookedDaysByRoom.get(room.id)?.has(todayKey) ?? false;
@@ -183,22 +186,19 @@ export function useCreateBookingAvailability({
 		if (room.status !== "AVAILABLE") {
 			statusTag = "";
 		} else if (walkIn && isWalkInBlocked) {
-			const activeBooking = roomBookings.find((b) => {
+			const todayEnd = new Date(todayKey + 86_400_000);
+			const blockingBooking = roomBookings.find((b) => {
+				if (b.status === "CHECKED_IN") return true;
 				const bCheckIn = new Date(b.checkIn);
 				const bCheckOut = new Date(b.checkOut);
-				return bCheckIn <= now && bCheckOut > now;
+				return bCheckIn < todayEnd && bCheckOut > todayStart;
 			});
-			if (activeBooking?.status === "CHECKED_IN") {
-				statusTag = "";
+			if (blockingBooking?.status === "CHECKED_IN") {
+				statusTag = " [OCCUPIED]";
+			} else if (blockingBooking) {
+				statusTag = ` [RESERVED ${formatShortDateTime(blockingBooking.checkIn)} - ${formatShortDateTime(blockingBooking.checkOut)}]`;
 			} else {
-				const todayBooking = roomBookings.find((b) => {
-					const bStart = new Date(b.checkIn);
-					bStart.setHours(0, 0, 0, 0);
-					return bStart.getTime() === todayKey;
-				});
-				statusTag = todayBooking
-					? ` [RESERVED TODAY ${formatShortDateTime(todayBooking.checkIn)} - ${formatShortDateTime(todayBooking.checkOut)}]`
-					: "";
+				statusTag = "";
 			}
 		} else if (!walkIn && hasActiveBooking) {
 			statusTag = "";
@@ -230,7 +230,7 @@ export function useCreateBookingAvailability({
 
 		return {
 			value: room.id.toString(),
-			label: `${room.roomNumber} - ${room.type} (${priceLabel})${statusTag}${isMonthlyDisabled ? " [NO MONTHLY RATE]" : ""}`,
+			label: `${room.roomNumber} - ${room.type} (${priceLabel}) · ${room.capacity} pax${statusTag}${isMonthlyDisabled ? " [NO MONTHLY RATE]" : ""}`,
 			disabled:
 				["MAINTENANCE", "OUT_OF_ORDER"].includes(room.status) ||
 				(walkIn && isWalkInBlocked) ||

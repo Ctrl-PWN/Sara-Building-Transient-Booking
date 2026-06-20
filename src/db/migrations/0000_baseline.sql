@@ -1,7 +1,7 @@
 CREATE TYPE "public"."booking_payment_status" AS ENUM('CURRENT', 'OVERDUE', 'PAID_IN_FULL');--> statement-breakpoint
 CREATE TYPE "public"."booking_status" AS ENUM('RESERVED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED', 'EVICTED', 'TRANSFERRED');--> statement-breakpoint
 CREATE TYPE "public"."booking_type" AS ENUM('DAILY', 'MONTHLY');--> statement-breakpoint
-CREATE TYPE "public"."ledger_transaction_category" AS ENUM('ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND', 'LATE_FEE');--> statement-breakpoint
+CREATE TYPE "public"."ledger_transaction_category" AS ENUM('ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND', 'ADVANCE', 'LATE_FEE', 'UTILITY');--> statement-breakpoint
 CREATE TYPE "public"."payment_method" AS ENUM('CASH', 'GCASH', 'BANK_TRANSFER');--> statement-breakpoint
 CREATE TYPE "public"."room_status" AS ENUM('AVAILABLE', 'MAINTENANCE', 'OUT_OF_ORDER', 'OCCUPIED');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'staff');--> statement-breakpoint
