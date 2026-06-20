@@ -36,6 +36,13 @@
 			"when": 1780137000000,
 			"tag": "0004_late_fee_enum",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1780137000000,
+			"tag": "0004_utility_type",
+			"breakpoints": true
 		}
 	]
 }

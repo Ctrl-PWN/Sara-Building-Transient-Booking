@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,13 @@ type AddExpenseDialogProps = {
 	bookingId: number;
 };
 
+const UTILITY_TYPE_OPTIONS = [
+	{ value: "ELECTRICITY", label: "Electricity" },
+	{ value: "WATER", label: "Water" },
+	{ value: "INTERNET", label: "Internet" },
+	{ value: "OTHER", label: "Other" },
+];
+
 export function AddExpenseDialog({
 	open,
 	onOpenChange,
@@ -36,6 +44,8 @@ export function AddExpenseDialog({
 		amount: 0,
 		description: "",
 		isPaid: false,
+		category: "ROOM_CHARGE",
+		utilityType: undefined,
 		paymentMethod: undefined,
 		referenceNumber: "",
 	};
@@ -49,6 +59,9 @@ export function AddExpenseDialog({
 				amount: value.amount,
 				description: value.description.trim(),
 				isPaid: value.isPaid,
+				category: value.category,
+				utilityType:
+					value.category === "UTILITY" ? value.utilityType : undefined,
 				paymentMethod: value.isPaid ? value.paymentMethod : undefined,
 				referenceNumber: value.isPaid ? value.referenceNumber : undefined,
 			});
@@ -56,6 +69,9 @@ export function AddExpenseDialog({
 			onOpenChange(false);
 		},
 	});
+
+	const category = useSelector(form.store, (state) => state.values.category);
+	const isPaid = useSelector(form.store, (state) => state.values.isPaid);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,6 +87,29 @@ export function AddExpenseDialog({
 					}}
 				>
 					<form.AppForm>
+						<form.AppField name="category">
+							{(field) => (
+								<field.SelectField
+									label="Category"
+									options={[
+										{ value: "ROOM_CHARGE", label: "Room charge" },
+										{ value: "UTILITY", label: "Utility" },
+									]}
+								/>
+							)}
+						</form.AppField>
+
+						{category === "UTILITY" && (
+							<form.AppField name="utilityType">
+								{(field) => (
+									<field.SelectField
+										label="Utility type"
+										options={UTILITY_TYPE_OPTIONS}
+									/>
+								)}
+							</form.AppField>
+						)}
+
 						<form.AppField name="description">
 							{(field) => (
 								<field.TextField
@@ -87,11 +126,9 @@ export function AddExpenseDialog({
 						<form.AppField name="isPaid">
 							{(field) => <field.ToggleField label="Mark as paid" />}
 						</form.AppField>
-						<form.Subscribe selector={(state) => state.values.isPaid}>
-							{(isPaid) => (
-								<LedgerPaymentFieldsSection form={form} disabled={!isPaid} />
-							)}
-						</form.Subscribe>
+						{isPaid && (
+							<LedgerPaymentFieldsSection form={form} disabled={!isPaid} />
+						)}
 						<DialogFooter>
 							<Button
 								type="button"

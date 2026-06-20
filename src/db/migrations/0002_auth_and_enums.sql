@@ -2,7 +2,7 @@ CREATE TYPE "public"."booking_status" AS ENUM('RESERVED', 'CHECKED_IN', 'CHECKED
 CREATE TYPE "public"."booking_payment_status" AS ENUM('CURRENT', 'OVERDUE', 'PAID_IN_FULL');--> statement-breakpoint
 CREATE TYPE "public"."room_status" AS ENUM('AVAILABLE', 'MAINTENANCE', 'OUT_OF_ORDER', 'OCCUPIED');--> statement-breakpoint
 CREATE TYPE "public"."ledger_transaction_type" AS ENUM('DEPOSIT', 'PAYMENT', 'REFUND', 'ADJUSTMENT');--> statement-breakpoint
-CREATE TYPE "public"."ledger_transaction_category" AS ENUM('ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND', 'LATE_FEE', 'ADJUSTMENT');--> statement-breakpoint
+CREATE TYPE "public"."ledger_transaction_category" AS ENUM('ROOM_CHARGE', 'DEPOSIT', 'PAYMENT', 'REFUND');--> statement-breakpoint
 CREATE TYPE "public"."payment_method" AS ENUM('CASH', 'CARD', 'BANK_TRANSFER');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('ADMIN', 'STAFF');--> statement-breakpoint
 ALTER TABLE "bookings" ALTER COLUMN "status" SET DEFAULT 'RESERVED'::"public"."booking_status";--> statement-breakpoint
