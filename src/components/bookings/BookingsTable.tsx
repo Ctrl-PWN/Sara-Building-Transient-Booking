@@ -95,7 +95,7 @@ export function BookingsTable({
 							<TableHead>Room</TableHead>
 							<TableHead>Type</TableHead>
 							<TableHead>Status</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
+							<TableHead className="text-center">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -171,7 +171,7 @@ export function BookingsTable({
 											</Badge>
 										)}
 									</TableCell>
-									<TableCell className="text-right">
+									<TableCell className="text-center">
 										<Button
 											variant="ghost"
 											size="sm"
