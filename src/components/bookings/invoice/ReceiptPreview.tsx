@@ -39,7 +39,10 @@ export function ReceiptPreview({ receipt, className }: ReceiptPreviewProps) {
 
 			<div className="space-y-0.5">
 				{receipt.kvRows.map((row) => (
-					<div key={`${row.label}-${row.value}`} className="flex justify-between gap-2">
+					<div
+						key={`${row.label}-${row.value}`}
+						className="flex justify-between gap-2"
+					>
 						<span className="shrink-0 text-gray-500">{row.label}</span>
 						<span className="text-right font-medium">{row.value}</span>
 					</div>

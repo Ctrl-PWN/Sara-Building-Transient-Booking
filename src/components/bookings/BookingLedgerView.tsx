@@ -1,4 +1,8 @@
-import { CalendarBlankIcon, FileTextIcon, PlusIcon } from "@phosphor-icons/react";
+import {
+	CalendarBlankIcon,
+	FileTextIcon,
+	PlusIcon,
+} from "@phosphor-icons/react";
 import {
 	useMutation,
 	useQueryClient,

@@ -177,9 +177,7 @@ export function MonthlyInvoiceComposer({
 
 									<MonthlyInvoiceUtilitySection form={form} />
 
-									<form.Subscribe
-										selector={(state) => state.values.utilities}
-									>
+									<form.Subscribe selector={(state) => state.values.utilities}>
 										{(utilities) => {
 											const utilitiesTotal = utilities.reduce(
 												(sum, u) =>
@@ -215,7 +213,10 @@ export function MonthlyInvoiceComposer({
 										}}
 									</form.Subscribe>
 
-									<form.SubmitButton label="Generate invoice" className="w-full" />
+									<form.SubmitButton
+										label="Generate invoice"
+										className="w-full"
+									/>
 								</form.AppForm>
 							</form>
 						</CardContent>

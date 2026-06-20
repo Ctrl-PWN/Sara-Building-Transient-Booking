@@ -1,9 +1,8 @@
 import { format } from "date-fns";
-
+import type { MonthlyBillingPeriod } from "@/lib/bookings/monthly-billing-periods";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
-import type { MonthlyBillingPeriod } from "@/lib/bookings/monthly-billing-periods";
 import type { MonthlyInvoiceUtilityLine } from "@/lib/invoices/schemas";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
@@ -140,7 +139,10 @@ export function buildMonthlyInvoiceReceiptModel(args: {
 		kvRows.push({ label: "Contact", value: booking.contactNumber });
 	}
 	kvRows.push({ label: "Booking", value: booking.bookingRef });
-	kvRows.push({ label: "Room", value: `${booking.roomNumber} (${booking.roomType})` });
+	kvRows.push({
+		label: "Room",
+		value: `${booking.roomNumber} (${booking.roomType})`,
+	});
 	kvRows.push({ label: "Billing period", value: period.label });
 	kvRows.push({ label: "Issued", value: issuedAt });
 	kvRows.push({ label: "Issued by", value: issuedBy });

@@ -9,7 +9,11 @@ import {
 	View,
 } from "@react-pdf/renderer";
 
-import { formatReceiptAmount, buildLedgerReceiptModel, type ReceiptModel } from "./receipt-model";
+import {
+	buildLedgerReceiptModel,
+	formatReceiptAmount,
+	type ReceiptModel,
+} from "./receipt-model";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -174,7 +178,9 @@ type ThermalReceiptDocumentProps = {
 	receipt: ReceiptModel;
 };
 
-export function ThermalReceiptDocument({ receipt }: ThermalReceiptDocumentProps) {
+export function ThermalReceiptDocument({
+	receipt,
+}: ThermalReceiptDocumentProps) {
 	const pageHeight = estimateThermalPageHeight(receipt);
 
 	return (
@@ -208,7 +214,9 @@ export function ThermalReceiptDocument({ receipt }: ThermalReceiptDocumentProps)
 				</View>
 
 				<View style={styles.rule} />
-				<Text style={[styles.kvLabel, styles.center, styles.bold]}>CHARGES</Text>
+				<Text style={[styles.kvLabel, styles.center, styles.bold]}>
+					CHARGES
+				</Text>
 				<View style={styles.rule} />
 
 				{receipt.lineItems.length === 0 ? (

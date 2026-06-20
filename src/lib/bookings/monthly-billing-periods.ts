@@ -27,7 +27,10 @@ export function listMonthlyBillingPeriods(
 	const checkInDate = new Date(checkIn);
 	const finalCheckOut = new Date(checkOut);
 
-	if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(finalCheckOut.getTime())) {
+	if (
+		Number.isNaN(checkInDate.getTime()) ||
+		Number.isNaN(finalCheckOut.getTime())
+	) {
 		return [];
 	}
 
@@ -37,8 +40,7 @@ export function listMonthlyBillingPeriods(
 
 	while (periodStart < finalCheckOut) {
 		const periodEnd = addMonthlyPeriodEnd(periodStart);
-		const boundedEnd =
-			periodEnd > finalCheckOut ? finalCheckOut : periodEnd;
+		const boundedEnd = periodEnd > finalCheckOut ? finalCheckOut : periodEnd;
 
 		periods.push({
 			index,

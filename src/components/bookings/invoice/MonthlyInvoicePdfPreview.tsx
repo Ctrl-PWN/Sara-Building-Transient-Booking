@@ -14,8 +14,8 @@ import type { MonthlyInvoiceUtilityLine } from "@/lib/invoices/schemas";
 
 import { MonthlyInvoiceDocument } from "./MonthlyInvoiceDocument";
 import { buildMonthlyInvoiceReceiptModel } from "./receipt-model";
-import { ThermalPrintPreview } from "./ThermalPrintPreview";
 import { ThermalReceiptDocument } from "./ThermalInvoiceDocument";
+import { ThermalPrintPreview } from "./ThermalPrintPreview";
 
 const PDFViewer = lazy(() =>
 	import("@react-pdf/renderer").then((m) => ({ default: m.PDFViewer })),

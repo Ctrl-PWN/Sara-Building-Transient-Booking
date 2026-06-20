@@ -16,8 +16,8 @@ import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 import { InvoiceDocument } from "./InvoiceDocument";
 import { buildLedgerReceiptModel } from "./receipt-model";
-import { ThermalPrintPreview } from "./ThermalPrintPreview";
 import { ThermalReceiptDocument } from "./ThermalInvoiceDocument";
+import { ThermalPrintPreview } from "./ThermalPrintPreview";
 
 const PDFViewer = lazy(() =>
 	import("@react-pdf/renderer").then((m) => ({ default: m.PDFViewer })),

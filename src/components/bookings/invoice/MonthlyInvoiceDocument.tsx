@@ -189,7 +189,9 @@ export function MonthlyInvoiceDocument({
 							Description
 						</Text>
 						<Text style={[styles.tableHeaderCell, styles.thType]}>Type</Text>
-						<Text style={[styles.tableHeaderCell, styles.thAmount]}>Amount</Text>
+						<Text style={[styles.tableHeaderCell, styles.thAmount]}>
+							Amount
+						</Text>
 					</View>
 
 					<View style={styles.row} wrap={false}>
