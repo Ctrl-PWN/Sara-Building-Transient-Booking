@@ -178,7 +178,8 @@ export function ExtendBookingDialog({
 										Change checkout date
 									</span>
 									<span className="text-xs text-muted-foreground">
-										Pick a custom checkout date (booked dates are disabled)
+										Pick a date within the next month (booked dates are
+										disabled)
 									</span>
 								</div>
 								<Switch
@@ -192,8 +193,9 @@ export function ExtendBookingDialog({
 									{(field) => (
 										<field.DateField
 											label="New checkout date"
-											description="Select the new checkout date"
+											description="Select a date up to 1 month from the current checkout"
 											minDate={new Date(booking.checkOut)}
+											maxDate={defaultNewCheckOut}
 											disabledDates={isDateDisabled}
 										/>
 									)}

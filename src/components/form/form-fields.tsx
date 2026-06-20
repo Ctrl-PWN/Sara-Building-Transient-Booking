@@ -630,12 +630,14 @@ function DateField({
 	label,
 	description,
 	minDate,
+	maxDate,
 	disabledDates,
 	onValueChange,
 }: {
 	label: string;
 	description?: string;
 	minDate?: Date;
+	maxDate?: Date;
 	disabledDates?: (date: Date) => boolean;
 	onValueChange?: (dateStr: string) => void;
 }) {
@@ -665,6 +667,7 @@ function DateField({
 					selectedDate={selectedDate ?? undefined}
 					onSelectDate={handleSelectDate}
 					minDate={minDate}
+					maxDate={maxDate}
 					disabledDates={disabledDates}
 				/>
 			</div>
