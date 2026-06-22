@@ -180,10 +180,38 @@ export const generateUtilityPaymentItemsSchema = z.array(
 export const generateUtilityPaymentsSchema = z
 	.object({
 		bookingId: z.number().int().positive(),
+		periodIndex: z.number().int().min(0),
 		items: generateUtilityPaymentItemsSchema,
 		...ledgerPaymentFieldsShape,
 	})
 	.superRefine(paymentReferenceRefine);
+
+export const monthlyUtilitiesSearchSchema = z.object({
+	period: z.number().int().min(0).optional().default(0),
+});
+
+export const monthlyUtilitiesFormSchema = z
+	.object({
+		periodIndex: z.number().int().min(0),
+		items: generateUtilityPaymentItemsSchema,
+		...ledgerPaymentFieldsShape,
+	})
+	.superRefine((data, ctx) => {
+		paymentReferenceRefine(data, ctx);
+		const payable = data.items.filter((item) => item.amount > 0);
+		if (payable.length === 0) {
+			ctx.addIssue({
+				code: "custom",
+				message:
+					"At least one utility with an amount greater than zero is required",
+				path: ["items"],
+			});
+		}
+	});
+
+export type MonthlyUtilitiesFormValues = z.infer<
+	typeof monthlyUtilitiesFormSchema
+>;
 
 const payExpenseItemSchema = z
 	.object({

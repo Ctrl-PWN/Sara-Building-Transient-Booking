@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
+import { formatManilaDateTime, nowInManila } from "@/lib/date/manila";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 const COLORS = {
@@ -213,7 +214,7 @@ export function InvoiceDocument({
 	remainingBalance,
 }: InvoiceDocumentProps) {
 	const invoiceRef = `INV-${booking.bookingRef}`;
-	const issuedDate = format(new Date(), "MMM d, yyyy h:mm a");
+	const issuedDate = formatManilaDateTime(nowInManila());
 
 	return (
 		<Document
@@ -281,7 +282,7 @@ export function InvoiceDocument({
 										{tx.description ?? formatCategory(tx.category)}
 									</Text>
 									<Text style={styles.descMeta}>
-										{format(new Date(tx.createdAt), "MMM d, yyyy h:mm a")}
+										{formatManilaDateTime(tx.createdAt, "MMM d, yyyy h:mm a")}
 									</Text>
 								</View>
 								<Text style={[styles.cellMuted, styles.cellPayment]}>

@@ -3,6 +3,7 @@ import type { MonthlyBillingPeriod } from "@/lib/bookings/monthly-billing-period
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
+import { formatManilaDateTime, nowInManila } from "@/lib/date/manila";
 import type { MonthlyInvoiceUtilityLine } from "@/lib/invoices/schemas";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
@@ -63,7 +64,7 @@ export function buildLedgerReceiptModel(args: {
 }): ReceiptModel {
 	const { booking, transactions, total, payments, remainingBalance, issuedBy } =
 		args;
-	const issuedAt = format(new Date(), "MMM d, yyyy h:mm a");
+	const issuedAt = formatManilaDateTime(nowInManila());
 
 	const kvRows: ReceiptKvRow[] = [
 		{ label: "Guest", value: formatGuestName(booking) },
@@ -90,7 +91,7 @@ export function buildLedgerReceiptModel(args: {
 			? formatPaymentMethod(tx.paymentMethod)
 			: "";
 		const refMeta = tx.referenceNumber ? ` · ${tx.referenceNumber}` : "";
-		const dateMeta = format(new Date(tx.createdAt), "MMM d, h:mm a");
+		const dateMeta = formatManilaDateTime(tx.createdAt, "MMM d, h:mm a");
 		const meta = [dateMeta, paymentMeta + refMeta].filter(Boolean).join(" · ");
 
 		return {
@@ -129,7 +130,7 @@ export function buildMonthlyInvoiceReceiptModel(args: {
 	issuedBy: string;
 }): ReceiptModel {
 	const { booking, period, roomCharge, utilities, issuedBy } = args;
-	const issuedAt = format(new Date(), "MMM d, yyyy h:mm a");
+	const issuedAt = formatManilaDateTime(nowInManila());
 	const totalDue = roomCharge + utilities.reduce((sum, u) => sum + u.amount, 0);
 
 	const kvRows: ReceiptKvRow[] = [

@@ -8,6 +8,13 @@
 			"when": 1781985286020,
 			"tag": "0000_baseline",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1781991653250,
+			"tag": "0001_timestamptz_columns",
+			"breakpoints": true
 		}
 	]
 }

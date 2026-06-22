@@ -51,13 +51,11 @@ export const createRoom = createServerFn({ method: "POST" })
 		const [room] = await db
 			.insert(rooms)
 			.values({
-				roomNumber: data.roomNumber,
-				type: data.type,
-				capacity: data.capacity,
+				...data,
 				basePrice: data.basePrice.toString(),
 				monthlyPrice:
 					data.monthlyPrice > 0 ? data.monthlyPrice.toString() : null,
-				status: data.status,
+				status: "AVAILABLE",
 			})
 			.returning();
 		return room;
@@ -72,6 +70,10 @@ export const updateRoom = createServerFn({ method: "POST" })
 		});
 		if (!current) {
 			throw new Error("Room not found");
+		}
+
+		if (current.status === "OCCUPIED" && data.status !== undefined) {
+			throw new Error("Cannot change status of an occupied room");
 		}
 
 		if (

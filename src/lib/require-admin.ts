@@ -1,11 +1,8 @@
 import { createMiddleware, createServerOnlyFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { auth } from "./auth";
 
-export const requireAdmin = createServerOnlyFn(async () => {
-	const [{ auth }, { getRequestHeaders }] = await Promise.all([
-		import("./auth"),
-		import("@tanstack/react-start/server"),
-	]);
-
+const requireAdmin = createServerOnlyFn(async () => {
 	const session = await auth.api.getSession({
 		headers: getRequestHeaders(),
 	});
@@ -26,15 +23,8 @@ export function authMiddleware() {
 	});
 }
 
-export async function requireSession() {
-	const [{ auth }, { getRequestHeaders }] = await Promise.all([
-		import("./auth"),
-		import("@tanstack/react-start/server"),
-	]);
-
-	const session = await auth.api.getSession({
-		headers: getRequestHeaders(),
-	});
+const requireSession = createServerOnlyFn(async (headers: Headers) => {
+	const session = await auth.api.getSession({ headers });
 
 	if (!session) {
 		throw new Response("Unauthorized", {
@@ -43,11 +33,12 @@ export async function requireSession() {
 	}
 
 	return session;
-}
+});
 
 export function sessionMiddleware() {
 	return createMiddleware().server(async ({ next }) => {
-		await requireSession();
+		const headers = getRequestHeaders();
+		await requireSession(headers);
 		return next();
 	});
 }

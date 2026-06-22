@@ -41,6 +41,13 @@ export function formatManilaDisplayDate(date: Date | string | number): string {
 	return formatManilaDate(date, "EEEE, MMMM d, yyyy");
 }
 
+export function formatManilaDateTime(
+	date: Date | string | number,
+	dateFormat = "MMM d, yyyy h:mm a",
+): string {
+	return formatManilaDate(date, dateFormat);
+}
+
 /**
  * Returns true if `iso` falls on the same Manila calendar day as
  * `referenceDate` (default: now), or any earlier day. Uses Asia/Manila so

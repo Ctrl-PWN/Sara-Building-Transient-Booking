@@ -122,7 +122,7 @@ export function BookingsTable({
 							<TableRow>
 								<TableCell
 									className="text-center text-muted-foreground py-8"
-									colSpan={7}
+									colSpan={8}
 								>
 									{emptyMessage}
 								</TableCell>

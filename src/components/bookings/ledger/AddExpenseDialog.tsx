@@ -5,9 +5,9 @@ import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
-	DialogContent,
 	DialogFooter,
 	DialogHeader,
+	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -75,7 +75,7 @@ export function AddExpenseDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-md">
+			<DialogOutsideScroll className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Add charge</DialogTitle>
 				</DialogHeader>
@@ -141,7 +141,7 @@ export function AddExpenseDialog({
 						</DialogFooter>
 					</form.AppForm>
 				</form>
-			</DialogContent>
+			</DialogOutsideScroll>
 		</Dialog>
 	);
 }
