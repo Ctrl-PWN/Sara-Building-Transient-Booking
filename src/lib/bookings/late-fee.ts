@@ -1,6 +1,10 @@
 import { differenceInCalendarDays, format } from "date-fns";
 
-import { nowInManila, startOfDayInManila } from "@/lib/date/manila";
+import {
+	formatManilaDate,
+	nowInManila,
+	startOfDayInManila,
+} from "@/lib/date/manila";
 
 export type LateFeePreview = {
 	daysOverdue: number;
@@ -10,15 +14,9 @@ export type LateFeePreview = {
 };
 
 function toManilaDateKey(value: string | Date | number): string {
-	if (value instanceof Date) {
-		return format(value, "yyyy-MM-dd");
-	}
-	if (typeof value === "number") {
-		return format(new Date(value), "yyyy-MM-dd");
-	}
-	const tz = new Date(value);
-	if (Number.isNaN(tz.getTime())) return value;
-	return format(tz, "yyyy-MM-dd");
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return String(value);
+	return formatManilaDate(date, "yyyy-MM-dd");
 }
 
 export function computeLateFee(args: {

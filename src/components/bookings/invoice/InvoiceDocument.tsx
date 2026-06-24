@@ -1,12 +1,15 @@
 import "@/lib/pdf/fonts";
 
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { format } from "date-fns";
 
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
 import { formatManilaDateTime, nowInManila } from "@/lib/date/manila";
+import {
+	formatLedgerCategory,
+	formatPaymentMethod,
+} from "@/lib/ledger/display.helpers";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 const COLORS = {
@@ -183,19 +186,6 @@ const styles = StyleSheet.create({
 	},
 });
 
-function formatCategory(category: string): string {
-	return category
-		.split("_")
-		.map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-		.join(" ");
-}
-
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "—";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
-
 type InvoiceDocumentProps = {
 	booking: BookingWithRoom;
 	issuedBy: string;
@@ -247,7 +237,7 @@ export function InvoiceDocument({
 						) : null}
 						<Text style={styles.sectionLabel}>Check-out:</Text>
 						<Text style={styles.sectionValue}>
-							{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
+							{formatManilaDateTime(booking.checkOut, "MMM d, yyyy 'at' HH:mm")}
 						</Text>
 					</View>
 					<View style={styles.gridColRight}>
@@ -279,7 +269,7 @@ export function InvoiceDocument({
 							<View key={tx.id} style={styles.row} wrap={false}>
 								<View style={styles.cellDescription}>
 									<Text style={styles.descTitle}>
-										{tx.description ?? formatCategory(tx.category)}
+										{tx.description ?? formatLedgerCategory(tx.category)}
 									</Text>
 									<Text style={styles.descMeta}>
 										{formatManilaDateTime(tx.createdAt, "MMM d, yyyy h:mm a")}

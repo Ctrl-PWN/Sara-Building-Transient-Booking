@@ -20,6 +20,7 @@ import {
 	parseManilaDate,
 	todayIsoInManila,
 } from "@/lib/date/manila";
+import { sessionMiddleware } from "@/lib/require-admin";
 
 import type { DashboardMetrics, OverdueFlagRow } from "./dashboard.types";
 
@@ -44,6 +45,7 @@ const bookingSelect = {
 };
 
 export const getDashboardMetrics = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(getDashboardMetricsSchema)
 	.handler(async ({ data }): Promise<DashboardMetrics> => {
 		const today = data.date ?? todayIsoInManila();

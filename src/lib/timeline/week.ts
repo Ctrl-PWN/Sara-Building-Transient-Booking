@@ -7,6 +7,7 @@ import {
 	parseISO,
 	startOfWeek,
 } from "date-fns";
+import { todayIsoInManila } from "@/lib/date/manila";
 
 export const WEEK_STARTS_ON = 1;
 
@@ -22,7 +23,7 @@ export function resolveWeekStart(weekParam?: string): string {
 	}
 
 	return format(
-		startOfWeek(new Date(), { weekStartsOn: WEEK_STARTS_ON }),
+		startOfWeek(parseISO(todayIsoInManila()), { weekStartsOn: WEEK_STARTS_ON }),
 		"yyyy-MM-dd",
 	);
 }
@@ -65,5 +66,5 @@ export function formatDayHeader(date: string): {
 }
 
 export function isToday(date: string): boolean {
-	return date === format(new Date(), "yyyy-MM-dd");
+	return date === todayIsoInManila();
 }

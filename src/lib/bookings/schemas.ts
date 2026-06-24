@@ -10,6 +10,7 @@ import {
 	paymentMethodSchema,
 	paymentReferenceRefine,
 } from "@/lib/ledger/schemas";
+import { formatManilaDate, todayIsoInManila } from "@/lib/date/manila";
 
 export { paymentMethodSchema };
 
@@ -36,7 +37,7 @@ export const createBookingFormSchema = z
 		lastName: z.string().min(1, "Last name is required"),
 		contactNumber: z.string(),
 		address: z.string().optional(),
-		occupantsCount: z.number().int(),
+		occupantsCount: z.number().int().positive("Occupants are required"),
 		bookingType: z.enum(["DAILY", "MONTHLY"]),
 		walkIn: z.boolean(),
 		// Daily fields
@@ -168,21 +169,15 @@ export const createBookingFormSchema = z
 export type CreateBookingFormValues = z.infer<typeof createBookingFormSchema>;
 
 export function formatIsoDate(date: Date) {
-	const y = date.getFullYear();
-	const m = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	return `${y}-${m}-${day}`;
+	return formatManilaDate(date, "yyyy-MM-dd");
 }
 
 export function todayIsoDate() {
-	return formatIsoDate(new Date());
+	return todayIsoInManila();
 }
 
 function currentTimeHHMM() {
-	const now = new Date();
-	const h = String(now.getHours()).padStart(2, "0");
-	const m = String(now.getMinutes()).padStart(2, "0");
-	return `${h}:${m}`;
+	return formatManilaDate(new Date(), "HH:mm");
 }
 
 const createBookingStayDefaultValues = () => {
@@ -297,9 +292,22 @@ export const checkInBookingSchema = z
 	})
 	.superRefine(paymentReferenceRefine);
 
-export const checkOutBookingSchema = z.object({
-	bookingRef: z.string().min(1, "Booking reference is required"),
-});
+export const checkOutBookingSchema = z
+	.object({
+		bookingRef: z.string().min(1, "Booking reference is required"),
+		paymentMethod: paymentMethodSchema.optional(),
+		referenceNumber: z.string().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (!data.paymentMethod) return;
+		paymentReferenceRefine(
+			{
+				paymentMethod: data.paymentMethod,
+				referenceNumber: data.referenceNumber,
+			},
+			ctx,
+		);
+	});
 
 export const transferBookingSchema = z.object({
 	bookingRef: z.string().min(1, "Booking reference is required"),
@@ -315,6 +323,7 @@ export const extendBookingSchema = z
 		...ledgerPaymentFieldsShape,
 	})
 	.superRefine((data, ctx) => {
+		if (data.withCashAdvance) return;
 		paymentReferenceRefine(
 			{
 				paymentMethod: data.paymentMethod,

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -163,6 +163,7 @@ export function CheckOutBookingDialog({
 	const [mode, setMode] = useState<SettlementMode>("unified");
 	const [separateLines, setSeparateLines] = useState<SeparatePaymentLine[]>([]);
 	const [settleError, setSettleError] = useState<string | null>(null);
+	const wasOpenRef = useRef(false);
 
 	const { data: details } = useQuery({
 		...ledgerQueries.details(bookingId),
@@ -196,9 +197,6 @@ export function CheckOutBookingDialog({
 	const checkOutMutation = useMutation(
 		bookingMutations.checkOut(queryClient, bookingId),
 	);
-	const applyLateFeeMutation = useMutation(
-		bookingMutations.applyLateFee(queryClient, bookingId),
-	);
 
 	const unifiedForm = useAppForm({
 		defaultValues: {
@@ -208,15 +206,25 @@ export function CheckOutBookingDialog({
 		...dynamicSchemaValidators(ledgerPaymentFieldsSchema),
 		onSubmit: async () => {},
 	});
+	const lateFeeForm = useAppForm({
+		defaultValues: {
+			paymentMethod: "CASH" as PaymentMethod,
+			referenceNumber: "",
+		},
+		...dynamicSchemaValidators(ledgerPaymentFieldsSchema),
+		onSubmit: async () => {},
+	});
 
 	useEffect(() => {
-		if (open) {
+		if (open && !wasOpenRef.current) {
 			setMode("unified");
 			setSettleError(null);
 			unifiedForm.reset();
+			lateFeeForm.reset();
 			setSeparateLines(buildSeparateDefaults(unpaid));
 		}
-	}, [open, unpaid, unifiedForm]);
+		wasOpenRef.current = open;
+	}, [lateFeeForm, open, unpaid, unifiedForm]);
 
 	const validateSeparateLines = (): SeparatePaymentLine[] | null => {
 		for (const line of separateLines) {
@@ -275,10 +283,25 @@ export function CheckOutBookingDialog({
 	const handleCheckOut = async () => {
 		setSettleError(null);
 		try {
+			const input: {
+				bookingRef: string;
+				paymentMethod?: PaymentMethod;
+				referenceNumber?: string;
+			} = { bookingRef: booking.bookingRef };
 			if (lateFee) {
-				await applyLateFeeMutation.mutateAsync();
+				const parsed = ledgerPaymentFieldsSchema.safeParse(
+					lateFeeForm.state.values,
+				);
+				if (!parsed.success) {
+					setSettleError(
+						parsed.error.issues[0]?.message ?? "Invalid late fee payment",
+					);
+					return;
+				}
+				input.paymentMethod = parsed.data.paymentMethod;
+				input.referenceNumber = parsed.data.referenceNumber;
 			}
-			await checkOutMutation.mutateAsync({ bookingRef: booking.bookingRef });
+			await checkOutMutation.mutateAsync(input);
 			onOpenChange(false);
 		} catch (error) {
 			setSettleError(
@@ -294,8 +317,7 @@ export function CheckOutBookingDialog({
 	};
 	const remainingBalance = ledgerDetails.remainingBalance;
 	const isSettling = bulkMutation.isPending || separateMutation.isPending;
-	const isApplyingLateFee = applyLateFeeMutation.isPending;
-	const canCheckOut = remainingBalance === 0;
+	const canCheckOut = remainingBalance === 0 && unpaid.length === 0;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -322,6 +344,10 @@ export function CheckOutBookingDialog({
 								<p className="text-muted-foreground">
 									Late fee: {formatPeso(lateFee.amount)} ({lateFee.daysOverdue}{" "}
 									× {formatPeso(lateFee.rate)}/day)
+								</p>
+								<p className="text-muted-foreground">
+									This is a temporary preview. It will be recorded as paid during
+									check-out.
 								</p>
 							</div>
 						) : null}
@@ -397,9 +423,23 @@ export function CheckOutBookingDialog({
 							</Button>
 						</div>
 					) : (
-						<p className="text-sm text-muted-foreground">
-							All charges are paid. You can complete check-out.
-						</p>
+						<div className="space-y-4">
+							<p className="text-sm text-muted-foreground">
+								All posted charges are paid. You can complete check-out.
+							</p>
+							{lateFee ? (
+								<div className="space-y-4 rounded-lg border p-4">
+									<div>
+										<Label className="mb-1 block">Late fee payment</Label>
+										<p className="text-sm text-muted-foreground">
+											Record {formatPeso(lateFee.amount)} as paid during
+											check-out.
+										</p>
+									</div>
+									<LedgerPaymentFieldsSection form={lateFeeForm} />
+								</div>
+							) : null}
+						</div>
 					)}
 
 					{settleError ? (
@@ -421,13 +461,10 @@ export function CheckOutBookingDialog({
 						disabled={
 							!canCheckOut ||
 							checkOutMutation.isPending ||
-							isApplyingLateFee ||
 							isLateFeePending
 						}
 					>
-						{checkOutMutation.isPending || isApplyingLateFee
-							? "Checking out…"
-							: "Complete check-out"}
+						{checkOutMutation.isPending ? "Checking out…" : "Complete check-out"}
 					</Button>
 				</DialogFooter>
 			</DialogOutsideScroll>

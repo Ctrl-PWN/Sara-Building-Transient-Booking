@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { bookings, rooms } from "@/db/schema";
 import { bookingStatusSchema } from "@/lib/bookings/schemas";
+import { sessionMiddleware } from "@/lib/require-admin";
 import type {
 	BookingPaymentStatus,
 	BookingWithRoom,
@@ -122,6 +123,7 @@ async function getTimelineWeekFromDb(
 }
 
 export const getTimelineWeek = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(timelineWeekSchema)
 	.handler(async ({ data }) => {
 		const weekEnd = getWeekEnd(data.weekStart);

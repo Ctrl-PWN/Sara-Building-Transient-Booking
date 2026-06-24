@@ -56,6 +56,30 @@ export const updateUser = createServerFn({
 	.validator(updateUserSchema)
 	.handler(async ({ data }) => {
 		const updateData: Record<string, unknown> = {};
+		const headers = getRequestHeaders();
+		const current = await auth.api.listUsers({
+			query: {
+				filterField: "id",
+				filterValue: data.userId,
+				filterOperator: "eq",
+				limit: 1,
+			},
+			headers,
+		});
+		const currentUser = current.users[0];
+		if (!currentUser) {
+			throw new Error("User not found");
+		}
+		const currentUserData = currentUser as {
+			firstName?: string;
+			lastName?: string;
+			name?: string;
+		};
+		const fallbackNameParts = currentUserData.name?.split(" ") ?? [];
+		const currentFirstName =
+			currentUserData.firstName ?? fallbackNameParts.at(0) ?? "";
+		const currentLastName =
+			currentUserData.lastName ?? fallbackNameParts.slice(1).join(" ");
 
 		if (data.firstName !== undefined) {
 			const firstName = data.firstName.trim();
@@ -77,11 +101,11 @@ export const updateUser = createServerFn({
 			updateData.firstName !== undefined ||
 			updateData.lastName !== undefined
 		) {
-			updateData.name =
-				`${updateData.firstName ?? ""} ${updateData.lastName ?? ""}`.trim();
+			const firstName = updateData.firstName ?? currentFirstName;
+			const lastName = updateData.lastName ?? currentLastName;
+			updateData.name = `${firstName} ${lastName}`.trim();
 		}
 
-		const headers = getRequestHeaders();
 		return auth.api.adminUpdateUser({
 			body: { userId: data.userId, data: updateData },
 			headers,

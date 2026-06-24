@@ -1,13 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
+import { sessionMiddleware } from "@/lib/require-admin";
 import {
 	isWithinPeriod,
 	listMonthlyBillingPeriods,
 } from "@/lib/bookings/monthly-billing-periods";
 import {
+	type DbClient,
 	getBookingForLedger,
 	getLedgerTransactionWithBooking,
 	isProtectedLedgerTransaction,
@@ -26,16 +28,21 @@ import {
 } from "./schemas";
 import type { LedgerDetails } from "./types";
 
+const LEDGER_LOCK_NAMESPACE = 43;
+
+async function lockBookingLedger(
+	tx: DbClient,
+	bookingId: number,
+) {
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${LEDGER_LOCK_NAMESPACE}, ${bookingId})`,
+	);
+}
+
 export const createExpense = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(createExpenseSchema)
 	.handler(async ({ data }) => {
-		const booking = await getBookingForLedger(data.bookingId, db);
-		if (booking.status !== "CHECKED_IN") {
-			throw new Error(
-				"Charges can only be added while the guest is checked in",
-			);
-		}
-
 		const isPaid = data.isPaid ?? false;
 		const referenceNumber = isPaid
 			? normalizeReferenceNumber(
@@ -44,25 +51,38 @@ export const createExpense = createServerFn({ method: "POST" })
 				)
 			: null;
 
-		const [row] = await db
-			.insert(ledgerTransactions)
-			.values({
-				bookingId: data.bookingId,
-				category: data.category ?? "ROOM_CHARGE",
-				amount: String(data.amount),
-				description: data.description,
-				isPaid,
-				paymentMethod: isPaid ? data.paymentMethod : null,
-				referenceNumber,
-				utilityType: data.utilityType ?? null,
-			})
-			.returning();
+		const row = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
+			const booking = await getBookingForLedger(data.bookingId, tx);
+			if (booking.status !== "CHECKED_IN") {
+				throw new Error(
+					"Charges can only be added while the guest is checked in",
+				);
+			}
 
-		await syncBookingPaymentStatus(data.bookingId, db);
+			const [inserted] = await tx
+				.insert(ledgerTransactions)
+				.values({
+					bookingId: data.bookingId,
+					category: data.category ?? "ROOM_CHARGE",
+					amount: String(data.amount),
+					description: data.description,
+					isPaid,
+					paymentMethod: isPaid ? data.paymentMethod : null,
+					referenceNumber,
+					utilityType: data.utilityType ?? null,
+				})
+				.returning();
+
+			await syncBookingPaymentStatus(data.bookingId, tx);
+			return inserted;
+		});
+
 		return row;
 	});
 
 export const generateUtilityPayments = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(generateUtilityPaymentsSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -80,6 +100,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 		}
 
 		const result = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			const bookingRow = await tx
 				.select({
 					checkIn: bookings.checkIn,
@@ -132,6 +153,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			});
 
 			if (toInsert.length === 0) {
+				await syncBookingPaymentStatus(data.bookingId, tx);
 				return { inserted: 0, skipped: payableItems.length };
 			}
 
@@ -154,17 +176,19 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 				)
 				.returning();
 
+			await syncBookingPaymentStatus(data.bookingId, tx);
+
 			return {
 				inserted: inserted.length,
 				skipped: payableItems.length - inserted.length,
 			};
 		});
 
-		await syncBookingPaymentStatus(data.bookingId, db);
 		return result;
 	});
 
 export const payExpense = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpenseSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
@@ -183,21 +207,27 @@ export const payExpense = createServerFn({ method: "POST" })
 			data.referenceNumber,
 		);
 
-		const [updated] = await db
-			.update(ledgerTransactions)
-			.set({
-				isPaid: true,
-				paymentMethod: data.paymentMethod,
-				referenceNumber,
-			})
-			.where(eq(ledgerTransactions.id, data.id))
-			.returning();
+		const updated = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, transaction.bookingId);
+			const [row] = await tx
+				.update(ledgerTransactions)
+				.set({
+					isPaid: true,
+					paymentMethod: data.paymentMethod,
+					referenceNumber,
+				})
+				.where(eq(ledgerTransactions.id, data.id))
+				.returning();
 
-		await syncBookingPaymentStatus(transaction.bookingId, db);
+			await syncBookingPaymentStatus(transaction.bookingId, tx);
+			return row;
+		});
+
 		return updated;
 	});
 
 export const payExpensesBulk = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpensesBulkSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -225,6 +255,7 @@ export const payExpensesBulk = createServerFn({ method: "POST" })
 		);
 
 		await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			await tx
 				.update(ledgerTransactions)
 				.set({
@@ -246,6 +277,7 @@ export const payExpensesBulk = createServerFn({ method: "POST" })
 	});
 
 export const payExpenses = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpensesSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -260,6 +292,7 @@ export const payExpenses = createServerFn({ method: "POST" })
 		}
 
 		await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			for (const item of data.items) {
 				const rows = await tx
 					.select({
@@ -304,6 +337,7 @@ export const payExpenses = createServerFn({ method: "POST" })
 	});
 
 export const getLedgerDetails = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(getLedgerDetailsSchema)
 	.handler(async ({ data }): Promise<LedgerDetails> => {
 		const rows = await db
@@ -332,6 +366,7 @@ export const getLedgerDetails = createServerFn({ method: "GET" })
 	});
 
 export const getLedgerTransactions = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(getLedgerTransactionsSchema)
 	.handler(async ({ data }) => {
 		const transactions = await db
@@ -342,6 +377,7 @@ export const getLedgerTransactions = createServerFn({ method: "GET" })
 	});
 
 export const deleteLedgerTransaction = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(deleteLedgerTransactionSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
@@ -359,11 +395,16 @@ export const deleteLedgerTransaction = createServerFn({ method: "POST" })
 			throw new Error("This transaction cannot be deleted");
 		}
 
-		const [deleted] = await db
-			.delete(ledgerTransactions)
-			.where(eq(ledgerTransactions.id, data.id))
-			.returning();
+		const deleted = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, transaction.bookingId);
+			const [row] = await tx
+				.delete(ledgerTransactions)
+				.where(eq(ledgerTransactions.id, data.id))
+				.returning();
 
-		await syncBookingPaymentStatus(transaction.bookingId, db);
+			await syncBookingPaymentStatus(transaction.bookingId, tx);
+			return row;
+		});
+
 		return deleted;
 	});

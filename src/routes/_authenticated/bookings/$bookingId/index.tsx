@@ -44,16 +44,22 @@ function BookingNotFound() {
 export const Route = createFileRoute("/_authenticated/bookings/$bookingId/")({
 	loader: async ({ params, context }) => {
 		const id = Number(params.bookingId);
+		if (!Number.isInteger(id) || id <= 0) {
+			throw notFound();
+		}
+
 		try {
+			await context.queryClient.ensureQueryData(bookingQueries.detail(id));
 			await Promise.all([
-				context.queryClient.ensureQueryData(bookingQueries.detail(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.transactions(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.details(id)),
 				context.queryClient.ensureQueryData(roomQueries.list()),
 			]);
 		} catch (error) {
-			console.error(error);
-			throw notFound();
+			if (error instanceof Error && error.message === "Booking not found") {
+				throw notFound();
+			}
+			throw error;
 		}
 	},
 	notFoundComponent: BookingNotFound,

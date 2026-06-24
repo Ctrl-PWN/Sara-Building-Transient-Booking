@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type { z } from "zod";
+import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
 	createRoom,
@@ -24,6 +25,8 @@ export const roomMutations = {
 				createRoom({ data: input }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+				void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 
@@ -34,6 +37,8 @@ export const roomMutations = {
 			onSuccess: (_data, { id }) => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.detail(id) });
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+				void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 
@@ -44,6 +49,7 @@ export const roomMutations = {
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
 				void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 
@@ -53,6 +59,8 @@ export const roomMutations = {
 				deleteRoom({ data: input }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+				void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 
@@ -61,6 +69,8 @@ export const roomMutations = {
 			mutationFn: () => syncRoomStatuses({ data: undefined }),
 			onSuccess: () => {
 				void queryClient.invalidateQueries({ queryKey: roomKeys.lists() });
+				void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			},
 		}),
 };

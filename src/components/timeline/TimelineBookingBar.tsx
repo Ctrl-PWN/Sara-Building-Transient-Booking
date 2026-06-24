@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-
 import {
 	Tooltip,
 	TooltipContent,
@@ -8,6 +6,7 @@ import {
 import { getBookingStatusPresentation } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
+import { formatManilaDateTime } from "@/lib/date/manila";
 import type { TimelineBarPosition } from "@/lib/timeline/types";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +25,7 @@ export function TimelineBookingBar({
 }: TimelineBookingBarProps) {
 	const guestName = formatGuestName(booking);
 	const presentation = getBookingStatusPresentation(booking.status);
-	const tooltipLabel = `${guestName} · ${format(new Date(booking.checkIn), "d MMM")} – ${format(new Date(booking.checkOut), "d MMM")}`;
+	const tooltipLabel = `${guestName} · ${formatManilaDateTime(booking.checkIn, "d MMM")} – ${formatManilaDateTime(booking.checkOut, "d MMM")}`;
 	const isHatched = booking.status === "RESERVED";
 
 	return (

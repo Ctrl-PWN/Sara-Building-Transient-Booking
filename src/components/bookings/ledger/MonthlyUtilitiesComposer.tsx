@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, PlusIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useSelector } from "@tanstack/react-store";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -30,6 +31,7 @@ import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
 import { formatManilaDateTime } from "@/lib/date/manila";
+import { formatPaymentMethod } from "@/lib/ledger/display.helpers";
 import { ledgerMutations } from "@/lib/ledger/ledger.mutations";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
@@ -52,12 +54,6 @@ type MonthlyUtilitiesComposerProps = {
 	issuedBy: string;
 	initialPeriodIndex: number;
 };
-
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "—";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
 
 export function MonthlyUtilitiesComposer({
 	booking,
@@ -132,7 +128,10 @@ export function MonthlyUtilitiesComposer({
 		},
 	});
 
-	const periodIndex = form.store.state.values.periodIndex;
+	const periodIndex = useSelector(
+		form.store,
+		(state) => state.values.periodIndex,
+	);
 	const selectedPeriod = periods[periodIndex];
 
 	const recordedUtilities = useMemo(() => {

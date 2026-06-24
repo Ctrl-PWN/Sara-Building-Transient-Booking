@@ -5,6 +5,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { formatPaymentMethod } from "@/lib/ledger/display.helpers";
 
 type PaymentReferenceDialogProps = {
 	open: boolean;
@@ -12,11 +13,6 @@ type PaymentReferenceDialogProps = {
 	paymentMethod: string;
 	referenceNumber: string;
 };
-
-function formatPaymentMethod(method: string): string {
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
 
 export function PaymentReferenceDialog({
 	open,

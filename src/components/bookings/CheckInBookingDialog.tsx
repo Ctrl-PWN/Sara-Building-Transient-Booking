@@ -3,7 +3,6 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -24,6 +23,7 @@ import {
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { formatManilaDateTime } from "@/lib/date/manila";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 import { ledgerPaymentFieldsSchema } from "@/lib/ledger/schemas";
 
@@ -117,9 +117,9 @@ export function CheckInBookingDialog({
 								</p>
 								<p>
 									<span className="text-muted-foreground">Stay:</span>{" "}
-									{format(new Date(booking.checkIn), "MMM d, yyyy 'at' HH:mm")}{" "}
+									{formatManilaDateTime(booking.checkIn, "MMM d, yyyy 'at' HH:mm")}{" "}
 									–{" "}
-									{format(new Date(booking.checkOut), "MMM d, yyyy 'at' HH:mm")}
+									{formatManilaDateTime(booking.checkOut, "MMM d, yyyy 'at' HH:mm")}
 								</p>
 								{unpaidBalances.length > 0 && (
 									<div className="pt-1 space-y-1">

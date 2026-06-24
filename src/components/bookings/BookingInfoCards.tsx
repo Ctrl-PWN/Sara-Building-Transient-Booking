@@ -1,6 +1,6 @@
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { formatManilaDateTime } from "@/lib/date/manila";
 
 type BookingInfoCardsProps = {
 	booking: BookingWithRoom;
@@ -23,13 +23,13 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 					<div>
 						<p className="text-sm text-muted-foreground">Check-in</p>
 						<p className="font-medium mt-1">
-							{format(new Date(booking.checkIn), "MMMM d, yyyy 'at' HH:mm")}
+							{formatManilaDateTime(booking.checkIn, "MMMM d, yyyy 'at' HH:mm")}
 						</p>
 					</div>
 					<div>
 						<p className="text-sm text-muted-foreground">Check-out</p>
 						<p className="font-medium mt-1">
-							{format(new Date(booking.checkOut), "MMMM d, yyyy 'at' HH:mm")}
+							{formatManilaDateTime(booking.checkOut, "MMMM d, yyyy 'at' HH:mm")}
 						</p>
 					</div>
 					<div>

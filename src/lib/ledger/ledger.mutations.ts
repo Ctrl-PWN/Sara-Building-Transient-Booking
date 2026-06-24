@@ -1,7 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type z from "zod";
+import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { bookingKeys } from "@/lib/bookings/bookings.queries";
+import { roomKeys } from "@/lib/rooms/rooms.queries";
+import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
 	createExpense,
 	deleteLedgerTransaction,
@@ -20,13 +23,19 @@ import type {
 import type { LedgerTransactionRow } from "./types";
 
 function invalidateLedger(queryClient: QueryClient, bookingId: number) {
-	void queryClient.invalidateQueries({
-		queryKey: ledgerKeys.transactions(bookingId),
-	});
-	void queryClient.invalidateQueries({
-		queryKey: ledgerKeys.details(bookingId),
-	});
-	void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+	return Promise.all([
+		queryClient.invalidateQueries({
+			queryKey: ledgerKeys.transactions(bookingId),
+		}),
+		queryClient.invalidateQueries({
+			queryKey: ledgerKeys.details(bookingId),
+		}),
+		queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) }),
+		queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
+		queryClient.invalidateQueries({ queryKey: roomKeys.all }),
+		queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),
+		queryClient.invalidateQueries({ queryKey: timelineKeys.all }),
+	]);
 }
 
 export const ledgerMutations = {
@@ -35,7 +44,7 @@ export const ledgerMutations = {
 			mutationFn: (input: z.infer<typeof createExpenseSchema>) =>
 				createExpense({ data: input }),
 			onSuccess: (row: LedgerTransactionRow) => {
-				invalidateLedger(queryClient, row.bookingId);
+				return invalidateLedger(queryClient, row.bookingId);
 			},
 		}),
 
@@ -44,7 +53,7 @@ export const ledgerMutations = {
 			mutationFn: (input: z.infer<typeof generateUtilityPaymentsSchema>) =>
 				generateUtilityPayments({ data: input }),
 			onSuccess: () => {
-				invalidateLedger(queryClient, bookingId);
+				return invalidateLedger(queryClient, bookingId);
 			},
 		}),
 
@@ -53,7 +62,7 @@ export const ledgerMutations = {
 			mutationFn: (input: Parameters<typeof payExpense>[0]["data"]) =>
 				payExpense({ data: input }),
 			onSuccess: () => {
-				invalidateLedger(queryClient, bookingId);
+				return invalidateLedger(queryClient, bookingId);
 			},
 		}),
 
@@ -62,7 +71,7 @@ export const ledgerMutations = {
 			mutationFn: (input: z.infer<typeof payExpensesBulkSchema>) =>
 				payExpensesBulk({ data: input }),
 			onSuccess: () => {
-				invalidateLedger(queryClient, bookingId);
+				return invalidateLedger(queryClient, bookingId);
 			},
 		}),
 
@@ -71,7 +80,7 @@ export const ledgerMutations = {
 			mutationFn: (input: z.infer<typeof payExpensesSchema>) =>
 				payExpenses({ data: input }),
 			onSuccess: () => {
-				invalidateLedger(queryClient, bookingId);
+				return invalidateLedger(queryClient, bookingId);
 			},
 		}),
 
@@ -81,7 +90,7 @@ export const ledgerMutations = {
 				input: Parameters<typeof deleteLedgerTransaction>[0]["data"],
 			) => deleteLedgerTransaction({ data: input }),
 			onSuccess: () => {
-				invalidateLedger(queryClient, bookingId);
+				return invalidateLedger(queryClient, bookingId);
 			},
 		}),
 };

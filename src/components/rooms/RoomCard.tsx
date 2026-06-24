@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { Room } from "@/lib/rooms/types";
 
 const statusVariants: Record<
@@ -49,7 +50,7 @@ export function RoomCard({ room, onStatusClick }: RoomCardProps) {
 				<div className="flex justify-between">
 					<span className="text-muted-foreground">Price</span>
 					<span className="font-medium text-foreground">
-						₱{Number(room.basePrice).toLocaleString()}/night
+						{formatPeso(Number(room.basePrice))}/night
 					</span>
 				</div>
 			</div>
