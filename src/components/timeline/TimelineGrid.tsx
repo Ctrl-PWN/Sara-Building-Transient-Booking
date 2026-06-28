@@ -35,7 +35,15 @@ export function TimelineGrid({
 
 	return (
 		<div className="block-card min-w-0 overflow-hidden">
-			<div className="h-[min(70vh,48rem)] w-full overflow-auto bg-surface">
+			<div
+				className="h-[min(70vh,48rem)] w-full overflow-auto bg-surface"
+				style={{
+					maskImage:
+						"linear-gradient(to bottom, var(--surface-dim) 0%, transparent 3%, transparent 97%, var(--surface-container) 100%)",
+					WebkitMaskImage:
+						"linear-gradient(to bottom, var(--surface-dim) 0%, transparent 3%, transparent 97%, var(--surface-container) 100%)",
+				}}
+			>
 				<div className="min-w-5xl">
 					<div
 						className={`${gridCols} items-stretch border-b border-border bg-surface-dim`}
