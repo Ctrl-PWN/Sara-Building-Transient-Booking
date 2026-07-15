@@ -14,7 +14,11 @@ import {
 import { z } from "zod";
 import { db } from "@/db/index";
 import { bookings, ledgerTransactions, rooms } from "@/db/schema";
-import { isSameManilaDayOrAfter, todayIsoInManila } from "@/lib/date/manila";
+import {
+	isSameManilaDayOrAfter,
+	manilaWallClockToInstant,
+	todayIsoInManila,
+} from "@/lib/date/manila";
 import {
 	computeRemainingBalance,
 	type DbClient,
@@ -363,8 +367,10 @@ export const createBooking = createServerFn({ method: "POST" })
 			stayTotal,
 		);
 
-		const checkIn = new Date(data.checkIn);
-		const checkOut = new Date(data.checkOut);
+		const checkInIso = manilaWallClockToInstant(data.checkIn);
+		const checkOutIso = manilaWallClockToInstant(data.checkOut);
+		const checkIn = new Date(checkInIso);
+		const checkOut = new Date(checkOutIso);
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
@@ -381,8 +387,8 @@ export const createBooking = createServerFn({ method: "POST" })
 			await lockRoomForBooking(tx, data.roomId);
 			const conflict = await findRoomBookingConflict(tx, {
 				roomId: data.roomId,
-				checkIn: new Date(data.checkIn).toISOString(),
-				checkOut: new Date(data.checkOut).toISOString(),
+				checkIn: checkInIso,
+				checkOut: checkOutIso,
 			});
 
 			if (conflict) {
@@ -400,8 +406,8 @@ export const createBooking = createServerFn({ method: "POST" })
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
 					address: data.address,
-					checkIn: new Date(data.checkIn).toISOString(),
-					checkOut: new Date(data.checkOut).toISOString(),
+					checkIn: checkInIso,
+					checkOut: checkOutIso,
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
