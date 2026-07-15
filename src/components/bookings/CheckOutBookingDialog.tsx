@@ -346,8 +346,8 @@ export function CheckOutBookingDialog({
 									× {formatPeso(lateFee.rate)}/day)
 								</p>
 								<p className="text-muted-foreground">
-									This is a temporary preview. It will be recorded as paid during
-									check-out.
+									This is a temporary preview. It will be recorded as paid
+									during check-out.
 								</p>
 							</div>
 						) : null}
@@ -459,12 +459,12 @@ export function CheckOutBookingDialog({
 						type="button"
 						onClick={() => void handleCheckOut()}
 						disabled={
-							!canCheckOut ||
-							checkOutMutation.isPending ||
-							isLateFeePending
+							!canCheckOut || checkOutMutation.isPending || isLateFeePending
 						}
 					>
-						{checkOutMutation.isPending ? "Checking out…" : "Complete check-out"}
+						{checkOutMutation.isPending
+							? "Checking out…"
+							: "Complete check-out"}
 					</Button>
 				</DialogFooter>
 			</DialogOutsideScroll>

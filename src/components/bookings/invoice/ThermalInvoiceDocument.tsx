@@ -9,10 +9,7 @@ import {
 	View,
 } from "@react-pdf/renderer";
 
-import {
-	formatReceiptAmount,
-	type ReceiptModel,
-} from "./receipt-model";
+import { formatReceiptAmount, type ReceiptModel } from "./receipt-model";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -285,4 +282,3 @@ export function ThermalReceiptDocument({
 		</Document>
 	);
 }
-

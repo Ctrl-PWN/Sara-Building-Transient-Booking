@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
 	decimal,
 	integer,
@@ -7,7 +8,6 @@ import {
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 import { roomStatusEnum } from "./enums";
 

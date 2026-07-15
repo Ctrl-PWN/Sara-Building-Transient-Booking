@@ -75,11 +75,17 @@ export function TransferBookingDialog({
 								</span>
 								<span className="text-muted-foreground">Check-in:</span>
 								<span className="font-medium">
-									{formatManilaDateTime(booking.checkIn, "MMMM d, yyyy 'at' HH:mm")}
+									{formatManilaDateTime(
+										booking.checkIn,
+										"MMMM d, yyyy 'at' HH:mm",
+									)}
 								</span>
 								<span className="text-muted-foreground">Check-out:</span>
 								<span className="font-medium">
-									{formatManilaDateTime(booking.checkOut, "MMMM d, yyyy 'at' HH:mm")}
+									{formatManilaDateTime(
+										booking.checkOut,
+										"MMMM d, yyyy 'at' HH:mm",
+									)}
 								</span>
 								<span className="text-muted-foreground">Guests:</span>
 								<span className="font-medium">{booking.occupantsCount}</span>

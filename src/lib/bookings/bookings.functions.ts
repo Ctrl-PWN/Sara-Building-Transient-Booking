@@ -145,7 +145,9 @@ const ROOM_LOCK_NAMESPACE = 41;
 const BOOKING_LEDGER_LOCK_NAMESPACE = 42;
 
 async function lockRoomForBooking(tx: DbClient, roomId: number) {
-	await tx.execute(sql`select pg_advisory_xact_lock(${ROOM_LOCK_NAMESPACE}, ${roomId})`);
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${ROOM_LOCK_NAMESPACE}, ${roomId})`,
+	);
 }
 
 async function lockBookingLedger(tx: DbClient, bookingId: number) {

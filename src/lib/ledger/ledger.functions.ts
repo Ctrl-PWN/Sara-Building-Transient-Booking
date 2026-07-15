@@ -3,11 +3,11 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
-import { sessionMiddleware } from "@/lib/require-admin";
 import {
 	isWithinPeriod,
 	listMonthlyBillingPeriods,
 } from "@/lib/bookings/monthly-billing-periods";
+import { sessionMiddleware } from "@/lib/require-admin";
 import {
 	type DbClient,
 	getBookingForLedger,
@@ -30,10 +30,7 @@ import type { LedgerDetails } from "./types";
 
 const LEDGER_LOCK_NAMESPACE = 43;
 
-async function lockBookingLedger(
-	tx: DbClient,
-	bookingId: number,
-) {
+async function lockBookingLedger(tx: DbClient, bookingId: number) {
 	await tx.execute(
 		sql`select pg_advisory_xact_lock(${LEDGER_LOCK_NAMESPACE}, ${bookingId})`,
 	);

@@ -117,9 +117,15 @@ export function CheckInBookingDialog({
 								</p>
 								<p>
 									<span className="text-muted-foreground">Stay:</span>{" "}
-									{formatManilaDateTime(booking.checkIn, "MMM d, yyyy 'at' HH:mm")}{" "}
+									{formatManilaDateTime(
+										booking.checkIn,
+										"MMM d, yyyy 'at' HH:mm",
+									)}{" "}
 									–{" "}
-									{formatManilaDateTime(booking.checkOut, "MMM d, yyyy 'at' HH:mm")}
+									{formatManilaDateTime(
+										booking.checkOut,
+										"MMM d, yyyy 'at' HH:mm",
+									)}
 								</p>
 								{unpaidBalances.length > 0 && (
 									<div className="pt-1 space-y-1">
