@@ -27,5 +27,10 @@ export const ledgerTransactions = pgTable("ledger_transactions", {
 	paymentMethod: paymentMethodEnum("payment_method"),
 	referenceNumber: varchar("reference_number"),
 	utilityType: utilityTypeEnum("utility_type"),
-	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", {
+		withTimezone: true,
+		mode: "string",
+	})
+		.defaultNow()
+		.notNull(),
 });

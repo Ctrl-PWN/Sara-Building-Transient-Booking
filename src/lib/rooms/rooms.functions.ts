@@ -10,15 +10,19 @@ import {
 	updateRoomSchema,
 	updateRoomStatusSchema,
 } from "./schemas";
+import { canTransitionTo } from "./status";
 
-export const getRooms = createServerFn({ method: "GET" }).handler(async () => {
-	return await db.query.rooms.findMany({
-		where: isNull(rooms.deletedAt),
-		orderBy: [rooms.roomNumber],
+export const getRooms = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
+	.handler(async () => {
+		return await db.query.rooms.findMany({
+			where: isNull(rooms.deletedAt),
+			orderBy: [rooms.roomNumber],
+		});
 	});
-});
 
 export const getRoomById = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(
 		z.object({
 			id: z.number(),
@@ -26,7 +30,7 @@ export const getRoomById = createServerFn({ method: "GET" })
 	)
 	.handler(async ({ data }) => {
 		const room = await db.query.rooms.findFirst({
-			where: eq(rooms.id, data.id),
+			where: and(eq(rooms.id, data.id), isNull(rooms.deletedAt)),
 		});
 		if (!room) {
 			throw new Error("Room not found");
@@ -51,13 +55,11 @@ export const createRoom = createServerFn({ method: "POST" })
 		const [room] = await db
 			.insert(rooms)
 			.values({
-				roomNumber: data.roomNumber,
-				type: data.type,
-				capacity: data.capacity,
+				...data,
 				basePrice: data.basePrice.toString(),
 				monthlyPrice:
 					data.monthlyPrice > 0 ? data.monthlyPrice.toString() : null,
-				status: data.status,
+				status: "AVAILABLE",
 			})
 			.returning();
 		return room;
@@ -72,6 +74,10 @@ export const updateRoom = createServerFn({ method: "POST" })
 		});
 		if (!current) {
 			throw new Error("Room not found");
+		}
+
+		if (current.status === "OCCUPIED" && data.status !== undefined) {
+			throw new Error("Cannot change status of an occupied room");
 		}
 
 		if (
@@ -118,6 +124,9 @@ export const updateRoomStatus = createServerFn({ method: "POST" })
 		});
 		if (!current) {
 			throw new Error("Room not found");
+		}
+		if (!canTransitionTo(current.status, data.status)) {
+			throw new Error("Invalid room status transition");
 		}
 
 		const [room] = await db

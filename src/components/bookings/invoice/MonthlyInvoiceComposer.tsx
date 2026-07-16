@@ -40,6 +40,10 @@ export function MonthlyInvoiceComposer({
 }: MonthlyInvoiceComposerProps) {
 	const periods = listMonthlyBillingPeriods(booking.checkIn, booking.checkOut);
 	const fallbackIndex = getLatestPeriodIndex(periods);
+	const periodSelectItems = periods.map((period) => ({
+		value: String(period.index),
+		label: period.label,
+	}));
 	const clampedInitial =
 		periods.length === 0
 			? 0
@@ -51,7 +55,7 @@ export function MonthlyInvoiceComposer({
 	} | null>(null);
 
 	const form = useMonthlyInvoiceForm({
-		defaultPeriodIndex: clampedInitial || fallbackIndex,
+		defaultPeriodIndex: clampedInitial,
 		onSubmit: (values) => {
 			setSubmitted({
 				periodIndex: values.periodIndex,
@@ -137,6 +141,7 @@ export function MonthlyInvoiceComposer({
 												</label>
 												<Select
 													value={String(periodIndex)}
+													items={periodSelectItems}
 													onValueChange={(value) => {
 														const next = Number(value);
 														form.setFieldValue("periodIndex", next);

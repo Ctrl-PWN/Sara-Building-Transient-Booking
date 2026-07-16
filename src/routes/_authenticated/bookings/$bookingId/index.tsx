@@ -15,7 +15,6 @@ import { CheckInBookingDialog } from "@/components/bookings/CheckInBookingDialog
 import { CheckOutBookingDialog } from "@/components/bookings/CheckOutBookingDialog";
 import { EvictBookingDialog } from "@/components/bookings/EvictBookingDialog";
 import { ExtendBookingDialog } from "@/components/bookings/ExtendBookingDialog";
-import { GenerateUtilityPaymentsDialog } from "@/components/bookings/ledger/GenerateUtilityPaymentsDialog";
 import { TransferBookingDialog } from "@/components/bookings/TransferBookingDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
@@ -45,16 +44,22 @@ function BookingNotFound() {
 export const Route = createFileRoute("/_authenticated/bookings/$bookingId/")({
 	loader: async ({ params, context }) => {
 		const id = Number(params.bookingId);
+		if (!Number.isInteger(id) || id <= 0) {
+			throw notFound();
+		}
+
 		try {
+			await context.queryClient.ensureQueryData(bookingQueries.detail(id));
 			await Promise.all([
-				context.queryClient.ensureQueryData(bookingQueries.detail(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.transactions(id)),
 				context.queryClient.ensureQueryData(ledgerQueries.details(id)),
 				context.queryClient.ensureQueryData(roomQueries.list()),
 			]);
 		} catch (error) {
-			console.error(error);
-			throw notFound();
+			if (error instanceof Error && error.message === "Booking not found") {
+				throw notFound();
+			}
+			throw error;
 		}
 	},
 	notFoundComponent: BookingNotFound,
@@ -91,7 +96,6 @@ function BookingDetailPage() {
 	const [checkOutOpen, setCheckOutOpen] = useState(false);
 	const [transferOpen, setTransferOpen] = useState(false);
 	const [extendOpen, setExtendOpen] = useState(false);
-	const [utilitiesOpen, setUtilitiesOpen] = useState(false);
 
 	const updateStatus = useMutation(bookingMutations.updateStatus(queryClient));
 	const transferMutation = useMutation(
@@ -168,7 +172,6 @@ function BookingDetailPage() {
 					onCheckOut={() => setCheckOutOpen(true)}
 					onTransferClick={() => setTransferOpen(true)}
 					onExtendClick={() => setExtendOpen(true)}
-					onUtilitiesClick={() => setUtilitiesOpen(true)}
 				/>
 
 				<BookingInfoCards booking={booking} />
@@ -224,12 +227,6 @@ function BookingDetailPage() {
 					onOpenChange={setExtendOpen}
 					booking={booking}
 					onConfirm={handleExtend}
-				/>
-
-				<GenerateUtilityPaymentsDialog
-					open={utilitiesOpen}
-					onOpenChange={setUtilitiesOpen}
-					bookingId={numericBookingId}
 				/>
 			</div>
 		</main>

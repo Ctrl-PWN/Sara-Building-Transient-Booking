@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-
 import type { ReactNode } from "react";
 
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
@@ -9,6 +7,7 @@ import {
 } from "@/lib/bookings/status";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
+import { formatManilaDateTime } from "@/lib/date/manila";
 
 type BookingFieldGridProps = {
 	booking: BookingWithRoom;
@@ -26,7 +25,7 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function formatDate(isoString: string) {
-	return format(new Date(isoString), "EEE d MMM yyyy 'at' HH:mm");
+	return formatManilaDateTime(isoString, "EEE d MMM yyyy 'at' HH:mm");
 }
 
 export function BookingFieldGrid({ booking }: BookingFieldGridProps) {

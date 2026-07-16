@@ -9,6 +9,7 @@ import type {
 	BookingPaymentStatus,
 	BookingWithRoom,
 } from "@/lib/bookings/types";
+import { sessionMiddleware } from "@/lib/require-admin";
 
 import type { TimelineWeekData } from "./types";
 import { getWeekDays, getWeekEnd } from "./week";
@@ -122,6 +123,7 @@ async function getTimelineWeekFromDb(
 }
 
 export const getTimelineWeek = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(timelineWeekSchema)
 	.handler(async ({ data }) => {
 		const weekEnd = getWeekEnd(data.weekStart);

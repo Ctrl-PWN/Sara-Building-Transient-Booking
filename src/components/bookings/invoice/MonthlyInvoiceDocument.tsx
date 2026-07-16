@@ -1,10 +1,10 @@
 import "@/lib/pdf/fonts";
 
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { format } from "date-fns";
 
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import { formatGuestName } from "@/lib/bookings/types";
+import { formatManilaDateTime, nowInManila } from "@/lib/date/manila";
 
 import {
 	getMonthlyInvoiceRef,
@@ -138,7 +138,7 @@ export function MonthlyInvoiceDocument({
 	issuedBy,
 }: MonthlyInvoiceDocumentProps) {
 	const invoiceRef = getMonthlyInvoiceRef(booking.bookingRef, period.index);
-	const issuedDate = format(new Date(), "MMM d, yyyy h:mm a");
+	const issuedDate = formatManilaDateTime(nowInManila());
 	const totalDue = roomCharge + utilities.reduce((sum, u) => sum + u.amount, 0);
 
 	return (

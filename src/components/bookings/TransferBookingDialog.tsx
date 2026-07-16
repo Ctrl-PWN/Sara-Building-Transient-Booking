@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { formatManilaDateTime } from "@/lib/date/manila";
 
 type TransferBookingDialogProps = {
 	open: boolean;
@@ -75,12 +75,15 @@ export function TransferBookingDialog({
 								</span>
 								<span className="text-muted-foreground">Check-in:</span>
 								<span className="font-medium">
-									{format(new Date(booking.checkIn), "MMMM d, yyyy 'at' HH:mm")}
+									{formatManilaDateTime(
+										booking.checkIn,
+										"MMMM d, yyyy 'at' HH:mm",
+									)}
 								</span>
 								<span className="text-muted-foreground">Check-out:</span>
 								<span className="font-medium">
-									{format(
-										new Date(booking.checkOut),
+									{formatManilaDateTime(
+										booking.checkOut,
 										"MMMM d, yyyy 'at' HH:mm",
 									)}
 								</span>

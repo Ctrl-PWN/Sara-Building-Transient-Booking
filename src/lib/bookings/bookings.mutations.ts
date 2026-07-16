@@ -4,6 +4,7 @@ import type z from "zod";
 import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { ledgerKeys } from "@/lib/ledger/ledger.queries";
 import { roomKeys } from "@/lib/rooms/rooms.queries";
+import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
 	applyLateFee,
 	checkInBooking,
@@ -23,15 +24,31 @@ import type {
 	updateStatusSchema,
 } from "./schemas";
 
+function invalidateBookingSideEffects(
+	queryClient: QueryClient,
+	bookingId?: number,
+) {
+	void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+	void queryClient.invalidateQueries({ queryKey: roomKeys.all });
+	void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+	void queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+	if (bookingId != null) {
+		void queryClient.invalidateQueries({
+			queryKey: ledgerKeys.byBooking(bookingId),
+		});
+		void queryClient.invalidateQueries({
+			queryKey: bookingKeys.detail(bookingId),
+		});
+	}
+}
+
 export const bookingMutations = {
 	updateStatus: (queryClient: QueryClient) =>
 		mutationOptions({
 			mutationFn: (input: z.infer<typeof updateStatusSchema>) =>
 				updateBookingStatus({ data: input }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+				invalidateBookingSideEffects(queryClient);
 			},
 		}),
 
@@ -44,12 +61,7 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof createBookingServerSchema>) =>
 				createBooking({ data: input }),
 			onSuccess: (result) => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(result.bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, result.bookingId);
 				onSuccess?.(result.bookingRef);
 			},
 			onError: (err: Error) => {
@@ -62,12 +74,7 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof checkInBookingSchema>) =>
 				checkInBooking({ data: input }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, bookingId);
 			},
 		}),
 
@@ -76,12 +83,7 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof checkOutBookingSchema>) =>
 				checkOutBooking({ data: input }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, bookingId);
 			},
 		}),
 
@@ -90,11 +92,7 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof transferBookingSchema>) =>
 				transferBooking({ data: input }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, bookingId);
 			},
 		}),
 
@@ -103,12 +101,7 @@ export const bookingMutations = {
 			mutationFn: (input: z.infer<typeof extendBookingSchema>) =>
 				extendBooking({ data: input }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, bookingId);
 			},
 		}),
 
@@ -116,15 +109,7 @@ export const bookingMutations = {
 		mutationOptions({
 			mutationFn: () => applyLateFee({ data: { bookingId } }),
 			onSuccess: () => {
-				void queryClient.invalidateQueries({
-					queryKey: bookingKeys.detail(bookingId),
-				});
-				void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-				void queryClient.invalidateQueries({ queryKey: roomKeys.all });
-				void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-				void queryClient.invalidateQueries({
-					queryKey: ledgerKeys.byBooking(bookingId),
-				});
+				invalidateBookingSideEffects(queryClient, bookingId);
 			},
 		}),
 };

@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import type { z } from "zod";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
 	Sheet,
 	SheetContent,
@@ -9,10 +11,12 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { roomStatusValues } from "@/db/schema/enums";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { roomMutations } from "@/lib/rooms/rooms.mutations";
-import { updateRoomSchema } from "@/lib/rooms/schemas";
+import {
+	editableRoomStatusOptions,
+	updateRoomSchema,
+} from "@/lib/rooms/schemas";
 import type { Room } from "@/lib/rooms/types";
 
 type EditRoomSheetProps = {
@@ -36,15 +40,23 @@ export function EditRoomSheet({
 		capacity: room?.capacity ?? 0,
 		basePrice: Number(room?.basePrice ?? 0),
 		monthlyPrice: Number(room?.monthlyPrice ?? 0),
-		status: room?.status ?? ("AVAILABLE" as (typeof roomStatusValues)[number]),
+		...(room?.status !== "OCCUPIED"
+			? { status: room?.status ?? ("AVAILABLE" as const) }
+			: {}),
 	};
+
+	const isOccupied = room?.status === "OCCUPIED";
+	const roomFormSchema = isOccupied
+		? updateRoomSchema.omit({ status: true })
+		: updateRoomSchema;
 
 	const form = useAppForm({
 		defaultValues,
-		validators: { onSubmit: updateRoomSchema },
+		validators: { onSubmit: roomFormSchema },
 		onSubmit: async ({ value }) => {
 			try {
-				await updateRoom.mutateAsync(value);
+				const payload = isOccupied ? { ...value, status: undefined } : value;
+				await updateRoom.mutateAsync(payload);
 				toast.success("Room updated successfully");
 				onOpenChange(false);
 			} catch (err) {
@@ -63,7 +75,9 @@ export function EditRoomSheet({
 			form.setFieldValue("capacity", room.capacity);
 			form.setFieldValue("basePrice", Number(room.basePrice));
 			form.setFieldValue("monthlyPrice", Number(room.monthlyPrice ?? 0));
-			form.setFieldValue("status", room.status);
+			if (room.status !== "OCCUPIED") {
+				form.setFieldValue("status", room.status);
+			}
 		}
 	}, [room, open, form.setFieldValue]);
 
@@ -141,17 +155,26 @@ export function EditRoomSheet({
 							)}
 						</form.AppField>
 
-						<form.AppField name="status">
-							{(field) => (
-								<field.SelectField
-									label="Status"
-									options={roomStatusValues.map((s) => ({
-										value: s,
-										label: s.replace(/_/g, " "),
-									}))}
-								/>
-							)}
-						</form.AppField>
+						{isOccupied ? (
+							<div className="space-y-2">
+								<Label>Status</Label>
+								<div>
+									<Badge variant="default">OCCUPIED</Badge>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Status is managed automatically by bookings.
+								</p>
+							</div>
+						) : (
+							<form.AppField name="status">
+								{(field) => (
+									<field.SelectField
+										label="Status"
+										options={editableRoomStatusOptions}
+									/>
+								)}
+							</form.AppField>
+						)}
 
 						<div className="flex justify-end gap-2 pt-2">
 							<form.SubmitButton label="Save changes" />

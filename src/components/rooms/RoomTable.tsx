@@ -9,6 +9,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { Room } from "@/lib/rooms/types";
 
 type RoomTableProps = {
@@ -63,6 +64,9 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 							Base price
 						</th>
 						<th className="px-4 py-3 font-medium text-muted-foreground">
+							Monthly price
+						</th>
+						<th className="px-4 py-3 font-medium text-muted-foreground">
 							Status
 						</th>
 						<th className="px-4 py-3 font-medium text-muted-foreground">
@@ -84,7 +88,12 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 								{room.capacity}
 							</td>
 							<td className="px-4 py-3 text-muted-foreground">
-								₱{Number(room.basePrice).toLocaleString()}
+								{formatPeso(Number(room.basePrice))}
+							</td>
+							<td className="px-4 py-3">
+								{room.monthlyPrice
+									? formatPeso(Number(room.monthlyPrice))
+									: "N/A"}
 							</td>
 							<td className="px-4 py-3">
 								<Badge variant={statusVariants[room.status] ?? "default"}>

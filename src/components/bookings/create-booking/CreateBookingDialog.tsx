@@ -92,18 +92,21 @@ function computeMonthlyDates(
 	checkInTime: string,
 	durationMonths: number,
 ): { checkIn: string; checkOut: string } {
-	const checkIn = new Date(`${checkInDate}T${checkInTime}`);
-
-	const date = new Date(checkInDate);
-	const targetMonth = date.getMonth() + durationMonths;
-	const targetYear = date.getFullYear();
+	const [year, month, dayOfMonth] = checkInDate.split("-").map(Number);
+	// month is 1-based from the ISO string; Date math below wants 0-based.
+	const baseMonthIndex = month - 1;
+	const targetMonthIndex = baseMonthIndex + durationMonths;
+	const targetDate = new Date(year, targetMonthIndex, 1);
+	const targetYear = targetDate.getFullYear();
+	const targetMonth = targetDate.getMonth();
 	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-	const day = Math.min(date.getDate(), lastDayOfMonth);
-	const checkOut = new Date(targetYear, targetMonth, day, 12, 0, 0);
+	const day = Math.min(dayOfMonth, lastDayOfMonth);
 
+	const pad = (n: number) => String(n).padStart(2, "0");
+	// Emit naive Manila wall-clock strings; the server interprets them in Manila.
 	return {
-		checkIn: checkIn.toISOString(),
-		checkOut: checkOut.toISOString(),
+		checkIn: `${checkInDate}T${checkInTime}`,
+		checkOut: `${targetYear}-${pad(targetMonth + 1)}-${pad(day)}T12:00`,
 	};
 }
 

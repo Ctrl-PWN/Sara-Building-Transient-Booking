@@ -1,29 +1,61 @@
 import { TrashIcon } from "@phosphor-icons/react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
+import { useState } from "react";
 
 import { DataTable } from "@/components/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
+import { formatManilaDateTime } from "@/lib/date/manila";
+import {
+	formatLedgerCategory,
+	formatPaymentMethod,
+} from "@/lib/ledger/display.helpers";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 import {
 	canDeleteLedgerTransaction,
 	canPayLedgerTransaction,
 } from "./ledger/ledger-ui.helpers";
+import { PaymentReferenceDialog } from "./ledger/PaymentReferenceDialog";
 
-function formatCategory(category: string): string {
-	return category
-		.split("_")
-		.map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-		.join(" ");
-}
+function PaymentMethodCell({
+	transaction,
+}: {
+	transaction: LedgerTransactionListItem;
+}) {
+	const [open, setOpen] = useState(false);
+	const { isPaid, paymentMethod, referenceNumber } = transaction;
+	const showReference =
+		isPaid &&
+		(paymentMethod === "GCASH" || paymentMethod === "BANK_TRANSFER") &&
+		referenceNumber?.trim();
 
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "—";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
+	if (!showReference) {
+		return <span>{formatPaymentMethod(paymentMethod)}</span>;
+	}
+
+	return (
+		<>
+			<div className="flex items-center gap-2">
+				<span>{formatPaymentMethod(paymentMethod)}</span>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					onClick={() => setOpen(true)}
+				>
+					View
+				</Button>
+			</div>
+			<PaymentReferenceDialog
+				open={open}
+				onOpenChange={setOpen}
+				paymentMethod={paymentMethod}
+				referenceNumber={referenceNumber ?? ""}
+			/>
+		</>
+	);
 }
 
 type BookingLedgerTableProps = {
@@ -46,12 +78,12 @@ export function BookingLedgerTable({
 			accessorKey: "createdAt",
 			header: "Date",
 			cell: ({ row }) =>
-				format(new Date(row.original.createdAt), "MMM d, yyyy h:mm a"),
+				formatManilaDateTime(row.original.createdAt, "MMM d, yyyy h:mm a"),
 		},
 		{
 			accessorKey: "category",
 			header: "Category",
-			cell: ({ row }) => formatCategory(row.original.category),
+			cell: ({ row }) => formatLedgerCategory(row.original.category),
 		},
 		{
 			accessorKey: "description",
@@ -98,7 +130,7 @@ export function BookingLedgerTable({
 		{
 			accessorKey: "paymentMethod",
 			header: "Payment",
-			cell: ({ row }) => formatPaymentMethod(row.original.paymentMethod),
+			cell: ({ row }) => <PaymentMethodCell transaction={row.original} />,
 		},
 	];
 

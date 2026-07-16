@@ -1,9 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
 import {
+	isWithinPeriod,
+	listMonthlyBillingPeriods,
+} from "@/lib/bookings/monthly-billing-periods";
+import { sessionMiddleware } from "@/lib/require-admin";
+import {
+	type DbClient,
 	getBookingForLedger,
 	getLedgerTransactionWithBooking,
 	isProtectedLedgerTransaction,
@@ -22,16 +28,18 @@ import {
 } from "./schemas";
 import type { LedgerDetails } from "./types";
 
+const LEDGER_LOCK_NAMESPACE = 43;
+
+async function lockBookingLedger(tx: DbClient, bookingId: number) {
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${LEDGER_LOCK_NAMESPACE}, ${bookingId})`,
+	);
+}
+
 export const createExpense = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(createExpenseSchema)
 	.handler(async ({ data }) => {
-		const booking = await getBookingForLedger(data.bookingId, db);
-		if (booking.status !== "CHECKED_IN") {
-			throw new Error(
-				"Charges can only be added while the guest is checked in",
-			);
-		}
-
 		const isPaid = data.isPaid ?? false;
 		const referenceNumber = isPaid
 			? normalizeReferenceNumber(
@@ -40,25 +48,38 @@ export const createExpense = createServerFn({ method: "POST" })
 				)
 			: null;
 
-		const [row] = await db
-			.insert(ledgerTransactions)
-			.values({
-				bookingId: data.bookingId,
-				category: data.category ?? "ROOM_CHARGE",
-				amount: String(data.amount),
-				description: data.description,
-				isPaid,
-				paymentMethod: isPaid ? data.paymentMethod : null,
-				referenceNumber,
-				utilityType: data.utilityType ?? null,
-			})
-			.returning();
+		const row = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
+			const booking = await getBookingForLedger(data.bookingId, tx);
+			if (booking.status !== "CHECKED_IN") {
+				throw new Error(
+					"Charges can only be added while the guest is checked in",
+				);
+			}
 
-		await syncBookingPaymentStatus(data.bookingId, db);
+			const [inserted] = await tx
+				.insert(ledgerTransactions)
+				.values({
+					bookingId: data.bookingId,
+					category: data.category ?? "ROOM_CHARGE",
+					amount: String(data.amount),
+					description: data.description,
+					isPaid,
+					paymentMethod: isPaid ? data.paymentMethod : null,
+					referenceNumber,
+					utilityType: data.utilityType ?? null,
+				})
+				.returning();
+
+			await syncBookingPaymentStatus(data.bookingId, tx);
+			return inserted;
+		});
+
 		return row;
 	});
 
 export const generateUtilityPayments = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(generateUtilityPaymentsSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -68,51 +89,69 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			);
 		}
 
-		const validItems = data.items.filter((i) => i.amount > 0);
-		if (validItems.length === 0) {
+		const payableItems = data.items.filter((i) => i.amount > 0);
+		if (payableItems.length === 0) {
 			throw new Error(
 				"At least one utility with an amount greater than zero is required",
 			);
 		}
 
-		const referenceNumber = normalizeReferenceNumber(
-			data.paymentMethod,
-			data.referenceNumber,
-		);
-
 		const result = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			const bookingRow = await tx
-				.select({ id: bookings.id, checkIn: bookings.checkIn })
+				.select({
+					checkIn: bookings.checkIn,
+					checkOut: bookings.checkOut,
+				})
 				.from(bookings)
 				.where(eq(bookings.id, data.bookingId))
 				.limit(1);
-			const anchor = bookingRow[0]?.checkIn ?? new Date();
-			const periodStart = new Date(anchor);
-			const periodEnd = new Date();
 
-			const requestedTypes = validItems.map((i) => i.utilityType);
+			const checkIn = bookingRow[0]?.checkIn;
+			const checkOut = bookingRow[0]?.checkOut;
+			if (!checkIn || !checkOut) {
+				throw new Error("Booking dates are required for utility payments");
+			}
+
+			const periods = listMonthlyBillingPeriods(checkIn, checkOut);
+			const period = periods[data.periodIndex];
+			if (!period) {
+				throw new Error("Invalid billing period");
+			}
+
 			const existing = await tx
-				.select({ utilityType: ledgerTransactions.utilityType })
+				.select({
+					utilityType: ledgerTransactions.utilityType,
+					createdAt: ledgerTransactions.createdAt,
+				})
 				.from(ledgerTransactions)
 				.where(
 					and(
 						eq(ledgerTransactions.bookingId, data.bookingId),
 						eq(ledgerTransactions.category, "UTILITY"),
-						inArray(ledgerTransactions.utilityType, requestedTypes),
 					),
 				);
-			const existingTypes = new Set(
+
+			const existingMainTypesInPeriod = new Set(
 				existing
-					.map((e) => e.utilityType)
-					.filter((t): t is NonNullable<typeof t> => t !== null),
+					.filter(
+						(row) => row.createdAt && isWithinPeriod(row.createdAt, period),
+					)
+					.map((row) => row.utilityType)
+					.filter(
+						(type): type is "ELECTRICITY" | "WATER" | "INTERNET" =>
+							type === "ELECTRICITY" || type === "WATER" || type === "INTERNET",
+					),
 			);
 
-			const toInsert = validItems.filter(
-				(i) => !existingTypes.has(i.utilityType),
-			);
+			const toInsert = payableItems.filter((item) => {
+				if (item.utilityType === "OTHER") return true;
+				return !existingMainTypesInPeriod.has(item.utilityType);
+			});
 
 			if (toInsert.length === 0) {
-				return { inserted: 0, skipped: validItems.length };
+				await syncBookingPaymentStatus(data.bookingId, tx);
+				return { inserted: 0, skipped: payableItems.length };
 			}
 
 			const inserted = await tx
@@ -125,26 +164,28 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 						description: u.description.trim(),
 						isPaid: true,
 						paymentMethod: data.paymentMethod,
-						referenceNumber,
+						referenceNumber: normalizeReferenceNumber(
+							data.paymentMethod,
+							data.referenceNumber,
+						),
 						utilityType: u.utilityType,
 					})),
 				)
 				.returning();
 
-			void periodStart;
-			void periodEnd;
+			await syncBookingPaymentStatus(data.bookingId, tx);
 
 			return {
 				inserted: inserted.length,
-				skipped: validItems.length - inserted.length,
+				skipped: payableItems.length - inserted.length,
 			};
 		});
 
-		await syncBookingPaymentStatus(data.bookingId, db);
 		return result;
 	});
 
 export const payExpense = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpenseSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
@@ -163,21 +204,27 @@ export const payExpense = createServerFn({ method: "POST" })
 			data.referenceNumber,
 		);
 
-		const [updated] = await db
-			.update(ledgerTransactions)
-			.set({
-				isPaid: true,
-				paymentMethod: data.paymentMethod,
-				referenceNumber,
-			})
-			.where(eq(ledgerTransactions.id, data.id))
-			.returning();
+		const updated = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, transaction.bookingId);
+			const [row] = await tx
+				.update(ledgerTransactions)
+				.set({
+					isPaid: true,
+					paymentMethod: data.paymentMethod,
+					referenceNumber,
+				})
+				.where(eq(ledgerTransactions.id, data.id))
+				.returning();
 
-		await syncBookingPaymentStatus(transaction.bookingId, db);
+			await syncBookingPaymentStatus(transaction.bookingId, tx);
+			return row;
+		});
+
 		return updated;
 	});
 
 export const payExpensesBulk = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpensesBulkSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -205,6 +252,7 @@ export const payExpensesBulk = createServerFn({ method: "POST" })
 		);
 
 		await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			await tx
 				.update(ledgerTransactions)
 				.set({
@@ -226,6 +274,7 @@ export const payExpensesBulk = createServerFn({ method: "POST" })
 	});
 
 export const payExpenses = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(payExpensesSchema)
 	.handler(async ({ data }) => {
 		const booking = await getBookingForLedger(data.bookingId, db);
@@ -240,6 +289,7 @@ export const payExpenses = createServerFn({ method: "POST" })
 		}
 
 		await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 			for (const item of data.items) {
 				const rows = await tx
 					.select({
@@ -284,6 +334,7 @@ export const payExpenses = createServerFn({ method: "POST" })
 	});
 
 export const getLedgerDetails = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(getLedgerDetailsSchema)
 	.handler(async ({ data }): Promise<LedgerDetails> => {
 		const rows = await db
@@ -312,6 +363,7 @@ export const getLedgerDetails = createServerFn({ method: "GET" })
 	});
 
 export const getLedgerTransactions = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(getLedgerTransactionsSchema)
 	.handler(async ({ data }) => {
 		const transactions = await db
@@ -322,6 +374,7 @@ export const getLedgerTransactions = createServerFn({ method: "GET" })
 	});
 
 export const deleteLedgerTransaction = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(deleteLedgerTransactionSchema)
 	.handler(async ({ data }) => {
 		const { transaction, bookingStatus } =
@@ -339,11 +392,16 @@ export const deleteLedgerTransaction = createServerFn({ method: "POST" })
 			throw new Error("This transaction cannot be deleted");
 		}
 
-		const [deleted] = await db
-			.delete(ledgerTransactions)
-			.where(eq(ledgerTransactions.id, data.id))
-			.returning();
+		const deleted = await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, transaction.bookingId);
+			const [row] = await tx
+				.delete(ledgerTransactions)
+				.where(eq(ledgerTransactions.id, data.id))
+				.returning();
 
-		await syncBookingPaymentStatus(transaction.bookingId, db);
+			await syncBookingPaymentStatus(transaction.bookingId, tx);
+			return row;
+		});
+
 		return deleted;
 	});
