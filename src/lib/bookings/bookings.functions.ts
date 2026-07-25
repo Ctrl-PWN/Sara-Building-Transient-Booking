@@ -15,6 +15,11 @@ import { z } from "zod";
 import { db } from "@/db/index";
 import { bookings, ledgerTransactions, rooms } from "@/db/schema";
 import {
+	addMonthlyPeriodEnd,
+	listMonthlyBillingPeriods,
+} from "@/lib/bookings/monthly-billing-periods";
+import {
+	formatManilaDate,
 	isSameManilaDayOrAfter,
 	manilaWallClockToInstant,
 	todayIsoInManila,
@@ -145,7 +150,9 @@ const ROOM_LOCK_NAMESPACE = 41;
 const BOOKING_LEDGER_LOCK_NAMESPACE = 42;
 
 async function lockRoomForBooking(tx: DbClient, roomId: number) {
-	await tx.execute(sql`select pg_advisory_xact_lock(${ROOM_LOCK_NAMESPACE}, ${roomId})`);
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${ROOM_LOCK_NAMESPACE}, ${roomId})`,
+	);
 }
 
 async function lockBookingLedger(tx: DbClient, bookingId: number) {
@@ -831,14 +838,10 @@ export const extendBooking = createServerFn({ method: "POST" })
 	.middleware([sessionMiddleware()])
 	.validator(extendBookingSchema)
 	.handler(async ({ data }) => {
-		const rows = await db
+		const initialRows = await db
 			.select({
 				id: bookings.id,
-				status: bookings.status,
 				roomId: bookings.roomId,
-				checkIn: bookings.checkIn,
-				checkOut: bookings.checkOut,
-				bookingType: bookings.bookingType,
 			})
 			.from(bookings)
 			.where(
@@ -849,57 +852,67 @@ export const extendBooking = createServerFn({ method: "POST" })
 			)
 			.limit(1);
 
-		if (!rows[0]) {
+		if (!initialRows[0]) {
 			throw new Error("Booking not found");
 		}
 
-		const booking = rows[0];
+		const result = await db.transaction(async (tx) => {
+			await lockRoomForBooking(tx, initialRows[0].roomId);
+			await lockBookingLedger(tx, initialRows[0].id);
 
-		if (booking.status !== "CHECKED_IN") {
-			throw new Error("Only checked-in bookings can be extended");
-		}
+			const bookingRows = await tx
+				.select({
+					id: bookings.id,
+					status: bookings.status,
+					roomId: bookings.roomId,
+					checkIn: bookings.checkIn,
+					checkOut: bookings.checkOut,
+					bookingType: bookings.bookingType,
+					monthlyPrice: rooms.monthlyPrice,
+				})
+				.from(bookings)
+				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
+				.where(
+					and(eq(bookings.id, initialRows[0].id), isNull(bookings.deletedAt)),
+				)
+				.limit(1);
 
-		if (booking.bookingType !== "MONTHLY") {
-			throw new Error("Only monthly bookings can be extended");
-		}
+			const booking = bookingRows[0];
+			if (!booking) {
+				throw new Error("Booking not found");
+			}
+			if (booking.status !== "CHECKED_IN") {
+				throw new Error("Only checked-in bookings can be extended");
+			}
+			if (booking.bookingType !== "MONTHLY") {
+				throw new Error("Only monthly bookings can be extended");
+			}
+			if (!booking.checkIn || !booking.checkOut) {
+				throw new Error("Booking dates are required for an extension");
+			}
+			if (!booking.monthlyPrice) {
+				throw new Error("Room monthly price not configured");
+			}
 
-		if (!booking.checkOut) {
-			throw new Error("Booking has no check-out date");
-		}
-
-		const currentCheckOut = new Date(booking.checkOut);
-		const newCheckOut = new Date(data.newCheckOutDate);
-
-		if (newCheckOut <= currentCheckOut) {
-			throw new Error(
-				"New checkout date must be after the current checkout date",
+			const currentCheckOut = new Date(booking.checkOut);
+			const checkoutTime = formatManilaDate(currentCheckOut, "HH:mm:ss");
+			const newCheckOut = new Date(
+				manilaWallClockToInstant(`${data.newCheckOutDate}T${checkoutTime}`),
 			);
-		}
+			if (Number.isNaN(newCheckOut.getTime())) {
+				throw new Error("New checkout date is invalid");
+			}
+			if (newCheckOut <= currentCheckOut) {
+				throw new Error(
+					"New checkout date must be after the current checkout date",
+				);
+			}
+			if (newCheckOut > addMonthlyPeriodEnd(currentCheckOut)) {
+				throw new Error(
+					"New checkout date cannot be more than one month after the current checkout date",
+				);
+			}
 
-		const roomRows = await db
-			.select({
-				monthlyPrice: rooms.monthlyPrice,
-			})
-			.from(rooms)
-			.where(eq(rooms.id, booking.roomId))
-			.limit(1);
-
-		if (roomRows.length === 0 || !roomRows[0].monthlyPrice) {
-			throw new Error("Room monthly price not configured");
-		}
-
-		const monthlyPrice = Number(roomRows[0].monthlyPrice);
-		const diffMs = newCheckOut.getTime() - currentCheckOut.getTime();
-		const months = Math.max(1, Math.round(diffMs / (30 * 24 * 60 * 60 * 1000)));
-		const totalAmount = monthlyPrice * months;
-
-		const isPaid = !data.withCashAdvance;
-		const referenceNumber = isPaid
-			? normalizeReferenceNumber(data.paymentMethod, data.referenceNumber)
-			: null;
-
-		await db.transaction(async (tx) => {
-			await lockRoomForBooking(tx, booking.roomId);
 			const conflict = await findRoomBookingConflict(tx, {
 				roomId: booking.roomId,
 				checkIn: currentCheckOut.toISOString(),
@@ -913,6 +926,58 @@ export const extendBooking = createServerFn({ method: "POST" })
 				);
 			}
 
+			const monthlyPrice = Number(booking.monthlyPrice);
+			if (!Number.isFinite(monthlyPrice) || monthlyPrice <= 0) {
+				throw new Error("Room monthly price must be greater than zero");
+			}
+			const referenceNumber = normalizeReferenceNumber(
+				data.paymentMethod,
+				data.referenceNumber,
+			);
+			const unpaidRentRows = await tx
+				.select({
+					id: ledgerTransactions.id,
+					amount: ledgerTransactions.amount,
+				})
+				.from(ledgerTransactions)
+				.where(
+					and(
+						eq(ledgerTransactions.bookingId, booking.id),
+						eq(ledgerTransactions.isPaid, false),
+						inArray(ledgerTransactions.category, ["ROOM_CHARGE", "ADVANCE"]),
+					),
+				);
+			const existingRentPaid = unpaidRentRows.reduce(
+				(sum, row) => sum + (Number(row.amount) || 0),
+				0,
+			);
+
+			if (unpaidRentRows.length > 0) {
+				await tx
+					.update(ledgerTransactions)
+					.set({
+						isPaid: true,
+						paymentMethod: data.paymentMethod,
+						referenceNumber,
+					})
+					.where(
+						inArray(
+							ledgerTransactions.id,
+							unpaidRentRows.map((row) => row.id),
+						),
+					);
+			}
+
+			const existingPeriods = listMonthlyBillingPeriods(
+				booking.checkIn,
+				currentCheckOut.toISOString(),
+			);
+			const advancePeriodIndex = existingPeriods.length;
+			const advancePeriodLabel = `${formatManilaDate(
+				currentCheckOut,
+				"MMM d",
+			)} – ${formatManilaDate(newCheckOut, "MMM d, yyyy")}`;
+
 			await tx
 				.update(bookings)
 				.set({
@@ -925,18 +990,26 @@ export const extendBooking = createServerFn({ method: "POST" })
 
 			await tx.insert(ledgerTransactions).values({
 				bookingId: booking.id,
-				category: "ROOM_CHARGE",
-				amount: totalAmount.toFixed(4),
-				isPaid,
-				description: `Extension: ${months} month${months > 1 ? "s" : ""}`,
-				paymentMethod: isPaid ? data.paymentMethod : null,
+				category: "ADVANCE",
+				amount: monthlyPrice.toFixed(4),
+				isPaid: true,
+				description: `Advance rent: ${advancePeriodLabel}`,
+				paymentMethod: data.paymentMethod,
 				referenceNumber,
+				billingPeriodIndex: advancePeriodIndex,
 			});
 
 			await syncBookingPaymentStatus(booking.id, tx);
+
+			return {
+				newCheckOut: newCheckOut.toISOString(),
+				existingRentPaid,
+				advancePaid: monthlyPrice,
+				totalPaid: existingRentPaid + monthlyPrice,
+			};
 		});
 
-		return { success: true, newCheckOut: newCheckOut.toISOString() };
+		return { success: true, ...result };
 	});
 
 const previewLateFeeSchema = z.object({

@@ -10,11 +10,13 @@ import {
 	DialogOutsideScroll,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { bookingQueries } from "@/lib/bookings/bookings.queries";
+import { addMonthlyPeriodEnd } from "@/lib/bookings/monthly-billing-periods";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
+import { formatManilaDate } from "@/lib/date/manila";
+import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 
 import {
 	type ExtendBookingFormValues,
@@ -29,19 +31,11 @@ type ExtendBookingDialogProps = {
 };
 
 function computeNewCheckOut(currentCheckOut: string): Date {
-	const current = new Date(currentCheckOut);
-	const targetMonth = current.getMonth() + 1;
-	const targetYear = current.getFullYear();
-	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-	const day = Math.min(current.getDate(), lastDayOfMonth);
-	return new Date(targetYear, targetMonth, day, 12, 0, 0);
+	return addMonthlyPeriodEnd(new Date(currentCheckOut));
 }
 
 function toIsoDateString(date: Date): string {
-	const y = date.getFullYear();
-	const m = String(date.getMonth() + 1).padStart(2, "0");
-	const d = String(date.getDate()).padStart(2, "0");
-	return `${y}-${m}-${d}`;
+	return formatManilaDate(date);
 }
 
 export function ExtendBookingDialog({
@@ -55,6 +49,18 @@ export function ExtendBookingDialog({
 	const currentCheckOutDate = new Date(booking.checkOut);
 
 	const { data: allBookings = [] } = useQuery(bookingQueries.list());
+	const { data: transactions = [] } = useQuery(
+		ledgerQueries.transactions(booking.id),
+	);
+	const existingMonthlyRentDue = transactions
+		.filter(
+			(transaction) =>
+				!transaction.isPaid &&
+				(transaction.category === "ROOM_CHARGE" ||
+					transaction.category === "ADVANCE"),
+		)
+		.reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0);
+	const totalDueNow = existingMonthlyRentDue + monthlyPrice;
 
 	const [useCustomDate, setUseCustomDate] = useState(false);
 
@@ -200,28 +206,13 @@ export function ExtendBookingDialog({
 								</form.AppField>
 							)}
 
-							<form.Subscribe
-								selector={(state) => state.values.withCashAdvance}
-							>
-								{(withCashAdvance) => (
-									<div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-										<div className="space-y-0.5">
-											<FieldLabel className="text-base">
-												Collect cash advance
-											</FieldLabel>
-											<p className="text-xs text-muted-foreground">
-												Guest pays a portion now, rest due at check-in.
-											</p>
-										</div>
-										<Switch
-											checked={withCashAdvance}
-											onCheckedChange={(checked) =>
-												form.setFieldValue("withCashAdvance", checked)
-											}
-										/>
-									</div>
-								)}
-							</form.Subscribe>
+							<div className="rounded-lg border p-3 shadow-sm">
+								<p className="text-sm font-medium">Advance payment required</p>
+								<p className="text-xs text-muted-foreground">
+									The full monthly rate must be paid now to reserve the extended
+									period.
+								</p>
+							</div>
 
 							<form.AppField name="paymentMethod">
 								{(field) => (
@@ -245,33 +236,33 @@ export function ExtendBookingDialog({
 								)}
 							</form.AppField>
 
-							<form.Subscribe
-								selector={(state) => state.values.withCashAdvance}
-							>
-								{(withCashAdvance) => (
-									<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
-										<div className="flex justify-between">
-											<span className="text-muted-foreground">
-												Monthly rate
-											</span>
-											<span className="font-medium">
-												{formatPeso(monthlyPrice)}
-											</span>
-										</div>
-										<div className="flex justify-between border-t pt-2 font-semibold">
-											<span>Total due now</span>
-											<span>
-												{formatPeso(withCashAdvance ? 0 : monthlyPrice)}
-											</span>
-										</div>
-										<p className="text-xs text-muted-foreground">
-											{withCashAdvance
-												? "Cash advance collected now; remaining rent due at check-in."
-												: `Extension for ${periodLabel}.`}
-										</p>
+							<div className="rounded-lg border bg-muted/40 p-4 text-sm space-y-2">
+								{existingMonthlyRentDue > 0 ? (
+									<div className="flex justify-between">
+										<span className="text-muted-foreground">
+											Existing monthly rent due
+										</span>
+										<span className="font-medium">
+											{formatPeso(existingMonthlyRentDue)}
+										</span>
 									</div>
-								)}
-							</form.Subscribe>
+								) : null}
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										Next month advance
+									</span>
+									<span className="font-medium">
+										{formatPeso(monthlyPrice)}
+									</span>
+								</div>
+								<div className="flex justify-between border-t pt-2 font-semibold">
+									<span>Total due now</span>
+									<span>{formatPeso(totalDueNow)}</span>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Payment reserves the extension for {periodLabel}.
+								</p>
+							</div>
 						</div>
 
 						<DialogFooter>
@@ -282,7 +273,7 @@ export function ExtendBookingDialog({
 							>
 								Cancel
 							</Button>
-							<form.SubmitButton label="Extend Booking" />
+							<form.SubmitButton label="Extend & record payment" />
 						</DialogFooter>
 					</form.AppForm>
 				</form>
