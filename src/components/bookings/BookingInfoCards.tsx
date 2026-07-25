@@ -29,7 +29,10 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 					<div>
 						<p className="text-sm text-muted-foreground">Check-out</p>
 						<p className="font-medium mt-1">
-							{formatManilaDateTime(booking.checkOut, "MMMM d, yyyy 'at' HH:mm")}
+							{formatManilaDateTime(
+								booking.checkOut,
+								"MMMM d, yyyy 'at' HH:mm",
+							)}
 						</p>
 					</div>
 					<div>

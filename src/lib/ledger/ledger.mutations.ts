@@ -1,8 +1,8 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import type z from "zod";
-import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { bookingKeys } from "@/lib/bookings/bookings.queries";
+import { dashboardKeys } from "@/lib/dashboard/dashboard.queries";
 import { roomKeys } from "@/lib/rooms/rooms.queries";
 import { timelineKeys } from "@/lib/timeline/timeline.queries";
 import {
