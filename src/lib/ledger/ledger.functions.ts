@@ -3,11 +3,11 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
-import { sessionMiddleware } from "@/lib/require-admin";
 import {
-	isWithinPeriod,
+	isTransactionWithinPeriod,
 	listMonthlyBillingPeriods,
 } from "@/lib/bookings/monthly-billing-periods";
+import { sessionMiddleware } from "@/lib/require-admin";
 import {
 	type DbClient,
 	getBookingForLedger,
@@ -30,10 +30,7 @@ import type { LedgerDetails } from "./types";
 
 const LEDGER_LOCK_NAMESPACE = 43;
 
-async function lockBookingLedger(
-	tx: DbClient,
-	bookingId: number,
-) {
+async function lockBookingLedger(tx: DbClient, bookingId: number) {
 	await tx.execute(
 		sql`select pg_advisory_xact_lock(${LEDGER_LOCK_NAMESPACE}, ${bookingId})`,
 	);
@@ -125,6 +122,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			const existing = await tx
 				.select({
 					utilityType: ledgerTransactions.utilityType,
+					billingPeriodIndex: ledgerTransactions.billingPeriodIndex,
 					createdAt: ledgerTransactions.createdAt,
 				})
 				.from(ledgerTransactions)
@@ -138,7 +136,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			const existingMainTypesInPeriod = new Set(
 				existing
 					.filter(
-						(row) => row.createdAt && isWithinPeriod(row.createdAt, period),
+						(row) => row.createdAt && isTransactionWithinPeriod(row, period),
 					)
 					.map((row) => row.utilityType)
 					.filter(
@@ -172,6 +170,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 							data.referenceNumber,
 						),
 						utilityType: u.utilityType,
+						billingPeriodIndex: period.index,
 					})),
 				)
 				.returning();

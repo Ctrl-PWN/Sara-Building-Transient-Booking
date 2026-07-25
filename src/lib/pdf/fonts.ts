@@ -1,8 +1,8 @@
-import { Font } from "@react-pdf/renderer";
-import interItalic from "@fontsource/inter/files/inter-latin-400-italic.woff?url";
-import interRoman from "@fontsource/inter/files/inter-latin-400-normal.woff?url";
+import interItalic from "@fontsource/inter/files/inter-latin-ext-400-italic.woff?url";
+import interRoman from "@fontsource/inter/files/inter-latin-ext-400-normal.woff?url";
 import newsreaderItalic from "@fontsource/newsreader/files/newsreader-latin-400-italic.woff?url";
 import newsreaderRoman from "@fontsource/newsreader/files/newsreader-latin-400-normal.woff?url";
+import { Font } from "@react-pdf/renderer";
 
 Font.register({
 	family: "Newsreader",

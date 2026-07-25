@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import {
 	getLatestPeriodIndex,
-	isWithinPeriod,
+	isTransactionWithinPeriod,
 	listMonthlyBillingPeriods,
 } from "@/lib/bookings/monthly-billing-periods";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
@@ -70,7 +70,7 @@ export function MonthlyInvoiceComposer({
 		const period = periods[periodIndex];
 		if (!period) return;
 		const matches = transactions.filter(
-			(tx) => tx.utilityType !== null && isWithinPeriod(tx.createdAt, period),
+			(tx) => tx.utilityType !== null && isTransactionWithinPeriod(tx, period),
 		);
 		if (matches.length === 0) return;
 		form.setFieldValue(
