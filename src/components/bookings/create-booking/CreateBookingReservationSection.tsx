@@ -43,7 +43,7 @@ export function CreateBookingReservationSection({
 								<div className="flex flex-col gap-0.5">
 									<span className="font-medium text-sm">1 month</span>
 									<span className="text-xs text-muted-foreground">
-										1 month stay — pay balance at check-in
+											1-month stay — pay balance at check-in
 									</span>
 								</div>
 							</label>
