@@ -60,8 +60,6 @@ export function CreateBookingReservationSection({
 						</div>
 					</RadioGroup>
 				</div>
-
-
 			</div>
 		);
 	}
