@@ -1,39 +1,21 @@
 import { useSelector } from "@tanstack/react-store";
 import { FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { formatPeso } from "@/lib/bookings/stay-pricing";
 import { reservationFeeTypeOptions } from "./create-booking-form.constants";
 import type { CreateBookingFormSectionProps } from "./create-booking-form.types";
 
 export function CreateBookingReservationSection({
 	form,
-	rooms = [],
 }: CreateBookingFormSectionProps) {
 	const bookingType = useSelector(form.store, (s) => s.values.bookingType);
-	const selectedRoomId = useSelector(form.store, (s) => s.values.roomId);
 	const monthlyDuration = useSelector(
 		form.store,
 		(s) => s.values.monthlyDuration ?? 1,
 	);
-	const reservationFeeType = useSelector(
-		form.store,
-		(s) => s.values.reservationFeeType,
-	);
-	const reservationFeeValue = useSelector(
-		form.store,
-		(s) => s.values.reservationFeeValue,
-	);
 	const isMonthly = bookingType === "MONTHLY";
 
 	if (isMonthly) {
-		const selectedRoom = rooms.find(
-			(r) => String(r.id) === String(selectedRoomId),
-		);
-		const monthlyPrice = selectedRoom?.monthlyPrice
-			? Number(selectedRoom.monthlyPrice)
-			: 0;
 		const isExtended = monthlyDuration > 1;
-		const hasFee = reservationFeeType != null && (reservationFeeValue ?? 0) > 0;
 
 		return (
 			<div className="grid gap-4 rounded-lg border p-4">
@@ -61,7 +43,7 @@ export function CreateBookingReservationSection({
 								<div className="flex flex-col gap-0.5">
 									<span className="font-medium text-sm">1 month</span>
 									<span className="text-xs text-muted-foreground">
-										1 month stay — pay reservation fee now, balance at check-in
+										1 month stay — pay balance at check-in
 									</span>
 								</div>
 							</label>
@@ -71,8 +53,7 @@ export function CreateBookingReservationSection({
 								<div className="flex flex-col gap-0.5">
 									<span className="font-medium text-sm">2 months</span>
 									<span className="text-xs text-muted-foreground">
-										2 month stay — pay reservation fee now, balance + 2nd month
-										advance at check-in
+										2 month stay — pay balance + 2nd month advance at check-in
 									</span>
 								</div>
 							</label>
@@ -80,43 +61,7 @@ export function CreateBookingReservationSection({
 					</RadioGroup>
 				</div>
 
-				<div className="space-y-3 border-t pt-3">
-					<FieldLabel className="text-base">Reservation fee</FieldLabel>
-					<p className="text-xs text-muted-foreground">
-						Amount the guest pays now to hold the booking. Applied to the first
-						month's rent.
-					</p>
-					<form.AppField name="reservationFeeType">
-						{(field) => (
-							<field.RadioChoiceCardField
-								label="Fee type"
-								options={[...reservationFeeTypeOptions]}
-							/>
-						)}
-					</form.AppField>
-					<form.Subscribe selector={(state) => state.values.reservationFeeType}>
-						{(feeType) => (
-							<form.AppField name="reservationFeeValue">
-								{(field) => (
-									<field.NumberField
-										label={
-											feeType === "PERCENT"
-												? "Reservation fee percentage"
-												: "Reservation fee amount (₱)"
-										}
-									/>
-								)}
-							</form.AppField>
-						)}
-					</form.Subscribe>
-					{hasFee && monthlyPrice > 0 && (
-						<p className="text-xs text-muted-foreground">
-							{reservationFeeType === "PERCENT"
-								? `${reservationFeeValue}% of ${formatPeso(monthlyPrice)} = ${formatPeso((monthlyPrice * (reservationFeeValue ?? 0)) / 100)}`
-								: `Fixed ${formatPeso(reservationFeeValue ?? 0)}`}
-						</p>
-					)}
-				</div>
+
 			</div>
 		);
 	}
