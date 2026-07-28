@@ -9,11 +9,7 @@ import {
 	View,
 } from "@react-pdf/renderer";
 
-import {
-	buildLedgerReceiptModel,
-	formatReceiptAmount,
-	type ReceiptModel,
-} from "./receipt-model";
+import { formatReceiptAmount, type ReceiptModel } from "./receipt-model";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -285,17 +281,4 @@ export function ThermalReceiptDocument({
 			</Page>
 		</Document>
 	);
-}
-
-/** Backward-compatible wrapper for ledger receipts. */
-export function ThermalInvoiceDocument(props: {
-	booking: import("@/lib/bookings/types").BookingWithRoom;
-	issuedBy: string;
-	transactions: import("@/lib/ledger/types").LedgerTransactionListItem[];
-	total: number;
-	payments: number;
-	remainingBalance: number;
-}) {
-	const receipt = buildLedgerReceiptModel(props);
-	return <ThermalReceiptDocument receipt={receipt} />;
 }

@@ -24,6 +24,8 @@ import { roomMutations } from "@/lib/rooms/rooms.mutations";
 import { getValidRoomStatusTransitions } from "@/lib/rooms/status";
 import type { Room } from "@/lib/rooms/types";
 
+type EditableRoomStatus = Exclude<RoomStatus, "OCCUPIED">;
+
 type ChangeRoomStatusDialogProps = {
 	room: Room;
 	open: boolean;
@@ -53,7 +55,7 @@ export function ChangeRoomStatusDialog({
 		try {
 			await updateStatus.mutateAsync({
 				id: room.id,
-				status: selectedStatus as RoomStatus,
+				status: selectedStatus as EditableRoomStatus,
 			});
 			toast.success(`Status updated to ${selectedStatus.replace(/_/g, " ")}`);
 			onOpenChange(false);

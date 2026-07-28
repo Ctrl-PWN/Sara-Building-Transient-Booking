@@ -14,14 +14,25 @@ import {
 import { z } from "zod";
 import { db } from "@/db/index";
 import { bookings, ledgerTransactions, rooms } from "@/db/schema";
-import { isSameManilaDayOrAfter } from "@/lib/date/manila";
+import {
+	addMonthlyPeriodEnd,
+	listMonthlyBillingPeriods,
+} from "@/lib/bookings/monthly-billing-periods";
+import {
+	formatManilaDate,
+	isSameManilaDayOrAfter,
+	manilaWallClockToInstant,
+	todayIsoInManila,
+} from "@/lib/date/manila";
 import {
 	computeRemainingBalance,
+	type DbClient,
 	normalizeReferenceNumber,
 	RESERVATION_ADVANCE_DESCRIPTION,
 	RESERVATION_BALANCE_DESCRIPTION,
 	syncBookingPaymentStatus,
 } from "@/lib/ledger/ledger.helpers";
+import { sessionMiddleware } from "@/lib/require-admin";
 import { buildCreateBookingLedgerLines } from "./create-booking-ledger";
 import { computeLateFee, type LateFeePreview } from "./late-fee";
 import {
@@ -34,7 +45,11 @@ import {
 	transferBookingSchema,
 	updateStatusSchema,
 } from "./schemas";
-import { calculateMonthlyPricing, calculateStayPricing } from "./stay-pricing";
+import {
+	calculateMonthlyPricing,
+	calculateStayPricing,
+	toDecimalString,
+} from "./stay-pricing";
 import type { BookingPaymentStatus, BookingWithRoom } from "./types";
 
 function toISOString(value: string | Date | null): string {
@@ -130,13 +145,75 @@ const bookingSelect = {
 	deletedAt: bookings.deletedAt,
 };
 
+const ACTIVE_BOOKING_STATUSES = ["RESERVED", "CHECKED_IN"] as const;
+const ROOM_LOCK_NAMESPACE = 41;
+const BOOKING_LEDGER_LOCK_NAMESPACE = 42;
+
+async function lockRoomForBooking(tx: DbClient, roomId: number) {
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${ROOM_LOCK_NAMESPACE}, ${roomId})`,
+	);
+}
+
+async function lockBookingLedger(tx: DbClient, bookingId: number) {
+	await tx.execute(
+		sql`select pg_advisory_xact_lock(${BOOKING_LEDGER_LOCK_NAMESPACE}, ${bookingId})`,
+	);
+}
+
+async function findRoomBookingConflict(
+	tx: DbClient,
+	args: {
+		roomId: number;
+		checkIn: string;
+		checkOut: string;
+		excludeBookingId?: number;
+	},
+) {
+	const predicates = [
+		eq(bookings.roomId, args.roomId),
+		isNull(bookings.deletedAt),
+		inArray(bookings.status, ACTIVE_BOOKING_STATUSES),
+		lte(bookings.checkIn, args.checkOut),
+		gte(bookings.checkOut, args.checkIn),
+	];
+
+	if (args.excludeBookingId != null) {
+		predicates.push(ne(bookings.id, args.excludeBookingId));
+	}
+
+	const conflicts = await tx
+		.select({ id: bookings.id })
+		.from(bookings)
+		.where(and(...predicates))
+		.limit(1);
+
+	return conflicts[0] ?? null;
+}
+
+async function syncRoomOccupancy(tx: DbClient, roomId: number) {
+	const checkedIn = await tx
+		.select({ id: bookings.id })
+		.from(bookings)
+		.where(
+			and(
+				eq(bookings.roomId, roomId),
+				eq(bookings.status, "CHECKED_IN"),
+				isNull(bookings.deletedAt),
+			),
+		)
+		.limit(1);
+
+	await tx
+		.update(rooms)
+		.set({ status: checkedIn[0] ? "OCCUPIED" : "AVAILABLE" })
+		.where(eq(rooms.id, roomId));
+}
+
 export function generateBookingRef(): string {
-	const now = new Date();
-	const y = now.getFullYear();
-	const m = String(now.getMonth() + 1).padStart(2, "0");
-	const d = String(now.getDate()).padStart(2, "0");
+	const ymd = todayIsoInManila().replaceAll("-", "");
 	const seq = String(Math.floor(Math.random() * 900) + 100);
-	return `BK-${y}${m}${d}-${seq}`;
+	return `BK-${ymd}-${seq}`;
 }
 
 async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
@@ -155,11 +232,11 @@ async function getBookingsFromDb(): Promise<BookingWithRoom[]> {
 	return rows.map(mapBookingRow);
 }
 
-export const getBookings = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getBookings = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
+	.handler(async () => {
 		return getBookingsFromDb();
-	},
-);
+	});
 
 async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
 	const rows = await db
@@ -184,13 +261,14 @@ async function getBookingHistoryFromDb(): Promise<BookingWithRoom[]> {
 	return rows.map(mapBookingRow);
 }
 
-export const getBookingHistory = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getBookingHistory = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
+	.handler(async () => {
 		return getBookingHistoryFromDb();
-	},
-);
+	});
 
 export const getBookingById = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(bookingByIdSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
@@ -212,6 +290,7 @@ const bookingRefSchema = z.object({
 });
 
 export const getBookingByRef = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(bookingRefSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
@@ -230,33 +309,9 @@ export const getBookingByRef = createServerFn({ method: "GET" })
 	});
 
 export const createBooking = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(createBookingServerSchema)
 	.handler(async ({ data }) => {
-		const conflicts = await db
-			.select({ id: bookings.id })
-			.from(bookings)
-			.where(
-				and(
-					eq(bookings.roomId, data.roomId),
-					isNull(bookings.deletedAt),
-					or(
-						eq(bookings.status, "RESERVED"),
-						eq(bookings.status, "CHECKED_IN"),
-					),
-					and(
-						lte(bookings.checkIn, new Date(data.checkOut).toISOString()),
-						gte(bookings.checkOut, new Date(data.checkIn).toISOString()),
-					),
-				),
-			)
-			.limit(1);
-
-		if (conflicts.length > 0) {
-			throw new Error(
-				"Room is not available for the selected date and time. Please choose a different time slot.",
-			);
-		}
-
 		const roomRows = await db
 			.select({
 				capacity: rooms.capacity,
@@ -272,6 +327,9 @@ export const createBooking = createServerFn({ method: "POST" })
 		}
 
 		const room = roomRows[0];
+		if (data.occupantsCount > room.capacity) {
+			throw new Error("Occupants exceed this room's capacity");
+		}
 
 		const isMonthly = data.bookingType === "MONTHLY";
 
@@ -316,8 +374,10 @@ export const createBooking = createServerFn({ method: "POST" })
 			stayTotal,
 		);
 
-		const checkIn = new Date(data.checkIn);
-		const checkOut = new Date(data.checkOut);
+		const checkInIso = manilaWallClockToInstant(data.checkIn);
+		const checkOutIso = manilaWallClockToInstant(data.checkOut);
+		const checkIn = new Date(checkInIso);
+		const checkOut = new Date(checkOutIso);
 		const depositHours = 24;
 		const depositDeadline = new Date(
 			checkIn.getTime() - depositHours * 60 * 60 * 1000,
@@ -331,6 +391,19 @@ export const createBooking = createServerFn({ method: "POST" })
 		const paymentStatus = data.walkIn ? "PAID_IN_FULL" : "CURRENT";
 
 		const { bookingId } = await db.transaction(async (tx) => {
+			await lockRoomForBooking(tx, data.roomId);
+			const conflict = await findRoomBookingConflict(tx, {
+				roomId: data.roomId,
+				checkIn: checkInIso,
+				checkOut: checkOutIso,
+			});
+
+			if (conflict) {
+				throw new Error(
+					"Room is not available for the selected date and time. Please choose a different time slot.",
+				);
+			}
+
 			const [row] = await tx
 				.insert(bookings)
 				.values({
@@ -340,8 +413,8 @@ export const createBooking = createServerFn({ method: "POST" })
 					lastName: data.lastName,
 					contactNumber: data.contactNumber,
 					address: data.address,
-					checkIn: new Date(data.checkIn).toISOString(),
-					checkOut: new Date(data.checkOut).toISOString(),
+					checkIn: checkInIso,
+					checkOut: checkOutIso,
 					occupantsCount: data.occupantsCount,
 					status,
 					paymentStatus,
@@ -382,10 +455,15 @@ export const createBooking = createServerFn({ method: "POST" })
 	});
 
 export const updateBookingStatus = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(updateStatusSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
-			.select({ id: bookings.id, roomId: bookings.roomId })
+			.select({
+				id: bookings.id,
+				roomId: bookings.roomId,
+				status: bookings.status,
+			})
 			.from(bookings)
 			.where(
 				and(
@@ -404,38 +482,39 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 		};
 
 		if (data.status === "CANCELLED") {
+			if (rows[0].status !== "RESERVED") {
+				throw new Error("Only reserved bookings can be cancelled");
+			}
 			updateData.cancelledAt = sql`now()`;
 			updateData.cancellationReason = data.cancellationReason ?? null;
-		}
-
-		if (data.status === "EVICTED") {
+		} else if (data.status === "EVICTED") {
+			if (rows[0].status !== "CHECKED_IN") {
+				throw new Error("Only checked-in bookings can be evicted");
+			}
 			updateData.cancelledAt = sql`now()`;
 			updateData.cancellationReason = data.evictionReason ?? "Evicted";
+		} else {
+			throw new Error("Use the dedicated flow for this booking status change");
 		}
-
-		await db
-			.update(bookings)
-			.set(updateData)
-			.where(eq(bookings.bookingRef, data.bookingRef));
 
 		const roomId = rows[0].roomId;
 
-		if (data.status === "CHECKED_IN") {
-			await db
-				.update(rooms)
-				.set({ status: "OCCUPIED" })
-				.where(eq(rooms.id, roomId));
-		} else if (["CANCELLED", "CHECKED_OUT", "EVICTED"].includes(data.status)) {
-			await db
-				.update(rooms)
-				.set({ status: "AVAILABLE" })
-				.where(eq(rooms.id, roomId));
-		}
+		await db.transaction(async (tx) => {
+			await tx
+				.update(bookings)
+				.set(updateData)
+				.where(eq(bookings.bookingRef, data.bookingRef));
+
+			if (data.status === "EVICTED") {
+				await syncRoomOccupancy(tx, roomId);
+			}
+		});
 
 		return { success: true };
 	});
 
 export const checkInBooking = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(checkInBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
@@ -542,6 +621,7 @@ export const checkInBooking = createServerFn({ method: "POST" })
 	});
 
 export const checkOutBooking = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(checkOutBookingSchema)
 	.handler(async ({ data }) => {
 		const rows = await db
@@ -549,8 +629,11 @@ export const checkOutBooking = createServerFn({ method: "POST" })
 				id: bookings.id,
 				status: bookings.status,
 				roomId: bookings.roomId,
+				checkOut: bookings.checkOut,
+				basePrice: rooms.basePrice,
 			})
 			.from(bookings)
+			.innerJoin(rooms, eq(bookings.roomId, rooms.id))
 			.where(
 				and(
 					eq(bookings.bookingRef, data.bookingRef),
@@ -569,29 +652,60 @@ export const checkOutBooking = createServerFn({ method: "POST" })
 			throw new Error("Only checked-in bookings can be checked out");
 		}
 
-		const remainingBalance = await computeRemainingBalance(booking.id, db);
-		if (remainingBalance > 0) {
-			throw new Error(
-				"Cannot check out while there is an outstanding balance. Settle all charges first.",
-			);
+		if (!booking.checkOut) {
+			throw new Error("Booking has no scheduled check-out date");
 		}
+		const scheduledCheckOut = booking.checkOut;
 
 		await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, booking.id);
+
+			const remainingBalance = await computeRemainingBalance(booking.id, tx);
+			if (remainingBalance > 0) {
+				throw new Error(
+					"Cannot check out while there is an outstanding balance. Settle all charges first.",
+				);
+			}
+
+			const fee = computeLateFee({
+				checkOut: scheduledCheckOut,
+				roomBasePrice: booking.basePrice,
+			});
+
+			if (fee) {
+				if (!data.paymentMethod) {
+					throw new Error("Payment method is required for the late fee");
+				}
+
+				await tx.insert(ledgerTransactions).values({
+					bookingId: booking.id,
+					category: "LATE_FEE",
+					amount: toDecimalString(fee.amount),
+					isPaid: true,
+					description: fee.description,
+					paymentMethod: data.paymentMethod,
+					referenceNumber: normalizeReferenceNumber(
+						data.paymentMethod,
+						data.referenceNumber,
+					),
+				});
+
+				await syncBookingPaymentStatus(booking.id, tx);
+			}
+
 			await tx
 				.update(bookings)
 				.set({ status: "CHECKED_OUT" })
 				.where(eq(bookings.id, booking.id));
 
-			await tx
-				.update(rooms)
-				.set({ status: "AVAILABLE" })
-				.where(eq(rooms.id, booking.roomId));
+			await syncRoomOccupancy(tx, booking.roomId);
 		});
 
 		return { success: true };
 	});
 
 export const transferBooking = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(transferBookingSchema)
 	.handler(async ({ data }) => {
 		const result = await db.transaction(async (tx) => {
@@ -621,12 +735,22 @@ export const transferBooking = createServerFn({ method: "POST" })
 				throw new Error("Target room must be different from current room");
 			}
 
+			if (!booking.checkOut) {
+				throw new Error("Booking has no scheduled check-out date");
+			}
+
+			for (const roomId of [booking.roomId, data.targetRoomId].sort(
+				(a, b) => a - b,
+			)) {
+				await lockRoomForBooking(tx, roomId);
+			}
+			await lockBookingLedger(tx, booking.id);
+
 			const targetRoomRows = await tx
 				.select({
 					id: rooms.id,
 					status: rooms.status,
 					capacity: rooms.capacity,
-					basePrice: rooms.basePrice,
 				})
 				.from(rooms)
 				.where(and(eq(rooms.id, data.targetRoomId), isNull(rooms.deletedAt)))
@@ -642,23 +766,24 @@ export const transferBooking = createServerFn({ method: "POST" })
 				throw new Error("Target room is not available");
 			}
 
-			const { subtotal: stayTotal } = calculateStayPricing({
-				basePrice: targetRoom.basePrice,
-				checkIn: String(booking.checkIn),
-				checkOut: String(booking.checkOut),
+			if (booking.occupantsCount > targetRoom.capacity) {
+				throw new Error("Occupants exceed the target room's capacity");
+			}
+
+			const transferCheckIn = new Date().toISOString();
+			const transferCheckOut = new Date(booking.checkOut).toISOString();
+			const conflict = await findRoomBookingConflict(tx, {
+				roomId: data.targetRoomId,
+				checkIn: transferCheckIn,
+				checkOut: transferCheckOut,
+				excludeBookingId: booking.id,
 			});
 
-			const newBookingRef = generateBookingRef();
+			if (conflict) {
+				throw new Error("Target room has an overlapping active booking");
+			}
 
-			const ledgerLines = buildCreateBookingLedgerLines(
-				{
-					walkIn: true,
-					bookingType: "DAILY",
-					paymentMethod: "CASH",
-					referenceNumber: undefined,
-				},
-				stayTotal,
-			);
+			const newBookingRef = generateBookingRef();
 
 			await tx
 				.update(bookings)
@@ -669,11 +794,6 @@ export const transferBooking = createServerFn({ method: "POST" })
 				})
 				.where(eq(bookings.id, booking.id));
 
-			await tx
-				.update(rooms)
-				.set({ status: "AVAILABLE" })
-				.where(eq(rooms.id, booking.roomId));
-
 			const [newBooking] = await tx
 				.insert(bookings)
 				.values({
@@ -683,11 +803,11 @@ export const transferBooking = createServerFn({ method: "POST" })
 					lastName: booking.lastName,
 					contactNumber: booking.contactNumber,
 					address: booking.address ?? "",
-					checkIn: new Date().toISOString(),
-					checkOut: new Date(booking.checkOut ?? "").toISOString(),
+					checkIn: transferCheckIn,
+					checkOut: transferCheckOut,
 					occupantsCount: booking.occupantsCount,
 					status: "CHECKED_IN",
-					paymentStatus: "PAID_IN_FULL",
+					paymentStatus: booking.paymentStatus,
 					bookingType: booking.bookingType,
 					transferredFromBookingRef: booking.bookingRef,
 					depositDeadline: booking.depositDeadline,
@@ -696,20 +816,13 @@ export const transferBooking = createServerFn({ method: "POST" })
 				})
 				.returning();
 
-			await tx.insert(ledgerTransactions).values(
-				ledgerLines.map((line) => ({
-					bookingId: newBooking.id,
-					category: line.category,
-					amount: line.amount,
-					isPaid: line.isPaid,
-					description: line.description ?? null,
-					paymentMethod: line.isPaid ? (line.paymentMethod ?? null) : null,
-					referenceNumber: line.isPaid
-						? line.referenceNumber?.trim() || null
-						: null,
-				})),
-			);
+			await tx
+				.update(ledgerTransactions)
+				.set({ bookingId: newBooking.id })
+				.where(eq(ledgerTransactions.bookingId, booking.id));
 
+			await syncBookingPaymentStatus(newBooking.id, tx);
+			await syncRoomOccupancy(tx, booking.roomId);
 			await tx
 				.update(rooms)
 				.set({ status: "OCCUPIED" })
@@ -722,16 +835,13 @@ export const transferBooking = createServerFn({ method: "POST" })
 	});
 
 export const extendBooking = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(extendBookingSchema)
 	.handler(async ({ data }) => {
-		const rows = await db
+		const initialRows = await db
 			.select({
 				id: bookings.id,
-				status: bookings.status,
 				roomId: bookings.roomId,
-				checkIn: bookings.checkIn,
-				checkOut: bookings.checkOut,
-				bookingType: bookings.bookingType,
 			})
 			.from(bookings)
 			.where(
@@ -742,83 +852,132 @@ export const extendBooking = createServerFn({ method: "POST" })
 			)
 			.limit(1);
 
-		if (!rows[0]) {
+		if (!initialRows[0]) {
 			throw new Error("Booking not found");
 		}
 
-		const booking = rows[0];
+		const result = await db.transaction(async (tx) => {
+			await lockRoomForBooking(tx, initialRows[0].roomId);
+			await lockBookingLedger(tx, initialRows[0].id);
 
-		if (booking.status !== "CHECKED_IN") {
-			throw new Error("Only checked-in bookings can be extended");
-		}
+			const bookingRows = await tx
+				.select({
+					id: bookings.id,
+					status: bookings.status,
+					roomId: bookings.roomId,
+					checkIn: bookings.checkIn,
+					checkOut: bookings.checkOut,
+					bookingType: bookings.bookingType,
+					monthlyPrice: rooms.monthlyPrice,
+				})
+				.from(bookings)
+				.innerJoin(rooms, eq(bookings.roomId, rooms.id))
+				.where(
+					and(eq(bookings.id, initialRows[0].id), isNull(bookings.deletedAt)),
+				)
+				.limit(1);
 
-		if (booking.bookingType !== "MONTHLY") {
-			throw new Error("Only monthly bookings can be extended");
-		}
+			const booking = bookingRows[0];
+			if (!booking) {
+				throw new Error("Booking not found");
+			}
+			if (booking.status !== "CHECKED_IN") {
+				throw new Error("Only checked-in bookings can be extended");
+			}
+			if (booking.bookingType !== "MONTHLY") {
+				throw new Error("Only monthly bookings can be extended");
+			}
+			if (!booking.checkIn || !booking.checkOut) {
+				throw new Error("Booking dates are required for an extension");
+			}
+			if (!booking.monthlyPrice) {
+				throw new Error("Room monthly price not configured");
+			}
 
-		if (!booking.checkOut) {
-			throw new Error("Booking has no check-out date");
-		}
-
-		const currentCheckOut = new Date(booking.checkOut);
-		const newCheckOut = new Date(data.newCheckOutDate);
-
-		if (newCheckOut <= currentCheckOut) {
-			throw new Error(
-				"New checkout date must be after the current checkout date",
+			const currentCheckOut = new Date(booking.checkOut);
+			const checkoutTime = formatManilaDate(currentCheckOut, "HH:mm:ss");
+			const newCheckOut = new Date(
+				manilaWallClockToInstant(`${data.newCheckOutDate}T${checkoutTime}`),
 			);
-		}
+			if (Number.isNaN(newCheckOut.getTime())) {
+				throw new Error("New checkout date is invalid");
+			}
+			if (newCheckOut <= currentCheckOut) {
+				throw new Error(
+					"New checkout date must be after the current checkout date",
+				);
+			}
+			if (newCheckOut > addMonthlyPeriodEnd(currentCheckOut)) {
+				throw new Error(
+					"New checkout date cannot be more than one month after the current checkout date",
+				);
+			}
 
-		const conflicts = await db
-			.select({ id: bookings.id })
-			.from(bookings)
-			.where(
-				and(
-					eq(bookings.roomId, booking.roomId),
-					isNull(bookings.deletedAt),
-					or(
-						eq(bookings.status, "RESERVED"),
-						eq(bookings.status, "CHECKED_IN"),
-					),
+			const conflict = await findRoomBookingConflict(tx, {
+				roomId: booking.roomId,
+				checkIn: currentCheckOut.toISOString(),
+				checkOut: newCheckOut.toISOString(),
+				excludeBookingId: booking.id,
+			});
+
+			if (conflict) {
+				throw new Error(
+					"Room is not available for the extended period. Please choose a different date.",
+				);
+			}
+
+			const monthlyPrice = Number(booking.monthlyPrice);
+			if (!Number.isFinite(monthlyPrice) || monthlyPrice <= 0) {
+				throw new Error("Room monthly price must be greater than zero");
+			}
+			const referenceNumber = normalizeReferenceNumber(
+				data.paymentMethod,
+				data.referenceNumber,
+			);
+			const unpaidRentRows = await tx
+				.select({
+					id: ledgerTransactions.id,
+					amount: ledgerTransactions.amount,
+				})
+				.from(ledgerTransactions)
+				.where(
 					and(
-						lte(bookings.checkIn, newCheckOut.toISOString()),
-						gte(bookings.checkOut, currentCheckOut.toISOString()),
+						eq(ledgerTransactions.bookingId, booking.id),
+						eq(ledgerTransactions.isPaid, false),
+						inArray(ledgerTransactions.category, ["ROOM_CHARGE", "ADVANCE"]),
 					),
-					ne(bookings.id, booking.id),
-				),
-			)
-			.limit(1);
-
-		if (conflicts.length > 0) {
-			throw new Error(
-				"Room is not available for the extended period. Please choose a different date.",
+				);
+			const existingRentPaid = unpaidRentRows.reduce(
+				(sum, row) => sum + (Number(row.amount) || 0),
+				0,
 			);
-		}
 
-		const roomRows = await db
-			.select({
-				monthlyPrice: rooms.monthlyPrice,
-			})
-			.from(rooms)
-			.where(eq(rooms.id, booking.roomId))
-			.limit(1);
+			if (unpaidRentRows.length > 0) {
+				await tx
+					.update(ledgerTransactions)
+					.set({
+						isPaid: true,
+						paymentMethod: data.paymentMethod,
+						referenceNumber,
+					})
+					.where(
+						inArray(
+							ledgerTransactions.id,
+							unpaidRentRows.map((row) => row.id),
+						),
+					);
+			}
 
-		if (roomRows.length === 0 || !roomRows[0].monthlyPrice) {
-			throw new Error("Room monthly price not configured");
-		}
+			const existingPeriods = listMonthlyBillingPeriods(
+				booking.checkIn,
+				currentCheckOut.toISOString(),
+			);
+			const advancePeriodIndex = existingPeriods.length;
+			const advancePeriodLabel = `${formatManilaDate(
+				currentCheckOut,
+				"MMM d",
+			)} – ${formatManilaDate(newCheckOut, "MMM d, yyyy")}`;
 
-		const monthlyPrice = Number(roomRows[0].monthlyPrice);
-		const diffMs = newCheckOut.getTime() - currentCheckOut.getTime();
-		const months = Math.max(1, Math.round(diffMs / (30 * 24 * 60 * 60 * 1000)));
-		const totalAmount = monthlyPrice * months;
-
-		const paymentMethod = data.paymentMethod;
-		const referenceNumber = normalizeReferenceNumber(
-			paymentMethod,
-			data.referenceNumber,
-		);
-
-		await db.transaction(async (tx) => {
 			await tx
 				.update(bookings)
 				.set({
@@ -831,18 +990,26 @@ export const extendBooking = createServerFn({ method: "POST" })
 
 			await tx.insert(ledgerTransactions).values({
 				bookingId: booking.id,
-				category: "ROOM_CHARGE",
-				amount: totalAmount.toFixed(4),
+				category: "ADVANCE",
+				amount: monthlyPrice.toFixed(4),
 				isPaid: true,
-				description: `Extension: ${months} month${months > 1 ? "s" : ""}`,
-				paymentMethod,
-				referenceNumber: referenceNumber?.trim() || null,
+				description: `Advance rent: ${advancePeriodLabel}`,
+				paymentMethod: data.paymentMethod,
+				referenceNumber,
+				billingPeriodIndex: advancePeriodIndex,
 			});
 
 			await syncBookingPaymentStatus(booking.id, tx);
+
+			return {
+				newCheckOut: newCheckOut.toISOString(),
+				existingRentPaid,
+				advancePaid: monthlyPrice,
+				totalPaid: existingRentPaid + monthlyPrice,
+			};
 		});
 
-		return { success: true, newCheckOut: newCheckOut.toISOString() };
+		return { success: true, ...result };
 	});
 
 const previewLateFeeSchema = z.object({
@@ -850,6 +1017,7 @@ const previewLateFeeSchema = z.object({
 });
 
 export const previewLateFee = createServerFn({ method: "GET" })
+	.middleware([sessionMiddleware()])
 	.validator(previewLateFeeSchema)
 	.handler(async ({ data }): Promise<LateFeePreview | null> => {
 		const rows = await db
@@ -877,60 +1045,63 @@ const applyLateFeeSchema = z.object({
 });
 
 export const applyLateFee = createServerFn({ method: "POST" })
+	.middleware([sessionMiddleware()])
 	.validator(applyLateFeeSchema)
 	.handler(async ({ data }) => {
-		const rows = await db
-			.select({
-				id: bookings.id,
-				checkOut: bookings.checkOut,
-				status: bookings.status,
-				basePrice: rooms.basePrice,
-			})
-			.from(bookings)
-			.innerJoin(rooms, eq(rooms.id, bookings.roomId))
-			.where(and(eq(bookings.id, data.bookingId), isNull(bookings.deletedAt)))
-			.limit(1);
+		return await db.transaction(async (tx) => {
+			await lockBookingLedger(tx, data.bookingId);
 
-		const row = rows[0];
-		if (row?.status !== "CHECKED_IN" || !row.checkOut) {
-			throw new Error("Booking is not checked in or has been deleted");
-		}
+			const rows = await tx
+				.select({
+					id: bookings.id,
+					checkOut: bookings.checkOut,
+					status: bookings.status,
+					basePrice: rooms.basePrice,
+				})
+				.from(bookings)
+				.innerJoin(rooms, eq(rooms.id, bookings.roomId))
+				.where(and(eq(bookings.id, data.bookingId), isNull(bookings.deletedAt)))
+				.limit(1);
 
-		const fee = computeLateFee({
-			checkOut: row.checkOut,
-			roomBasePrice: row.basePrice,
-		});
-		if (!fee) {
-			return { applied: false as const };
-		}
+			const row = rows[0];
+			if (row?.status !== "CHECKED_IN" || !row.checkOut) {
+				throw new Error("Booking is not checked in or has been deleted");
+			}
 
-		const existing = await db
-			.select({ id: ledgerTransactions.id })
-			.from(ledgerTransactions)
-			.where(
-				and(
-					eq(ledgerTransactions.bookingId, row.id),
-					eq(ledgerTransactions.category, "LATE_FEE"),
-					eq(ledgerTransactions.isPaid, false),
-				),
-			)
-			.limit(1);
+			const fee = computeLateFee({
+				checkOut: row.checkOut,
+				roomBasePrice: row.basePrice,
+			});
+			if (!fee) {
+				return { applied: false as const };
+			}
 
-		if (existing[0]) {
-			return { applied: true as const, fee, reused: true };
-		}
+			const existing = await tx
+				.select({ id: ledgerTransactions.id })
+				.from(ledgerTransactions)
+				.where(
+					and(
+						eq(ledgerTransactions.bookingId, row.id),
+						eq(ledgerTransactions.category, "LATE_FEE"),
+						eq(ledgerTransactions.isPaid, false),
+					),
+				)
+				.limit(1);
 
-		await db.transaction(async (tx) => {
+			if (existing[0]) {
+				return { applied: true as const, fee, reused: true };
+			}
+
 			await tx.insert(ledgerTransactions).values({
 				bookingId: row.id,
 				category: "LATE_FEE",
-				amount: fee.amount.toFixed(4),
+				amount: toDecimalString(fee.amount),
 				isPaid: false,
 				description: fee.description,
 			});
 
 			await syncBookingPaymentStatus(row.id, tx);
-		});
 
-		return { applied: true as const, fee, reused: false };
+			return { applied: true as const, fee, reused: false };
+		});
 	});

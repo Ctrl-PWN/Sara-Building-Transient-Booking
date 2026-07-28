@@ -187,7 +187,7 @@ export const generateUtilityPaymentsSchema = z
 	.superRefine(paymentReferenceRefine);
 
 export const monthlyUtilitiesSearchSchema = z.object({
-	period: z.number().int().min(0).optional().default(0),
+	period: z.coerce.number().int().min(0).catch(0),
 });
 
 export const monthlyUtilitiesFormSchema = z

@@ -1,10 +1,13 @@
-import { format } from "date-fns";
 import type { MonthlyBillingPeriod } from "@/lib/bookings/monthly-billing-periods";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { BookingWithRoom } from "@/lib/bookings/types";
 import { formatGuestName } from "@/lib/bookings/types";
 import { formatManilaDateTime, nowInManila } from "@/lib/date/manila";
 import type { MonthlyInvoiceUtilityLine } from "@/lib/invoices/schemas";
+import {
+	formatLedgerCategory,
+	formatPaymentMethod,
+} from "@/lib/ledger/display.helpers";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 export type ReceiptLineItem = {
@@ -41,19 +44,6 @@ export type ReceiptModel = {
 	footerText?: string;
 };
 
-function formatCategory(category: string): string {
-	return category
-		.split("_")
-		.map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-		.join(" ");
-}
-
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
-
 export function buildLedgerReceiptModel(args: {
 	booking: BookingWithRoom;
 	transactions: LedgerTransactionListItem[];
@@ -76,19 +66,19 @@ export function buildLedgerReceiptModel(args: {
 	if (booking.checkIn) {
 		kvRows.push({
 			label: "Check-in",
-			value: format(new Date(booking.checkIn), "MMM d, h:mm a"),
+			value: formatManilaDateTime(booking.checkIn, "MMM d, h:mm a"),
 		});
 	}
 	kvRows.push({
 		label: "Check-out",
-		value: format(new Date(booking.checkOut), "MMM d, h:mm a"),
+		value: formatManilaDateTime(booking.checkOut, "MMM d, h:mm a"),
 	});
 	kvRows.push({ label: "Issued", value: issuedAt });
 	kvRows.push({ label: "Issued by", value: issuedBy });
 
 	const lineItems: ReceiptLineItem[] = transactions.map((tx) => {
 		const paymentMeta = tx.paymentMethod
-			? formatPaymentMethod(tx.paymentMethod)
+			? formatPaymentMethod(tx.paymentMethod, "")
 			: "";
 		const refMeta = tx.referenceNumber ? ` · ${tx.referenceNumber}` : "";
 		const dateMeta = formatManilaDateTime(tx.createdAt, "MMM d, h:mm a");
@@ -96,7 +86,7 @@ export function buildLedgerReceiptModel(args: {
 
 		return {
 			id: String(tx.id),
-			label: tx.description ?? formatCategory(tx.category),
+			label: tx.description ?? formatLedgerCategory(tx.category),
 			meta: meta || undefined,
 			amount: Number(tx.amount),
 			isPaid: tx.isPaid,

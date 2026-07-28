@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import { formatManilaDateTime } from "@/lib/date/manila";
+import {
+	formatLedgerCategory,
+	formatPaymentMethod,
+} from "@/lib/ledger/display.helpers";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 
 import {
@@ -14,19 +18,6 @@ import {
 	canPayLedgerTransaction,
 } from "./ledger/ledger-ui.helpers";
 import { PaymentReferenceDialog } from "./ledger/PaymentReferenceDialog";
-
-function formatCategory(category: string): string {
-	return category
-		.split("_")
-		.map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-		.join(" ");
-}
-
-function formatPaymentMethod(method: string | null): string {
-	if (!method) return "—";
-	if (method === "BANK_TRANSFER") return "Bank transfer";
-	return method.charAt(0) + method.slice(1).toLowerCase();
-}
 
 function PaymentMethodCell({
 	transaction,
@@ -92,7 +83,7 @@ export function BookingLedgerTable({
 		{
 			accessorKey: "category",
 			header: "Category",
-			cell: ({ row }) => formatCategory(row.original.category),
+			cell: ({ row }) => formatLedgerCategory(row.original.category),
 		},
 		{
 			accessorKey: "description",
