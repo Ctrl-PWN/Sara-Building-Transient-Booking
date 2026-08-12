@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useState } from "react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CreateRoomSheet } from "@/components/rooms/CreateRoomSheet";
 import { DeleteRoomDialog } from "@/components/rooms/DeleteRoomDialog";
@@ -63,7 +64,17 @@ function RoomManagementPage() {
 					<>
 						<Button
 							variant="outline"
-							onClick={() => syncStatuses.mutate()}
+							onClick={() => {
+								syncStatuses.mutate(undefined, {
+									onSuccess: () => toast.success("Room statuses synced"),
+									onError: (error) =>
+										toast.error(
+											error instanceof Error
+												? error.message
+												: "Failed to sync room statuses",
+										),
+								});
+							}}
 							disabled={syncStatuses.isPending}
 						>
 							<ArrowClockwiseIcon
@@ -83,7 +94,8 @@ function RoomManagementPage() {
 			<div className="relative max-w-sm">
 				<MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
-					placeholder="Search by room number or type..."
+					aria-label="Search rooms by room number or type"
+					placeholder="Search by room number or type…"
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 					className="pl-8"
@@ -92,7 +104,8 @@ function RoomManagementPage() {
 
 			<section className="block-card overflow-hidden">
 				{isLoading ? (
-					<div className="p-4">
+					<div className="p-4" role="status" aria-live="polite">
+						<p className="mb-3 text-sm text-muted-foreground">Loading rooms…</p>
 						<Skeleton className="h-64 w-full rounded-xl" />
 					</div>
 				) : (

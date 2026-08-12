@@ -118,7 +118,7 @@ export function ChangeRoomStatusDialog({
 						{updateStatus.isPending ? (
 							<ArrowsClockwiseIcon className="size-4 animate-spin" />
 						) : null}
-						{updateStatus.isPending ? "Updating..." : "Update status"}
+						{updateStatus.isPending ? "Updating…" : "Update status"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

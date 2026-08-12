@@ -19,6 +19,7 @@ import { TransferBookingDialog } from "@/components/bookings/TransferBookingDial
 import { Spinner } from "@/components/ui/spinner";
 import { bookingMutations } from "@/lib/bookings/bookings.mutations";
 import { bookingQueries } from "@/lib/bookings/bookings.queries";
+import { formatPeso } from "@/lib/bookings/stay-pricing";
 import { ledgerQueries } from "@/lib/ledger/ledger.queries";
 import { roomQueries } from "@/lib/rooms/rooms.queries";
 
@@ -138,20 +139,24 @@ function BookingDetailPage() {
 
 	const handleExtend = async (values: {
 		newCheckOutDate: string;
-		withCashAdvance: boolean;
 		paymentMethod: string;
 		referenceNumber: string;
 	}) => {
 		try {
-			await extendMutation.mutateAsync({
+			const result = await extendMutation.mutateAsync({
 				bookingRef: booking.bookingRef,
 				newCheckOutDate: values.newCheckOutDate,
-				withCashAdvance: values.withCashAdvance,
 				paymentMethod: values.paymentMethod as
 					| "CASH"
 					| "GCASH"
 					| "BANK_TRANSFER",
 				referenceNumber: values.referenceNumber,
+			});
+			toast.success("Booking extended and payment recorded", {
+				description:
+					result.existingRentPaid > 0
+						? `${formatPeso(result.totalPaid)} paid for existing rent and the next monthly period.`
+						: `${formatPeso(result.advancePaid)} paid for the next monthly period.`,
 			});
 			setExtendOpen(false);
 		} catch (error) {

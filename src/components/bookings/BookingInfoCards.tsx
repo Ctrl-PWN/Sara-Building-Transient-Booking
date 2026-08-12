@@ -13,7 +13,7 @@ export function BookingInfoCards({ booking }: BookingInfoCardsProps) {
 				<CardHeader>
 					<CardTitle>Stay Details</CardTitle>
 				</CardHeader>
-				<CardContent className="grid grid-cols-2 gap-y-6">
+				<CardContent className="grid grid-cols-1 gap-y-6 sm:grid-cols-2">
 					<div>
 						<p className="text-sm text-muted-foreground">Booking Type</p>
 						<p className="font-medium mt-1">

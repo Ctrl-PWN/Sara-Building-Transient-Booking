@@ -1,4 +1,6 @@
+import { TZDate } from "@date-fns/tz";
 import { format } from "date-fns";
+import { MANILA_TZ } from "@/lib/date/manila";
 
 export type MonthlyBillingPeriod = {
 	index: number;
@@ -7,13 +9,37 @@ export type MonthlyBillingPeriod = {
 	label: string;
 };
 
+type PeriodAssignedTransaction = {
+	billingPeriodIndex: number | null;
+	createdAt: string;
+};
+
 /** Advance one billing month from a checkout anchor (same rules as extend booking). */
 export function addMonthlyPeriodEnd(date: Date): Date {
-	const targetMonth = date.getMonth() + 1;
-	const targetYear = date.getFullYear();
-	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-	const day = Math.min(date.getDate(), lastDayOfMonth);
-	return new Date(targetYear, targetMonth, day, 12, 0, 0);
+	const manilaDate = new TZDate(date, MANILA_TZ);
+	const targetMonth = manilaDate.getMonth() + 1;
+	const targetYear = manilaDate.getFullYear();
+	const lastDayOfMonth = new TZDate(
+		targetYear,
+		targetMonth + 1,
+		0,
+		0,
+		0,
+		0,
+		MANILA_TZ,
+	).getDate();
+	const day = Math.min(manilaDate.getDate(), lastDayOfMonth);
+
+	return new TZDate(
+		targetYear,
+		targetMonth,
+		day,
+		manilaDate.getHours(),
+		manilaDate.getMinutes(),
+		manilaDate.getSeconds(),
+		manilaDate.getMilliseconds(),
+		MANILA_TZ,
+	);
 }
 
 function formatPeriodLabel(start: Date, end: Date): string {
@@ -24,8 +50,8 @@ export function listMonthlyBillingPeriods(
 	checkIn: string,
 	checkOut: string,
 ): MonthlyBillingPeriod[] {
-	const checkInDate = new Date(checkIn);
-	const finalCheckOut = new Date(checkOut);
+	const checkInDate = new TZDate(checkIn, MANILA_TZ);
+	const finalCheckOut = new TZDate(checkOut, MANILA_TZ);
 
 	if (
 		Number.isNaN(checkInDate.getTime()) ||
@@ -35,7 +61,7 @@ export function listMonthlyBillingPeriods(
 	}
 
 	const periods: MonthlyBillingPeriod[] = [];
-	let periodStart = checkInDate;
+	let periodStart: Date = checkInDate;
 	let index = 0;
 
 	while (periodStart < finalCheckOut) {
@@ -72,4 +98,15 @@ export function isWithinPeriod(
 	const start = new Date(period.start).getTime();
 	const end = new Date(period.end).getTime();
 	return ts >= start && ts < end;
+}
+
+export function isTransactionWithinPeriod(
+	transaction: PeriodAssignedTransaction,
+	period: MonthlyBillingPeriod,
+): boolean {
+	if (transaction.billingPeriodIndex != null) {
+		return transaction.billingPeriodIndex === period.index;
+	}
+
+	return isWithinPeriod(transaction.createdAt, period);
 }

@@ -35,7 +35,19 @@ export function TimelineGrid({
 
 	return (
 		<div className="block-card min-w-0 overflow-hidden">
-			<div className="h-[min(70vh,48rem)] w-full overflow-auto bg-surface">
+			<p
+				id="timeline-scroll-hint"
+				className="px-4 py-3 text-xs text-muted-foreground sm:hidden"
+			>
+				Scroll horizontally to see the full week.
+			</p>
+			<section
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: The horizontal scroll region must be keyboard focusable.
+				tabIndex={0}
+				aria-label="Weekly booking timeline"
+				aria-describedby="timeline-scroll-hint"
+				className="h-[min(70vh,48rem)] w-full overflow-auto bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+			>
 				<div className="min-w-5xl">
 					<div
 						className={`${gridCols} items-stretch border-b border-border bg-surface-dim`}
@@ -86,7 +98,7 @@ export function TimelineGrid({
 						/>
 					))}
 				</div>
-			</div>
+			</section>
 		</div>
 	);
 }

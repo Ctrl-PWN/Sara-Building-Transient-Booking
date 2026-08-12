@@ -21,7 +21,7 @@ export function NotFoundPage() {
 						<ArrowLeftIcon data-icon="inline-start" />
 						Go back
 					</Button>
-					<Button render={<Link to="/dashboard" />}>
+					<Button nativeButton={false} render={<Link to="/dashboard" />}>
 						<HouseIcon data-icon="inline-start" />
 						Go to dashboard
 					</Button>

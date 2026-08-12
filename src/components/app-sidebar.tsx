@@ -1,5 +1,7 @@
 import { SignOutIcon } from "@phosphor-icons/react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
@@ -27,6 +29,7 @@ type AppSidebarProps = {
 export function AppSidebar({ session }: AppSidebarProps) {
 	const pathname = useRouterState({ select: (s) => s.location.pathname });
 	const navigate = useNavigate();
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const isAdmin = session.user.role === "admin";
 	const adminOnlyPaths = ["/user-management", "/room-management"];
 	const visibleNavItems = isAdmin
@@ -34,8 +37,19 @@ export function AppSidebar({ session }: AppSidebarProps) {
 		: mainNavItems.filter((item) => !adminOnlyPaths.includes(item.to));
 
 	async function handleLogout() {
-		await authClient.signOut();
-		await navigate({ to: "/log-in", replace: true });
+		setIsLoggingOut(true);
+		try {
+			const result = await authClient.signOut();
+			if (result.error) {
+				throw new Error(result.error.message || "Unable to log out");
+			}
+			toast.success("You are signed out");
+			await navigate({ to: "/log-in", replace: true });
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Unable to log out");
+		} finally {
+			setIsLoggingOut(false);
+		}
 	}
 
 	return (
@@ -90,9 +104,14 @@ export function AppSidebar({ session }: AppSidebarProps) {
 					onClick={() => {
 						void handleLogout();
 					}}
+					disabled={isLoggingOut}
+					aria-busy={isLoggingOut}
+					aria-label={isLoggingOut ? "Logging out" : "Log out"}
 				>
 					<SignOutIcon />
-					<span className="group-data-[collapsible=icon]:sr-only">Log out</span>
+					<span className="group-data-[collapsible=icon]:sr-only">
+						{isLoggingOut ? "Logging out…" : "Log out"}
+					</span>
 				</Button>
 			</SidebarFooter>
 			<SidebarRail />

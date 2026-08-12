@@ -27,6 +27,7 @@ export const ledgerTransactions = pgTable("ledger_transactions", {
 	paymentMethod: paymentMethodEnum("payment_method"),
 	referenceNumber: varchar("reference_number"),
 	utilityType: utilityTypeEnum("utility_type"),
+	billingPeriodIndex: integer("billing_period_index"),
 	createdAt: timestamp("created_at", {
 		withTimezone: true,
 		mode: "string",
