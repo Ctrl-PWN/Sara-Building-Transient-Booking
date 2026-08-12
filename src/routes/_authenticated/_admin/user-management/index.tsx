@@ -80,7 +80,8 @@ function UsersPage() {
 			<div className="relative max-w-sm">
 				<MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
-					placeholder="Search by name or email..."
+					aria-label="Search users by name or email"
+					placeholder="Search by name or email…"
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 					className="pl-8"
@@ -89,7 +90,8 @@ function UsersPage() {
 
 			<section className="block-card overflow-hidden">
 				{isLoading ? (
-					<div className="p-4">
+					<div className="p-4" role="status" aria-live="polite">
+						<p className="mb-3 text-sm text-muted-foreground">Loading users…</p>
 						<Skeleton className="h-64 w-full rounded-xl" />
 					</div>
 				) : (

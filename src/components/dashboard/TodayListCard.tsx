@@ -33,7 +33,8 @@ export function TodayListCard({
 								key={booking.id}
 								to="/bookings/$bookingId"
 								params={{ bookingId: String(booking.id) }}
-								className="group flex items-center justify-between rounded-lg px-4 py-4 transition-colors hover:bg-surface-container-high"
+								className="group flex items-center justify-between rounded-lg px-4 py-4 transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+								aria-label={`${formatGuestName(booking)}, room ${booking.roomNumber}, ${title.toLowerCase()}`}
 							>
 								<div>
 									<p className="font-body text-sm font-semibold text-on-surface">
