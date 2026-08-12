@@ -33,7 +33,11 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
 						<ArrowClockwiseIcon data-icon="inline-start" />
 						Try again
 					</Button>
-					<Button variant="outline" render={<Link to="/" />}>
+					<Button
+						nativeButton={false}
+						variant="outline"
+						render={<Link to="/" />}
+					>
 						<HouseIcon data-icon="inline-start" />
 						Go to dashboard
 					</Button>
