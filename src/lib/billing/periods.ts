@@ -1,4 +1,5 @@
-import { format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
+import { formatManilaDate, MANILA_TZ } from "@/lib/date/manila";
 
 export type MonthlyBillingPeriod = {
 	index: number;
@@ -7,24 +8,27 @@ export type MonthlyBillingPeriod = {
 	label: string;
 };
 
-/** Advance one billing month from a checkout anchor (same rules as extend booking). */
-export function addMonthlyPeriodEnd(date: Date): Date {
-	const targetMonth = date.getMonth() + 1;
-	const targetYear = date.getFullYear();
-	const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-	const day = Math.min(date.getDate(), lastDayOfMonth);
-	return new Date(targetYear, targetMonth, day, 12, 0, 0);
+const PERIOD_END_HOUR = 12;
+
+function periodEnd(checkIn: TZDate, monthsAhead: number): Date {
+	const year = checkIn.getFullYear();
+	const month = checkIn.getMonth() + monthsAhead;
+	const lastDayOfMonth = new TZDate(year, month + 1, 0, MANILA_TZ).getDate();
+	const day = Math.min(checkIn.getDate(), lastDayOfMonth);
+	const end = new TZDate(year, month, day, PERIOD_END_HOUR, 0, 0, MANILA_TZ);
+	// Plain Date, so toISOString() gives UTC ("…Z") like the stored values.
+	return new Date(end.getTime());
 }
 
 function formatPeriodLabel(start: Date, end: Date): string {
-	return `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`;
+	return `${formatManilaDate(start, "MMM d")} – ${formatManilaDate(end, "MMM d, yyyy")}`;
 }
 
 export function listMonthlyBillingPeriods(
 	checkIn: string,
 	checkOut: string,
 ): MonthlyBillingPeriod[] {
-	const checkInDate = new Date(checkIn);
+	const checkInDate = new TZDate(checkIn, MANILA_TZ);
 	const finalCheckOut = new Date(checkOut);
 
 	if (
@@ -35,12 +39,11 @@ export function listMonthlyBillingPeriods(
 	}
 
 	const periods: MonthlyBillingPeriod[] = [];
-	let periodStart = checkInDate;
-	let index = 0;
+	let periodStart = new Date(checkInDate.getTime());
 
-	while (periodStart < finalCheckOut) {
-		const periodEnd = addMonthlyPeriodEnd(periodStart);
-		const boundedEnd = periodEnd > finalCheckOut ? finalCheckOut : periodEnd;
+	for (let index = 0; periodStart < finalCheckOut && index <= 120; index++) {
+		const end = periodEnd(checkInDate, index + 1);
+		const boundedEnd = end > finalCheckOut ? finalCheckOut : end;
 
 		periods.push({
 			index,
@@ -50,10 +53,6 @@ export function listMonthlyBillingPeriods(
 		});
 
 		periodStart = boundedEnd;
-		index += 1;
-
-		if (periodStart >= finalCheckOut) break;
-		if (index > 120) break;
 	}
 
 	return periods;
