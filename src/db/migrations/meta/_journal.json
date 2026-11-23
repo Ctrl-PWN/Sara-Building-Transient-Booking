@@ -15,6 +15,13 @@
 			"when": 1781991653250,
 			"tag": "0001_timestamptz_columns",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1784974237838,
+			"tag": "0002_add-ledger-billing-period-index",
+			"breakpoints": true
 		}
 	]
 }

@@ -1,5 +1,7 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useAppForm } from "@/integrations/tanstack-form";
 import { authClient } from "@/lib/auth-client";
 import { logInSchema } from "@/lib/session/schemas";
@@ -47,6 +49,8 @@ function LogInPage() {
 				<img
 					src="/log-in-background.png"
 					alt=""
+					width={1774}
+					height={887}
 					className="h-full w-full object-cover"
 				/>
 				<div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/55 to-black/20" />
@@ -58,6 +62,8 @@ function LogInPage() {
 						<img
 							src="/logo.png"
 							alt="Sara Building"
+							width={780}
+							height={780}
 							className="h-24 w-auto max-w-full object-contain"
 						/>
 						<h1 className="mt-3 font-display text-3xl text-[var(--on-surface)]">
@@ -97,7 +103,11 @@ function LogInPage() {
 						</form.AppField>
 
 						{error ? (
-							<div className="rounded-xl border border-red-400/30 bg-red-950/60 p-3 text-xs text-red-300">
+							<div
+								role="alert"
+								aria-live="assertive"
+								className="rounded-xl border border-red-400/30 bg-red-950/60 p-3 text-xs text-red-300"
+							>
 								{error}
 							</div>
 						) : null}
@@ -106,13 +116,15 @@ function LogInPage() {
 							selector={(state) => [state.canSubmit, state.isSubmitting]}
 						>
 							{([canSubmit, isSubmitting]) => (
-								<button
+								<Button
 									type="submit"
 									disabled={!canSubmit || isSubmitting}
+									aria-busy={isSubmitting}
 									className="h-11 w-full rounded-xl bg-[var(--secondary)] text-sm font-semibold text-[var(--on-secondary)] transition hover:-translate-y-0.5 hover:bg-[#f0d5b8] disabled:opacity-60"
 								>
-									{isSubmitting ? "Please wait..." : "Sign in"}
-								</button>
+									{isSubmitting ? <Spinner data-icon="inline-start" /> : null}
+									{isSubmitting ? "Signing in…" : "Sign in"}
+								</Button>
 							)}
 						</form.Subscribe>
 					</form>

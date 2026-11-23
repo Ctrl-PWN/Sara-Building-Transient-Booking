@@ -1,5 +1,6 @@
 import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { computeBookingDisplayStatus } from "@/lib/bookings/status";
@@ -74,12 +75,15 @@ export function BookingDetailHeader({
 				<ArrowLeftIcon className="mr-2" size={16} />
 				Back to Bookings
 			</Link>
-			<div className="flex justify-between items-end">
-				<div>
-					<div className="flex items-center gap-3 mb-2">
-						<h2 className="text-3xl font-serif tracking-tight text-foreground">
-							{booking.bookingRef}
-						</h2>
+			<PageHeader
+				title={booking.bookingRef}
+				description={
+					booking.transferredFromBookingRef
+						? `Transferred from ${booking.transferredFromBookingRef}`
+						: undefined
+				}
+				actions={
+					<div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
 						<Badge variant={statusColorMap[displayStatus]}>
 							{displayStatus.replace("_", " ")}
 						</Badge>
@@ -92,48 +96,35 @@ export function BookingDetailHeader({
 						{isNonRefundable(booking.depositPctSnapshot) && (
 							<Badge variant="destructive">NON-REFUNDABLE</Badge>
 						)}
+						{canCancel(booking.status) && (
+							<Button variant="outline" onClick={onCancelClick}>
+								Cancel
+							</Button>
+						)}
+						{canCheckIn(booking.status, booking.checkIn) && (
+							<Button onClick={onCheckIn}>Check In</Button>
+						)}
+						{canCheckOut(booking.status) && (
+							<Button onClick={onCheckOut}>Check Out</Button>
+						)}
+						{canEvict(booking.status, booking.paymentStatus) && (
+							<Button variant="destructive" onClick={onEvictClick}>
+								Evict
+							</Button>
+						)}
+						{canTransfer(booking.status) && (
+							<Button variant="outline" onClick={onTransferClick}>
+								Transfer
+							</Button>
+						)}
+						{canExtend(booking.bookingType, booking.status) && (
+							<Button variant="outline" onClick={onExtendClick}>
+								Extend
+							</Button>
+						)}
 					</div>
-					<p className="text-muted-foreground">
-						Guest: {booking.firstName} {booking.lastName}
-					</p>
-					{booking.transferredFromBookingRef && (
-						<p className="text-sm text-muted-foreground mt-1">
-							Transferred from:{" "}
-							<span className="font-medium text-foreground">
-								{booking.transferredFromBookingRef}
-							</span>
-						</p>
-					)}
-				</div>
-				<div className="flex gap-2">
-					{canCancel(booking.status) && (
-						<Button variant="outline" onClick={onCancelClick}>
-							Cancel
-						</Button>
-					)}
-					{canCheckIn(booking.status, booking.checkIn) && (
-						<Button onClick={onCheckIn}>Check In</Button>
-					)}
-					{canCheckOut(booking.status) && (
-						<Button onClick={onCheckOut}>Check Out</Button>
-					)}
-					{canEvict(booking.status, booking.paymentStatus) && (
-						<Button variant="destructive" onClick={onEvictClick}>
-							Evict
-						</Button>
-					)}
-					{canTransfer(booking.status) && (
-						<Button variant="outline" onClick={onTransferClick}>
-							Transfer
-						</Button>
-					)}
-					{canExtend(booking.bookingType, booking.status) && (
-						<Button variant="outline" onClick={onExtendClick}>
-							Extend
-						</Button>
-					)}
-				</div>
-			</div>
+				}
+			/>
 		</div>
 	);
 }

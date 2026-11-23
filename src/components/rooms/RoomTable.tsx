@@ -9,6 +9,11 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatPeso } from "@/lib/bookings/stay-pricing";
 import type { Room } from "@/lib/rooms/types";
 
@@ -84,13 +89,13 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 								{room.roomNumber}
 							</td>
 							<td className="px-4 py-3 text-muted-foreground">{room.type}</td>
-							<td className="px-4 py-3 text-muted-foreground">
+							<td className="px-4 py-3 tabular-nums text-muted-foreground">
 								{room.capacity}
 							</td>
-							<td className="px-4 py-3 text-muted-foreground">
+							<td className="px-4 py-3 tabular-nums text-muted-foreground">
 								{formatPeso(Number(room.basePrice))}
 							</td>
-							<td className="px-4 py-3">
+							<td className="px-4 py-3 tabular-nums">
 								{room.monthlyPrice
 									? formatPeso(Number(room.monthlyPrice))
 									: "N/A"}
@@ -102,20 +107,34 @@ export function RoomTable({ rooms, onEdit, onDelete }: RoomTableProps) {
 							</td>
 							<td className="px-4 py-3">
 								<div className="flex items-center justify-end gap-1">
-									<Button
-										variant="ghost"
-										onClick={() => onEdit(room)}
-										aria-label={`Edit room ${room.roomNumber}`}
-									>
-										<PencilIcon />
-									</Button>
-									<Button
-										variant="ghost"
-										onClick={() => onDelete(room)}
-										aria-label={`Delete room ${room.roomNumber}`}
-									>
-										<TrashIcon />
-									</Button>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													variant="ghost"
+													onClick={() => onEdit(room)}
+													aria-label={`Edit room ${room.roomNumber}`}
+												/>
+											}
+										>
+											<PencilIcon aria-hidden="true" />
+										</TooltipTrigger>
+										<TooltipContent>Edit room</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													variant="ghost"
+													onClick={() => onDelete(room)}
+													aria-label={`Delete room ${room.roomNumber}`}
+												/>
+											}
+										>
+											<TrashIcon aria-hidden="true" />
+										</TooltipTrigger>
+										<TooltipContent>Delete room</TooltipContent>
+									</Tooltip>
 								</div>
 							</td>
 						</tr>

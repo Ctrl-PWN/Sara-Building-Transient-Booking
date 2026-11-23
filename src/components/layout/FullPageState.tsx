@@ -36,6 +36,8 @@ export function FullPageState({
 				<img
 					src="/logo.png"
 					alt="Sara Building"
+					width={780}
+					height={780}
 					className="h-14 w-auto max-w-full object-contain opacity-90"
 				/>
 

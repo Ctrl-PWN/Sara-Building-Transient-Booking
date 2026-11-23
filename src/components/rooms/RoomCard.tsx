@@ -20,23 +20,14 @@ type RoomCardProps = {
 
 export function RoomCard({ room, onStatusClick }: RoomCardProps) {
 	return (
-		<div className="block-card flex flex-col gap-3 p-4.5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:border-foreground/20">
+		<div className="block-card flex flex-col gap-3 p-4.5 transition-colors duration-200 hover:border-foreground/20 hover:bg-surface-container-high">
 			<div className="flex items-start justify-between gap-2">
 				<span className="font-display text-xl font-semibold text-foreground">
 					{room.roomNumber}
 				</span>
-				<button
-					type="button"
-					onClick={() => onStatusClick(room)}
-					className="cursor-pointer border-0 bg-transparent p-0"
-				>
-					<Badge
-						variant={statusVariants[room.status] ?? "default"}
-						className="cursor-pointer"
-					>
-						{room.status.replace(/_/g, " ")}
-					</Badge>
-				</button>
+				<Badge variant={statusVariants[room.status] ?? "default"}>
+					{room.status.replace(/_/g, " ")}
+				</Badge>
 			</div>
 			<div className="space-y-1.5 text-sm">
 				<div className="flex justify-between">

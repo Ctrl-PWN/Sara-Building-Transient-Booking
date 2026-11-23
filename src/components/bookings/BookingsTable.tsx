@@ -80,6 +80,19 @@ export function BookingsTable({
 	const startIdx = (safePage - 1) * pageSize;
 	const pageBookings = bookings.slice(startIdx, startIdx + pageSize);
 
+	const handleSearchChange = (value: string) => {
+		setPage(1);
+		onSearchChange(value);
+	};
+	const handleBookingTypeFilterChange = (value: string) => {
+		setPage(1);
+		onBookingTypeFilterChange(value);
+	};
+	const handleSortChange = (value: SortOption) => {
+		setPage(1);
+		onSortByChange(value);
+	};
+
 	return (
 		<Card>
 			<CardHeader className="border-b border-border p-4 bg-muted/20">
@@ -90,18 +103,19 @@ export function BookingsTable({
 							size={18}
 						/>
 						<Input
-							placeholder="Search guest name or ref..."
+							aria-label="Search bookings by guest name or reference"
+							placeholder="Search guest name or ref…"
 							className="pl-10"
 							value={searchQuery}
-							onChange={(e) => onSearchChange(e.target.value)}
+							onChange={(e) => handleSearchChange(e.target.value)}
 						/>
 					</div>
 				</div>
 				<BookingsFilterBar
 					bookingTypeFilter={bookingTypeFilter}
 					sortBy={sortBy}
-					onBookingTypeFilterChange={onBookingTypeFilterChange}
-					onSortByChange={onSortByChange}
+					onBookingTypeFilterChange={handleBookingTypeFilterChange}
+					onSortByChange={handleSortChange}
 				/>
 			</CardHeader>
 			<CardContent className="p-0">
@@ -122,7 +136,7 @@ export function BookingsTable({
 							<TableRow>
 								<TableCell
 									className="text-center text-muted-foreground py-8"
-									colSpan={8}
+									colSpan={7}
 								>
 									{emptyMessage}
 								</TableCell>
@@ -137,11 +151,27 @@ export function BookingsTable({
 										)
 									: booking.status;
 							return (
-								<TableRow key={booking.id}>
-									<TableCell className="font-mono text-xs text-muted-foreground">
+								<TableRow
+									key={booking.id}
+									className="group relative hover:bg-muted/40 focus-within:bg-muted/40"
+								>
+									<TableCell
+										colSpan={7}
+										className="absolute inset-0 z-0 h-full w-full p-0"
+									>
+										<Link
+											to="/bookings/$bookingId"
+											params={{ bookingId: String(booking.id) }}
+											aria-label={`Open booking ${booking.bookingRef} for ${booking.firstName} ${booking.lastName}`}
+											className="block h-full w-full rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+										>
+											<span className="sr-only">Open booking</span>
+										</Link>
+									</TableCell>
+									<TableCell className="relative z-10 pointer-events-none font-mono text-xs text-muted-foreground">
 										{booking.bookingRef}
 									</TableCell>
-									<TableCell>
+									<TableCell className="relative z-10 pointer-events-none">
 										<p className="font-medium">
 											{booking.firstName} {booking.lastName}
 										</p>
@@ -149,7 +179,7 @@ export function BookingsTable({
 											{booking.contactNumber}
 										</p>
 									</TableCell>
-									<TableCell>
+									<TableCell className="relative z-10 pointer-events-none">
 										<p className="text-sm">
 											{safeFormatDate(
 												booking.checkIn,
@@ -164,7 +194,7 @@ export function BookingsTable({
 											)}
 										</p>
 									</TableCell>
-									<TableCell>
+									<TableCell className="relative z-10 pointer-events-none">
 										<Badge variant="outline" className="font-mono">
 											{booking.roomNumber}
 										</Badge>
@@ -172,7 +202,7 @@ export function BookingsTable({
 											{booking.roomType}
 										</span>
 									</TableCell>
-									<TableCell>
+									<TableCell className="relative z-10 pointer-events-none">
 										<Badge
 											variant="secondary"
 											className="text-[10px] uppercase"
@@ -180,7 +210,7 @@ export function BookingsTable({
 											{booking.bookingType === "MONTHLY" ? "Monthly" : "Daily"}
 										</Badge>
 									</TableCell>
-									<TableCell>
+									<TableCell className="relative z-10 pointer-events-none">
 										<Badge variant={statusColorMap[displayStatus]}>
 											{displayStatus.replace("_", " ")}
 										</Badge>
@@ -190,7 +220,7 @@ export function BookingsTable({
 											</Badge>
 										)}
 									</TableCell>
-									<TableCell className="text-center">
+									<TableCell className="relative z-20 text-center pointer-events-auto">
 										<Button
 											variant="ghost"
 											size="sm"
@@ -201,6 +231,7 @@ export function BookingsTable({
 													params={{ bookingId: String(booking.id) }}
 												/>
 											}
+											className="relative z-20"
 										>
 											Manage
 										</Button>
@@ -211,9 +242,12 @@ export function BookingsTable({
 					</TableBody>
 				</Table>
 				{bookings.length > 0 && (
-					<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							<span>Showing</span>
+							<label htmlFor="bookings-page-size" className="sr-only">
+								Bookings per page
+							</label>
 							<Select
 								value={String(pageSize)}
 								onValueChange={(v) => {
@@ -221,7 +255,12 @@ export function BookingsTable({
 									setPage(1);
 								}}
 							>
-								<SelectTrigger size="sm" className="w-16">
+								<SelectTrigger
+									id="bookings-page-size"
+									size="sm"
+									className="w-16"
+									aria-label="Bookings per page"
+								>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -233,14 +272,18 @@ export function BookingsTable({
 							</Select>
 							<span>of {bookings.length} bookings</span>
 						</div>
-						<div className="flex items-center gap-1">
+						<nav
+							className="flex items-center gap-1"
+							aria-label="Booking pagination"
+						>
 							<Button
 								variant="outline"
 								size="sm"
 								disabled={safePage <= 1}
+								aria-label="Previous page"
 								onClick={() => setPage((p) => p - 1)}
 							>
-								<CaretLeftIcon size={14} />
+								<CaretLeftIcon size={14} aria-hidden="true" />
 							</Button>
 							<span className="text-sm px-2">
 								{safePage} / {totalPages}
@@ -249,11 +292,12 @@ export function BookingsTable({
 								variant="outline"
 								size="sm"
 								disabled={safePage >= totalPages}
+								aria-label="Next page"
 								onClick={() => setPage((p) => p + 1)}
 							>
-								<CaretRightIcon size={14} />
+								<CaretRightIcon size={14} aria-hidden="true" />
 							</Button>
-						</div>
+						</nav>
 					</div>
 				)}
 			</CardContent>

@@ -17,6 +17,7 @@ export type LedgerTransactionListItem = {
 	paymentMethod: PaymentMethod | null;
 	referenceNumber: string | null;
 	utilityType: UtilityType | null;
+	billingPeriodIndex: number | null;
 	createdAt: string;
 };
 
@@ -35,4 +36,5 @@ export type InsertLedgerTransactionInput = {
 	paymentMethod?: PaymentMethod | null;
 	referenceNumber?: string | null;
 	utilityType?: UtilityType | null;
+	billingPeriodIndex?: number | null;
 };

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import {
 	Sheet,
@@ -29,9 +30,16 @@ export function CreateUserSheet({ open, onOpenChange }: CreateUserSheetProps) {
 		},
 		validators: { onSubmit: createUserSchema },
 		onSubmit: async ({ value }) => {
-			await createUser.mutateAsync(value);
-			form.reset();
-			onOpenChange(false);
+			try {
+				await createUser.mutateAsync(value);
+				toast.success("User created successfully");
+				form.reset();
+				onOpenChange(false);
+			} catch (error) {
+				toast.error(
+					error instanceof Error ? error.message : "Failed to create user",
+				);
+			}
 		},
 	});
 

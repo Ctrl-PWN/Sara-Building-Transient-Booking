@@ -1,4 +1,11 @@
+import { DesktopIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type ThemeMode = "light" | "dark" | "auto";
 
@@ -62,17 +69,28 @@ export default function ThemeToggle() {
 		window.localStorage.setItem("theme", nextMode);
 	}
 
-	const label = mode === "auto" ? "Theme: auto" : `Theme: ${mode}`;
+	const nextMode: ThemeMode =
+		mode === "light" ? "dark" : mode === "dark" ? "auto" : "light";
+	const label = `Theme is ${mode}; switch to ${nextMode}`;
+	const Icon =
+		mode === "auto" ? DesktopIcon : mode === "dark" ? MoonIcon : SunIcon;
 
 	return (
-		<button
-			type="button"
-			onClick={toggleMode}
-			aria-label={label}
-			title={label}
-			className="btn-secondary text-xs px-3 py-1.5"
-		>
-			{mode === "auto" ? "Auto" : mode === "dark" ? "Dark" : "Light"}
-		</button>
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						onClick={toggleMode}
+						aria-label={label}
+					/>
+				}
+			>
+				<Icon aria-hidden="true" />
+			</TooltipTrigger>
+			<TooltipContent>{label}</TooltipContent>
+		</Tooltip>
 	);
 }

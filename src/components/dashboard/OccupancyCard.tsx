@@ -23,7 +23,15 @@ export function OccupancyCard({ occupancy }: OccupancyCardProps) {
 			<p className="mt-4 font-body text-sm font-medium tracking-tight text-on-surface-variant">
 				{occupiedRooms} of {totalRooms} rooms occupied
 			</p>
-			<div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-surface-container-highest">
+			<div
+				className="mt-5 h-2 w-full overflow-hidden rounded-full bg-surface-container-highest"
+				role="progressbar"
+				aria-label="Room occupancy"
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={rate}
+				aria-valuetext={`${rate}% occupied, ${occupiedRooms} of ${totalRooms} rooms`}
+			>
 				<div
 					className="h-full rounded-full bg-status-occupied transition-all duration-500"
 					style={{ width: `${rate}%` }}

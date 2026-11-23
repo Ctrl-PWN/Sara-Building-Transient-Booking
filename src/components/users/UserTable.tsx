@@ -8,6 +8,11 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type UserRow = {
 	id: string;
@@ -77,20 +82,34 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
 
 							<td className="px-4 py-3">
 								<div className="flex items-center justify-end gap-1">
-									<Button
-										variant="ghost"
-										onClick={() => onEdit(user)}
-										aria-label={`Edit ${user.firstName} ${user.lastName}`}
-									>
-										<PencilIcon />
-									</Button>
-									<Button
-										variant="ghost"
-										onClick={() => onDelete(user)}
-										aria-label={`Delete ${user.firstName} ${user.lastName}`}
-									>
-										<TrashIcon />
-									</Button>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													variant="ghost"
+													onClick={() => onEdit(user)}
+													aria-label={`Edit ${user.firstName} ${user.lastName}`}
+												/>
+											}
+										>
+											<PencilIcon aria-hidden="true" />
+										</TooltipTrigger>
+										<TooltipContent>Edit user</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													variant="ghost"
+													onClick={() => onDelete(user)}
+													aria-label={`Delete ${user.firstName} ${user.lastName}`}
+												/>
+											}
+										>
+											<TrashIcon aria-hidden="true" />
+										</TooltipTrigger>
+										<TooltipContent>Delete user</TooltipContent>
+									</Tooltip>
 								</div>
 							</td>
 						</tr>

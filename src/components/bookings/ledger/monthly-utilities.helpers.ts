@@ -1,5 +1,5 @@
 import type { MonthlyBillingPeriod } from "@/lib/bookings/monthly-billing-periods";
-import { isWithinPeriod } from "@/lib/bookings/monthly-billing-periods";
+import { isTransactionWithinPeriod } from "@/lib/bookings/monthly-billing-periods";
 import type { MonthlyInvoiceUtilityLine } from "@/lib/invoices/schemas";
 import type { LedgerTransactionListItem } from "@/lib/ledger/types";
 import type {
@@ -32,7 +32,7 @@ export function getExistingMainTypesInPeriod(
 			tx.category === "UTILITY" &&
 			tx.utilityType &&
 			tx.utilityType !== "OTHER" &&
-			isWithinPeriod(tx.createdAt, period)
+			isTransactionWithinPeriod(tx, period)
 		) {
 			types.add(tx.utilityType);
 		}
@@ -45,7 +45,7 @@ export function getUtilityTransactionsInPeriod(
 	period: MonthlyBillingPeriod,
 ): LedgerTransactionListItem[] {
 	return transactions.filter(
-		(tx) => tx.category === "UTILITY" && isWithinPeriod(tx.createdAt, period),
+		(tx) => tx.category === "UTILITY" && isTransactionWithinPeriod(tx, period),
 	);
 }
 

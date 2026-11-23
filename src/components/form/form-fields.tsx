@@ -42,6 +42,21 @@ function useFieldInvalidState() {
 	return { field, isInvalid };
 }
 
+function getDescribedBy(
+	fieldName: string,
+	description: string | undefined,
+	isInvalid: boolean,
+) {
+	return (
+		[
+			description ? `${fieldName}-description` : null,
+			isInvalid ? `${fieldName}-error` : null,
+		]
+			.filter(Boolean)
+			.join(" ") || undefined
+	);
+}
+
 type NumberFieldProps = {
 	label: string;
 	description?: string;
@@ -95,7 +110,7 @@ function TextField({
 					field.handleChange(next);
 				}}
 				aria-invalid={isInvalid || undefined}
-				aria-describedby={description ? `${field.name}-description` : undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 			/>
 			{description ? (
 				<p
@@ -105,7 +120,12 @@ function TextField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -139,7 +159,7 @@ export function TimeField({
 				onBlur={field.handleBlur}
 				onChange={(event) => field.handleChange(event.target.value)}
 				aria-invalid={isInvalid || undefined}
-				aria-describedby={description ? `${field.name}-description` : undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 				className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
 			/>
 			{description ? (
@@ -150,7 +170,12 @@ export function TimeField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -186,14 +211,13 @@ function PasswordField({
 					onBlur={field.handleBlur}
 					onChange={(event) => field.handleChange(event.target.value)}
 					aria-invalid={isInvalid || undefined}
-					aria-describedby={
-						description ? `${field.name}-description` : undefined
-					}
+					aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 				/>
 				<InputGroupAddon align="inline-end">
 					<InputGroupButton
 						size="icon-xs"
 						tabIndex={-1}
+						type="button"
 						onClick={() => setShowPassword((prev) => !prev)}
 						aria-label={showPassword ? "Hide password" : "Show password"}
 					>
@@ -209,7 +233,12 @@ function PasswordField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -242,7 +271,7 @@ function TextareaField({
 				onBlur={field.handleBlur}
 				onChange={(event) => field.handleChange(event.target.value)}
 				aria-invalid={isInvalid || undefined}
-				aria-describedby={description ? `${field.name}-description` : undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 			/>
 			{description ? (
 				<p
@@ -252,7 +281,12 @@ function TextareaField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -275,6 +309,7 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
 				onBlur={field.handleBlur}
 				onCheckedChange={(value) => field.handleChange(value)}
 				aria-invalid={isInvalid || undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 			/>
 			<div className="flex flex-col gap-1">
 				<FieldLabel htmlFor={field.name} className="font-normal">
@@ -283,7 +318,12 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
 				{description ? (
 					<p className="text-sm text-muted-foreground">{description}</p>
 				) : null}
-				{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+				{isInvalid ? (
+					<FieldError
+						id={`${field.name}-error`}
+						errors={field.state.meta.errors}
+					/>
+				) : null}
 			</div>
 		</Field>
 	);
@@ -307,6 +347,7 @@ function ToggleField({ label, description }: ToggleFieldProps) {
 				onBlur={field.handleBlur}
 				onCheckedChange={(value) => field.handleChange(value)}
 				aria-invalid={isInvalid || undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 			/>
 			<div className="flex flex-col gap-1">
 				<FieldLabel htmlFor={field.name} className="font-normal">
@@ -315,7 +356,12 @@ function ToggleField({ label, description }: ToggleFieldProps) {
 				{description ? (
 					<p className="text-sm text-muted-foreground">{description}</p>
 				) : null}
-				{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+				{isInvalid ? (
+					<FieldError
+						id={`${field.name}-error`}
+						errors={field.state.meta.errors}
+					/>
+				) : null}
 			</div>
 		</Field>
 	);
@@ -367,9 +413,7 @@ function SelectField({
 				<SelectTrigger
 					id={field.name}
 					aria-invalid={isInvalid || undefined}
-					aria-describedby={
-						description ? `${field.name}-description` : undefined
-					}
+					aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 				>
 					<SelectValue placeholder={placeholder} />
 				</SelectTrigger>
@@ -393,7 +437,12 @@ function SelectField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -426,6 +475,8 @@ function RadioGroupField({
 				</FieldLegend>
 				<RadioGroup
 					aria-labelledby={legendId}
+					aria-invalid={isInvalid || undefined}
+					aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 					name={field.name}
 					value={value}
 					onValueChange={field.handleChange}
@@ -450,7 +501,12 @@ function RadioGroupField({
 			{description ? (
 				<p className="text-sm text-muted-foreground">{description}</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -492,6 +548,8 @@ function RadioChoiceCardField({
 				</FieldLegend>
 				<RadioGroup
 					aria-labelledby={legendId}
+					aria-invalid={isInvalid || undefined}
+					aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 					name={field.name}
 					value={value}
 					onValueChange={handleChange}
@@ -530,7 +588,12 @@ function RadioChoiceCardField({
 			{description ? (
 				<p className="text-sm text-muted-foreground">{description}</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -612,6 +675,8 @@ function NumberField({
 					}
 					field.handleChange(next);
 				}}
+				aria-invalid={isInvalid || undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
 			/>
 			{description ? (
 				<p
@@ -621,7 +686,12 @@ function NumberField({
 					{description}
 				</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -659,8 +729,14 @@ function DateField({
 
 	return (
 		<Field data-invalid={isInvalid || undefined}>
-			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-			<div className="rounded-md border border-input bg-transparent p-1">
+			<FieldLabel htmlFor={`${field.name}-control`}>{label}</FieldLabel>
+			<fieldset
+				id={`${field.name}-control`}
+				aria-label={label}
+				aria-invalid={isInvalid || undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
+				className="min-w-0 rounded-md border border-input bg-transparent p-1"
+			>
 				<Calendar
 					month={month}
 					onMonthChange={setMonth}
@@ -670,7 +746,7 @@ function DateField({
 					maxDate={maxDate}
 					disabledDates={disabledDates}
 				/>
-			</div>
+			</fieldset>
 			{selectedDate && (
 				<p className="text-xs text-muted-foreground mt-1">
 					Selected:{" "}
@@ -682,7 +758,12 @@ function DateField({
 			{description ? (
 				<p className="text-sm text-muted-foreground">{description}</p>
 			) : null}
-			{isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+			{isInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
 		</Field>
 	);
 }
@@ -731,12 +812,18 @@ function DateRangeField({
 	return (
 		<Field data-invalid={isInvalid || undefined}>
 			<div className="flex items-baseline justify-between">
-				<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+				<FieldLabel htmlFor={`${field.name}-control`}>{label}</FieldLabel>
 				<span className="text-xs text-muted-foreground">
 					{formatRangeLabel(startDate, endDate)}
 				</span>
 			</div>
-			<div className="rounded-md border border-input bg-transparent p-1">
+			<fieldset
+				id={`${field.name}-control`}
+				aria-label={label}
+				aria-invalid={isInvalid || undefined}
+				aria-describedby={getDescribedBy(field.name, description, isInvalid)}
+				className="min-w-0 rounded-md border border-input bg-transparent p-1"
+			>
 				<Calendar
 					month={month}
 					onMonthChange={setMonth}
@@ -746,7 +833,7 @@ function DateRangeField({
 					minDate={minDate}
 					disabledDates={disabledDates}
 				/>
-			</div>
+			</fieldset>
 			<div className="flex items-center justify-between text-xs text-muted-foreground">
 				<span>
 					<span className="font-medium text-foreground">{startLabel}:</span>{" "}
@@ -760,8 +847,15 @@ function DateRangeField({
 			{description ? (
 				<p className="text-sm text-muted-foreground">{description}</p>
 			) : null}
-			{startIsInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
-			{endIsInvalid ? <FieldError errors={endErrors} /> : null}
+			{startIsInvalid ? (
+				<FieldError
+					id={`${field.name}-error`}
+					errors={field.state.meta.errors}
+				/>
+			) : null}
+			{endIsInvalid ? (
+				<FieldError id={`${endFieldName}-error`} errors={endErrors} />
+			) : null}
 		</Field>
 	);
 }

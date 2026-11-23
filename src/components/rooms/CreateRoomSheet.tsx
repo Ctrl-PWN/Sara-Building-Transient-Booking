@@ -32,6 +32,7 @@ export function CreateRoomSheet({ open, onOpenChange }: CreateRoomSheetProps) {
 		onSubmit: async ({ value }) => {
 			try {
 				await createRoom.mutateAsync(value);
+				toast.success("Room created successfully");
 				form.reset();
 				onOpenChange(false);
 			} catch (err) {

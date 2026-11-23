@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { bookings, ledgerTransactions } from "@/db/schema";
 import type { PaymentMethod } from "@/db/schema/enums";
 import {
-	isWithinPeriod,
+	isTransactionWithinPeriod,
 	listMonthlyBillingPeriods,
 } from "@/lib/bookings/monthly-billing-periods";
 import { sessionMiddleware } from "@/lib/require-admin";
@@ -122,6 +122,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			const existing = await tx
 				.select({
 					utilityType: ledgerTransactions.utilityType,
+					billingPeriodIndex: ledgerTransactions.billingPeriodIndex,
 					createdAt: ledgerTransactions.createdAt,
 				})
 				.from(ledgerTransactions)
@@ -135,7 +136,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 			const existingMainTypesInPeriod = new Set(
 				existing
 					.filter(
-						(row) => row.createdAt && isWithinPeriod(row.createdAt, period),
+						(row) => row.createdAt && isTransactionWithinPeriod(row, period),
 					)
 					.map((row) => row.utilityType)
 					.filter(
@@ -169,6 +170,7 @@ export const generateUtilityPayments = createServerFn({ method: "POST" })
 							data.referenceNumber,
 						),
 						utilityType: u.utilityType,
+						billingPeriodIndex: period.index,
 					})),
 				)
 				.returning();

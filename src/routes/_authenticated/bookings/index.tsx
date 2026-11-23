@@ -30,8 +30,12 @@ function BookingsRoute() {
 	return (
 		<Suspense
 			fallback={
-				<div className="px-4 py-20 text-center text-muted-foreground">
-					Loading...
+				<div
+					className="px-4 py-20 text-center text-muted-foreground"
+					role="status"
+					aria-live="polite"
+				>
+					Loading bookings…
 				</div>
 			}
 		>

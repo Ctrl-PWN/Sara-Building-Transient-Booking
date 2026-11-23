@@ -319,16 +319,6 @@ export const extendBookingSchema = z
 	.object({
 		bookingRef: z.string().min(1, "Booking reference is required"),
 		newCheckOutDate: z.string().min(1, "Checkout date is required"),
-		withCashAdvance: z.boolean(),
 		...ledgerPaymentFieldsShape,
 	})
-	.superRefine((data, ctx) => {
-		if (data.withCashAdvance) return;
-		paymentReferenceRefine(
-			{
-				paymentMethod: data.paymentMethod,
-				referenceNumber: data.referenceNumber,
-			},
-			ctx,
-		);
-	});
+	.superRefine(paymentReferenceRefine);

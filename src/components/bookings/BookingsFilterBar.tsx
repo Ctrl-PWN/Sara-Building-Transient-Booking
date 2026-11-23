@@ -47,7 +47,11 @@ export function BookingsFilterBar({
 				}}
 				items={bookingTypeOptions}
 			>
-				<SelectTrigger size="sm" className="w-auto min-w-36">
+				<SelectTrigger
+					size="sm"
+					className="w-auto min-w-36"
+					aria-label="Filter bookings by type"
+				>
 					<SelectValue placeholder="All Types" />
 				</SelectTrigger>
 				<SelectContent>
@@ -66,7 +70,11 @@ export function BookingsFilterBar({
 				}}
 				items={sortOptions}
 			>
-				<SelectTrigger size="sm" className="w-auto min-w-40">
+				<SelectTrigger
+					size="sm"
+					className="w-auto min-w-40"
+					aria-label="Sort bookings"
+				>
 					<SelectValue placeholder="Sort by" />
 				</SelectTrigger>
 				<SelectContent>
